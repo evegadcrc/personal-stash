@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
+      "title": "Personal Knowledge Base (this project)",
+      "url": null,
+      "summary": "Build a personal info manager using Claude Code as the input interface and a Next.js / Vercel app as the browsing UI. Claude fetches URLs, generates summaries, writes JSON files, and commits to GitHub — Vercel auto-deploys on every push.",
+      "category": "ideas",
+      "subcategory": "project",
+      "tags": ["claude", "next.js", "vercel", "knowledge-base"],
+      "dateAdded": "2026-03-02T00:00:00Z",
+      "content": "## Stack\n- Next.js App Router + TypeScript + Tailwind\n- JSON files in GitHub as data store\n- Claude Code as the input layer\n- Vercel for hosting\n\n## Key insight\nUsing git as the data sync mechanism means zero backend cost and full version history.",
+      "source": "manual"
+    },
+    {
+      "id": "b8c9d0e1-f2a3-4567-bcde-678901234567",
+      "title": "Weekend Coding Challenges Newsletter",
+      "url": null,
+      "summary": "A weekly email with one well-scoped coding challenge, delivered every Friday. Each challenge comes with a test suite, a reference solution revealed on Monday, and a leaderboard. Target audience: developers who want to stay sharp without grinding LeetCode.",
+      "category": "ideas",
+      "subcategory": "business",
+      "tags": ["newsletter", "coding", "saas", "developer-tools"],
+      "dateAdded": "2026-03-02T00:00:00Z",
+      "content": "",
+      "source": "manual"
+    }
+  ]
+}

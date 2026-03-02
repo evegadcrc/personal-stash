@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "title": "Café de Flore — Paris",
+      "url": "https://maps.google.com/?q=Café+de+Flore+Paris",
+      "summary": "Iconic Parisian café on the Boulevard Saint-Germain, frequented by Sartre, de Beauvoir, and Picasso. Famous for its hot chocolate and people-watching. Best visited on a weekday morning to avoid tourist crowds.",
+      "category": "places",
+      "subcategory": "coffee",
+      "tags": ["paris", "iconic", "historic", "coffee"],
+      "dateAdded": "2026-03-02T00:00:00Z",
+      "content": "",
+      "source": "manual"
+    },
+    {
+      "id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "title": "Patagonia — Torres del Paine",
+      "url": "https://www.chile.travel/en/where-to-go/south-patagonia/torres-del-paine/",
+      "summary": "One of the most dramatic landscapes on Earth, the Torres del Paine national park in Chilean Patagonia offers world-class trekking, glaciers, and wildlife. The W Trek takes 4–5 days and is accessible from November to March. Book huts well in advance.",
+      "category": "places",
+      "subcategory": "travel",
+      "tags": ["patagonia", "trekking", "chile", "nature"],
+      "dateAdded": "2026-03-02T00:00:00Z",
+      "content": "",
+      "source": "manual"
+    }
+  ]
+}
