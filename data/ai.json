@@ -24,5 +24,18 @@
       "content": "",
       "source": "manual"
     }
+  ,
+    {
+      "id": "558c61c9-9518-4d8f-a6a1-0de43f17b5af",
+      "title": "12 LLM Prompts to Land a Job Faster (Career Coach Prompts)",
+      "url": "https://www.facebook.com/100083408053899/posts/909410155182578/",
+      "summary": "A viral Facebook post by Thedigitalkinggg sharing 12 ready-to-use LLM prompts that act as a personal career coach. Covers the full job search pipeline: ATS resume rewrite, LinkedIn profile overhaul, tailored cover letters, cold outreach templates, behavioral interview prep with STAR answers, salary negotiation scripts, mock interview simulation, and a weekly job search tracker. Each prompt is fill-in-the-bracket format — paste into ChatGPT, Claude, or Gemini and replace [brackets] with your info.",
+      "category": "ai",
+      "subcategory": "prompt",
+      "tags": ["career", "job-search", "prompts", "linkedin", "resume"],
+      "dateAdded": "2026-03-02T21:00:00Z",
+      "content": "## The 12 Prompts\n\n1. **How-to setup** — chain prompts in the same chat for best context\n2. **ATS resume rewrite & keyword sniper** — scores your resume 1–10, pulls top keywords from job postings, rewrites every bullet with quantified achievements\n3. **LinkedIn headline & About overhaul** — magnetic headline, 4–6 line About section, top skills, post ideas, personal brand statement\n4. **Tailored cover letter generator** — 300–400 words, hooks with company-specific detail, quantified proof, exact job description keywords\n5. **Cold outreach templates** — LinkedIn connect note, DM, cold email, and follow-up; all warm and non-spammy\n6. **Behavioral interview predictor + STAR answers** — 12 likely questions, full STAR answers from your real experience, weak-spot coaching\n7. **Salary negotiation script** — market rate research, negotiation email + call script, pushback handlers, walk-away line\n8. **Weekly job search tracker** — performance coach review: what worked, what wasted time, this week's focus, micro-experiments\n9. **LinkedIn content batch** — 7 ready-to-post updates to attract inbound recruiter messages\n10. **Mock interview simulator** — full 20–30 min mock, one question at a time, honest feedback + score per answer, hire/no-hire verdict\n11–12. (Additional prompts in thread)",
+      "source": "facebook"
+    }
   ]
 }
