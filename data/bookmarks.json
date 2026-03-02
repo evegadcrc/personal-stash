@@ -1,21 +1,3 @@
 {
-  "items": [
-    {
-      "id": "c9d0e1f2-a3b4-5678-cdef-789012345678",
-      "title": "Tailwind CSS Documentation",
-      "url": "https://tailwindcss.com/docs",
-      "summary": "Official documentation for Tailwind CSS, the utility-first CSS framework. Covers installation, core concepts, and all utility classes. The search is excellent — fastest way to find any class or concept.",
-      "category": "bookmarks",
-      "subcategory": "reference",
-      "tags": [
-        "tailwind",
-        "css",
-        "docs",
-        "frontend"
-      ],
-      "dateAdded": "2026-03-02T00:00:00Z",
-      "content": "",
-      "source": "manual"
-    }
-  ]
+  "items": []
 }
