@@ -1,21 +1,3 @@
 {
-  "items": [
-    {
-      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-      "title": "Dune: Part Two (2024)",
-      "url": "https://www.imdb.com/title/tt15239678/",
-      "summary": "Denis Villeneuve's epic continuation of the Dune saga follows Paul Atreides as he unites with the Fremen to wage war against House Harkonnen. Stunning visuals and a gripping story make this one of the finest sci-fi films in years. A must-watch on the biggest screen possible.",
-      "category": "movies",
-      "subcategory": "watched",
-      "tags": [
-        "sci-fi",
-        "epic",
-        "villeneuve",
-        "2024"
-      ],
-      "dateAdded": "2026-03-02T00:00:00Z",
-      "content": "",
-      "source": "manual"
-    }
-  ]
+  "items": []
 }
