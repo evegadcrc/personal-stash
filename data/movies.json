@@ -7,19 +7,12 @@
       "summary": "Denis Villeneuve's epic continuation of the Dune saga follows Paul Atreides as he unites with the Fremen to wage war against House Harkonnen. Stunning visuals and a gripping story make this one of the finest sci-fi films in years. A must-watch on the biggest screen possible.",
       "category": "movies",
       "subcategory": "watched",
-      "tags": ["sci-fi", "epic", "villeneuve", "2024"],
-      "dateAdded": "2026-03-02T00:00:00Z",
-      "content": "",
-      "source": "manual"
-    },
-    {
-      "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
-      "title": "Severance — Apple TV+",
-      "url": "https://tv.apple.com/us/show/severance/umc.cmc.1srk2goyh2q2zdxcx605w8vtx",
-      "summary": "A psychological thriller series where employees have their work and personal memories surgically separated. Season 2 has been widely praised as one of the best TV shows in recent memory. Deeply unsettling, beautifully crafted, and endlessly thought-provoking.",
-      "category": "movies",
-      "subcategory": "series",
-      "tags": ["thriller", "apple-tv", "dystopian", "must-watch"],
+      "tags": [
+        "sci-fi",
+        "epic",
+        "villeneuve",
+        "2024"
+      ],
       "dateAdded": "2026-03-02T00:00:00Z",
       "content": "",
       "source": "manual"
