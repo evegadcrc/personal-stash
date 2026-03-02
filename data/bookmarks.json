@@ -7,19 +7,12 @@
       "summary": "Official documentation for Tailwind CSS, the utility-first CSS framework. Covers installation, core concepts, and all utility classes. The search is excellent — fastest way to find any class or concept.",
       "category": "bookmarks",
       "subcategory": "reference",
-      "tags": ["tailwind", "css", "docs", "frontend"],
-      "dateAdded": "2026-03-02T00:00:00Z",
-      "content": "",
-      "source": "manual"
-    },
-    {
-      "id": "d0e1f2a3-b4c5-6789-defa-890123456789",
-      "title": "How I Built a Second Brain with Obsidian",
-      "url": "https://fortelabs.com/blog/basboverview/",
-      "summary": "Tiago Forte's overview of the Building a Second Brain methodology — a system for capturing, organizing, and retrieving knowledge using digital tools. Core framework: CODE (Capture, Organize, Distill, Express) and PARA (Projects, Areas, Resources, Archives).",
-      "category": "bookmarks",
-      "subcategory": "article",
-      "tags": ["productivity", "pkm", "obsidian", "second-brain"],
+      "tags": [
+        "tailwind",
+        "css",
+        "docs",
+        "frontend"
+      ],
       "dateAdded": "2026-03-02T00:00:00Z",
       "content": "",
       "source": "manual"
