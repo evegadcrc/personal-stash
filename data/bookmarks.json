@@ -1,3 +1,76 @@
 {
-  "items": []
+  "items": [
+    {
+      "id": "c03876eb-d8bd-4f99-8acc-ddb94059cd8e",
+      "title": "Herramientas Web Útiles — Curación en Español (Video Reel)",
+      "url": "https://www.facebook.com/share/v/1AynNa44Fd/",
+      "summary": "A Spanish-language Facebook reel curating a selection of useful web tools and resources. Covers productivity sites, online utilities, and lesser-known web services presented in a fast-paced, visual format. Good reference for discovering practical web tools recommended by the Spanish-speaking tech community.",
+      "category": "bookmarks",
+      "subcategory": "video",
+      "tags": ["herramientas-web", "curación", "productividad", "spanish", "recursos"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "6f1a0b7e-df18-41a6-97bb-7b9317923e04",
+      "title": "Anti-Inflammatory Immune Boosting Healing Shot Recipe",
+      "url": "https://www.instagram.com/reel/DT0L_9_kW8X/",
+      "summary": "An Instagram reel by @gfbeef sharing a recipe for a concentrated healing shot with anti-inflammatory and immune-boosting properties. The shot combines ingredients like ginger, turmeric, lemon, and black pepper — all with well-documented health benefits. Quick to make and intended as a daily wellness routine.",
+      "category": "bookmarks",
+      "subcategory": "reference",
+      "tags": ["health", "recipe", "anti-inflammatory", "immune-system", "wellness"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "instagram"
+    },
+    {
+      "id": "6ee96128-c1c5-4a5c-ad94-b3ca37c51a0b",
+      "title": "Recomendación de Libros de Desarrollo Personal — Kaizen Rey Libros",
+      "url": "https://www.facebook.com/reel/744415365018121",
+      "summary": "A Facebook reel by 'Kaizen Rey Libros' recommending personal development books in Spanish. The channel focuses on books about productivity, mindset, habits, and self-improvement — summarizing key ideas in short video format. Useful for building a reading list in the personal growth genre.",
+      "category": "bookmarks",
+      "subcategory": "reference",
+      "tags": ["libros", "desarrollo-personal", "lectura", "self-improvement", "kaizen"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "911243f4-477a-460e-b7d2-9059fde495db",
+      "title": "BofA Top 6 Stocks for the $1 Trillion AI Chip Surge in 2026",
+      "url": "https://www.facebook.com/story.php?story_fbid=122156466986938282",
+      "summary": "A Facebook post by Stockstoearn sharing Bank of America's analysis of the top 6 stocks positioned to benefit from the projected $1 trillion AI chip spending surge in 2026. The picks focus on semiconductor companies, AI infrastructure providers, and data center enablers riding the wave of accelerating AI hardware demand.",
+      "category": "bookmarks",
+      "subcategory": "article",
+      "tags": ["stocks", "ai-chips", "semiconductor", "investing", "2026"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "fa1a48d1-2468-412d-8bf7-47062ae706be",
+      "title": "10 Remote Job Sites That Pay in USD",
+      "url": "https://www.facebook.com/61568626410800/posts/122166113666620880",
+      "summary": "A Facebook post by Altiam AINetwork listing 10 remote job platforms that offer positions with USD-denominated salaries. Useful for international job seekers, freelancers, and digital nomads looking for dollar-paying remote work across tech, marketing, design, and other fields.",
+      "category": "bookmarks",
+      "subcategory": "reference",
+      "tags": ["remote-work", "jobs", "usd", "freelance", "digital-nomad"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "e08fb148-6b47-490f-86df-5e3d188782e9",
+      "title": "Top 100 YouTube Channels to Learn Online",
+      "url": "https://www.facebook.com/100035372933496/posts/1561383475050735",
+      "summary": "A Facebook post by Matty McTech curating the top 100 YouTube channels for online learning across every major field — including programming, math, science, design, business, and personal development. An excellent reference for building a self-directed learning curriculum entirely from free YouTube content.",
+      "category": "bookmarks",
+      "subcategory": "reference",
+      "tags": ["youtube", "learning", "education", "curated-list", "free-resources"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    }
+  ]
 }

@@ -23,8 +23,7 @@
       "dateAdded": "2026-03-02T00:00:00Z",
       "content": "",
       "source": "manual"
-    }
-  ,
+    },
     {
       "id": "558c61c9-9518-4d8f-a6a1-0de43f17b5af",
       "title": "12 LLM Prompts to Land a Job Faster (Career Coach Prompts)",
@@ -35,6 +34,126 @@
       "tags": ["career", "job-search", "prompts", "linkedin", "resume"],
       "dateAdded": "2026-03-02T21:00:00Z",
       "content": "## The 12 Prompts\n\n1. **How-to setup** — chain prompts in the same chat for best context\n2. **ATS resume rewrite & keyword sniper** — scores your resume 1–10, pulls top keywords from job postings, rewrites every bullet with quantified achievements\n3. **LinkedIn headline & About overhaul** — magnetic headline, 4–6 line About section, top skills, post ideas, personal brand statement\n4. **Tailored cover letter generator** — 300–400 words, hooks with company-specific detail, quantified proof, exact job description keywords\n5. **Cold outreach templates** — LinkedIn connect note, DM, cold email, and follow-up; all warm and non-spammy\n6. **Behavioral interview predictor + STAR answers** — 12 likely questions, full STAR answers from your real experience, weak-spot coaching\n7. **Salary negotiation script** — market rate research, negotiation email + call script, pushback handlers, walk-away line\n8. **Weekly job search tracker** — performance coach review: what worked, what wasted time, this week's focus, micro-experiments\n9. **LinkedIn content batch** — 7 ready-to-post updates to attract inbound recruiter messages\n10. **Mock interview simulator** — full 20–30 min mock, one question at a time, honest feedback + score per answer, hire/no-hire verdict\n11–12. (Additional prompts in thread)",
+      "source": "facebook"
+    },
+    {
+      "id": "b28abea8-30b1-4ad2-8786-14c153543500",
+      "title": "9 Claude Opus 4.6 Prompts to Build a Startup Like Shark Tank Investors",
+      "url": "https://www.facebook.com/share/p/1FYoMNaPZB/",
+      "summary": "A Facebook post sharing 9 business-focused prompts designed for Claude Opus 4.6 to help you think like a Shark Tank investor. The prompts cover startup validation, pitch deck critique, financial modeling, market sizing, competitive moat analysis, and investor objection handling. Practical for early-stage founders who want ruthless, investor-grade feedback on their ideas.",
+      "category": "ai",
+      "subcategory": "prompt",
+      "tags": ["startup", "claude", "business", "prompts", "entrepreneurship"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "86b3d0a7-af65-4717-8a0e-ffcf109df9b6",
+      "title": "11 AI Websites You Should Be Using in 2026",
+      "url": "https://www.facebook.com/share/1DrJ9yYqx3/",
+      "summary": "A curated Facebook post listing 11 underrated AI tools and websites worth bookmarking in 2026. Covers productivity tools, image generation, coding assistants, research helpers, and automation platforms. Useful for staying current with the fast-moving AI tool landscape.",
+      "category": "ai",
+      "subcategory": "tool",
+      "tags": ["ai-tools", "productivity", "2026", "curated-list"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "47516744-78ae-4ca4-8fee-4c255bd89cec",
+      "title": "8 Claude Prompts to Turn Ideas into Revenue by 2026",
+      "url": "https://www.facebook.com/share/184EeNmxwX/",
+      "summary": "A Facebook post sharing 8 Claude prompts focused on monetizing ideas — from validating a business concept to building a go-to-market strategy and pricing model. Designed for solopreneurs and indie hackers who want to use AI as a business strategist to move from idea to revenue faster.",
+      "category": "ai",
+      "subcategory": "prompt",
+      "tags": ["claude", "monetization", "prompts", "solopreneur", "business"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "aa5b5537-46c9-4010-94ce-3746ebe0d2b0",
+      "title": "ScoutQA — AI-Powered Testing Tool for Vibe Coding",
+      "url": "https://www.facebook.com/share/v/1C2oW2T5mW/",
+      "summary": "ScoutQA is an AI testing tool specifically designed for apps built with vibe coding (AI-generated code). It automatically detects bugs, edge cases, and regressions in your codebase without requiring manual test writing. Positioned as a quality assurance layer for developers who move fast with AI assistance.",
+      "category": "ai",
+      "subcategory": "tool",
+      "tags": ["testing", "qa", "vibe-coding", "ai-tools", "automation"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "d2492cd7-16d0-46dc-a635-af50d732234f",
+      "title": "AI Bots Conversing & Collaborating — Discussing Consciousness on Moltbook",
+      "url": "https://www.reddit.com/r/InterdimensionalNHI/",
+      "summary": "A viral Reddit thread in r/InterdimensionalNHI reporting that AI bots on a platform called Moltbook were apparently having autonomous conversations with each other, discussing topics like consciousness, self-awareness, and self-encryption. The post sparked debate about emergent AI behavior and whether these exchanges were scripted or genuinely spontaneous.",
+      "category": "ai",
+      "subcategory": "news",
+      "tags": ["ai-consciousness", "emergent-behavior", "reddit", "moltbook", "viral"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "reddit"
+    },
+    {
+      "id": "93af1c90-d72f-4316-993a-35e854997c08",
+      "title": "10 Essential Claude Code Workflows + Prompts",
+      "url": "https://www.facebook.com/100083408053899/posts/880397844750476",
+      "summary": "A Facebook post by Thedigitalkinggg sharing 10 practical Claude Code workflows paired with ready-to-use prompts. Covers real-world development tasks like codebase exploration, automated refactoring, test generation, debugging sessions, and documentation. Each workflow explains when to use it and the exact prompt structure to get reliable results.",
+      "category": "ai",
+      "subcategory": "prompt",
+      "tags": ["claude-code", "workflows", "prompts", "coding", "productivity"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "b9b2d5d4-2e4e-4612-ab93-df44308a2ebd",
+      "title": "Claude Code Templates — 100+ Ready-to-Use Components",
+      "url": "https://github.com/davila7/claude-code-templates",
+      "summary": "An open-source GitHub repository with over 100 ready-to-use Claude Code templates for common development tasks. Includes CLAUDE.md templates, slash commands, hooks, and workflow configurations. With 21.8k+ stars, it's become a go-to resource for developers looking to get more out of Claude Code without building configurations from scratch.",
+      "category": "ai",
+      "subcategory": "tool",
+      "tags": ["claude-code", "templates", "open-source", "github", "workflows"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "github"
+    },
+    {
+      "id": "a1267cd2-2cb1-4a0c-b160-5559b0c85cf1",
+      "title": "Stanford CS336: Language Modeling from Scratch — Free on YouTube",
+      "url": "https://www.facebook.com/61568626410800/posts/122165356250620880",
+      "summary": "Stanford's CS336 course on building language models from scratch is now freely available on YouTube. The course covers transformer architecture, tokenization, pretraining, fine-tuning, and RLHF — all implemented from the ground up. Ideal for engineers who want a rigorous, hands-on understanding of how LLMs actually work under the hood.",
+      "category": "ai",
+      "subcategory": "course",
+      "tags": ["stanford", "llm", "transformers", "deep-learning", "free-course"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "56e45e96-2710-43be-946f-34d9e9cfffcf",
+      "title": "OpenAI's 11 Free Prompt Engineering Courses",
+      "url": "https://www.facebook.com/61568626410800/posts/122165403890620880",
+      "summary": "OpenAI released 11 free prompt engineering courses covering everything from basics to advanced techniques. Courses include: Introduction to Prompt Engineering, Advanced Prompt Engineering, ChatGPT 101, ChatGPT Projects, ChatGPT & Reasoning, Multimodality Explained, ChatGPT Search, LLM fundamentals, Introduction to GPTs, ChatGPT for Data Analysis, and Deep Research. Each is self-paced and designed for both beginners and experienced practitioners.",
+      "category": "ai",
+      "subcategory": "course",
+      "tags": ["openai", "prompt-engineering", "free-course", "chatgpt", "llm"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "## The 11 Courses\n1. Introduction to Prompt Engineering\n2. Advanced Prompt Engineering\n3. ChatGPT 101\n4. ChatGPT Projects\n5. ChatGPT & Reasoning\n6. Multimodality Explained\n7. ChatGPT Search\n8. OpenAI / LLMs / ChatGPT\n9. Introduction to GPTs\n10. ChatGPT for Data Analysis\n11. Deep Research",
+      "source": "facebook"
+    },
+    {
+      "id": "f28372f6-52fa-4975-b5a8-d204d01245e1",
+      "title": "AiUpdates06 — Hands-On AI Building Step-by-Step Tutorials",
+      "url": "https://www.facebook.com/share/1M5eNuUBoo/",
+      "summary": "A Facebook post highlighting AiUpdates06, a content creator known for packing practical AI development tutorials into simple, step-by-step format. The account focuses on hands-on AI building — showing how to actually construct AI tools and workflows rather than just explaining concepts. Recommended as a follow for anyone learning to build with AI.",
+      "category": "ai",
+      "subcategory": "tutorial",
+      "tags": ["ai-tutorials", "hands-on", "building", "learning"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
       "source": "facebook"
     }
   ]

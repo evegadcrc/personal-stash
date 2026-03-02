@@ -1,3 +1,76 @@
 {
-  "items": []
+  "items": [
+    {
+      "id": "8873a104-334b-4e87-a8f9-45e123952c19",
+      "title": "5 Netflix Hidden Gems: Calibre, Along with the Gods, El Autor, Eli, Predestination",
+      "url": "https://www.facebook.com/share/r/1BiiyxTGoH/",
+      "summary": "A Facebook reel recommending five underrated Netflix films worth watching. The list includes Calibre (Scottish thriller about a hunting trip gone wrong), Along with the Gods (Korean fantasy epic about the afterlife), El Autor (Spanish dark comedy about a writer who manipulates real people), Eli (Netflix horror with a shocking twist ending), and Predestination (mind-bending time travel film based on a Heinlein story).",
+      "category": "movies",
+      "subcategory": "recommendation",
+      "tags": ["netflix", "hidden-gems", "thriller", "korean-cinema", "sci-fi"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "## Movies\n- **Calibre** (2018) — Scottish thriller, two friends on a hunting trip, one fatal mistake\n- **Along with the Gods** (2017) — Korean fantasy, a deceased man is defended through 7 trials in the afterlife\n- **El Autor** (2017) — Spanish dark comedy, a writer stages real-life scenarios to fuel his novel\n- **Eli** (2019) — Netflix horror with a twist ending that recontextualizes everything\n- **Predestination** (2014) — Time travel noir based on Heinlein's 'All You Zombies'",
+      "source": "facebook"
+    },
+    {
+      "id": "6ba30824-5989-406d-bf3a-2222bcd592e5",
+      "title": "Mejores Películas del Siglo — Top Films by Miguel Araiza",
+      "url": "https://www.facebook.com/share/v/1C6EX1Yppg/",
+      "summary": "A Facebook reel by Mexican film critic Miguel Araiza presenting his picks for the best films of the century so far. Araiza is known for his passionate, opinionated style and broad cinematic knowledge spanning art house, genre, and international cinema. A useful list for building a quality watchlist across different styles.",
+      "category": "movies",
+      "subcategory": "recommendation",
+      "tags": ["best-films", "21st-century", "miguel-araiza", "curated-list", "cinematheque"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "4641623c-6cb1-4327-b2b5-9d3bef065735",
+      "title": "Movie Recommendations Reel — Miguel Araiza (#peliculas #cine)",
+      "url": "https://www.facebook.com/reel/1274288514520726",
+      "summary": "A short Facebook reel by film commentator Miguel Araiza recommending films under hashtags #peliculas #cine #cinema. Araiza covers a mix of international and genre films in his signature direct style. Good for discovering titles outside the mainstream recommendation algorithms.",
+      "category": "movies",
+      "subcategory": "recommendation",
+      "tags": ["miguel-araiza", "peliculas", "cine", "international-film"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "dd0194b3-9ddb-4759-9e6a-5392f2303466",
+      "title": "Movie Recommendations Reel — Nico Habla de Cine",
+      "url": "https://www.facebook.com/reel/2015386269242602",
+      "summary": "A Facebook reel from 'Nico Habla de Cine', a Spanish-language film commentary account, sharing movie recommendations with hashtags #cine #peliculas. The account focuses on enthusiast-level film commentary for Spanish-speaking audiences, covering both classic and contemporary titles.",
+      "category": "movies",
+      "subcategory": "recommendation",
+      "tags": ["nico-habla-de-cine", "cine", "peliculas", "spanish-language"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "d608b670-960f-4641-9518-e6c9f5363afd",
+      "title": "Mi Top 10 de Películas de Este Año — Ibarreche Javier",
+      "url": "https://www.facebook.com/reel/795116183556538",
+      "summary": "A Facebook reel by Ibarreche Javier sharing his personal top 10 films of the year. Javier is a Spanish-language film commentator who reviews films across genres. His year-end list is a curated selection of standout releases worth catching up on.",
+      "category": "movies",
+      "subcategory": "recommendation",
+      "tags": ["top-10", "year-end", "ibarreche-javier", "best-of-year"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
+      "id": "0a720258-9226-440c-b0de-c89921eb03fc",
+      "title": "Documentaries on Tech & Children: The Social Dilemma, Childhood 2.0",
+      "url": "https://www.instagram.com/p/DSfo1NaD4_L/",
+      "summary": "An Instagram post by @anna.zaika.latam recommending documentaries about the impact of technology and social media on children and society. The post highlights The Social Dilemma (Netflix, 2020) and Childhood 2.0 (YouTube) — both essential watches for parents, educators, and anyone concerned about screen time and digital wellbeing. The post generated 59k+ likes and 292 comments with active discussion.",
+      "category": "movies",
+      "subcategory": "recommendation",
+      "tags": ["documentary", "social-media", "children", "tech-impact", "netflix"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "## Documentaries\n- **The Social Dilemma** (2020, Netflix) — Tech insiders expose how social media is designed to manipulate behavior\n- **Childhood 2.0** — Available on YouTube, explores how social media is affecting the mental health of today's children",
+      "source": "instagram"
+    }
+  ]
 }
