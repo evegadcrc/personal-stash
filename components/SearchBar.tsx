@@ -1,11 +1,14 @@
 "use client";
 
+import { RefObject } from "react";
+
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
+  inputRef?: RefObject<HTMLInputElement | null>;
 }
 
-export default function SearchBar({ value, onChange }: SearchBarProps) {
+export default function SearchBar({ value, onChange, inputRef }: SearchBarProps) {
   return (
     <div className="relative">
       <svg
@@ -22,8 +25,9 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
         />
       </svg>
       <input
+        ref={inputRef}
         type="text"
-        placeholder="Search titles, summaries, tags…"
+        placeholder="Search… (press / to focus)"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg bg-zinc-800 pl-9 pr-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 outline-none ring-1 ring-zinc-700 focus:ring-zinc-500 transition-colors"

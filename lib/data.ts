@@ -12,6 +12,7 @@ export interface Item {
   dateAdded: string;
   content?: string;
   source: string;
+  read?: boolean;
 }
 
 export interface CategoryData {

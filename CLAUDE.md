@@ -1,4 +1,4 @@
-# Info — Personal Knowledge Base
+# Stash — Personal Knowledge Base
 
 This is a personal knowledge base. Claude Code is the input interface.
 The web app at Vercel is the browsing UI. Data lives in `data/*.json`, versioned in GitHub.
@@ -31,7 +31,8 @@ The web app at Vercel is the browsing UI. Data lives in `data/*.json`, versioned
   "tags": ["string", "max 5 tags"],
   "dateAdded": "2026-03-02T00:00:00Z",
   "content": "string (optional extended markdown notes)",
-  "source": "facebook | youtube | twitter | reddit | manual | ..."
+  "source": "facebook | youtube | twitter | reddit | manual | ...",
+  "read": false
 }
 ```
 
@@ -46,13 +47,14 @@ The web app at Vercel is the browsing UI. Data lives in `data/*.json`, versioned
 
 ## Categories and subcategories
 
-| Category   | File              | Valid subcategories                                   |
-|------------|-------------------|-------------------------------------------------------|
-| ai         | data/ai.json      | tool, model, prompt, tutorial, course, research, news |
-| movies     | data/movies.json  | to-watch, watched, series, recommendation             |
-| places     | data/places.json  | restaurant, travel, experience, coffee                |
-| ideas      | data/ideas.json   | project, business, creative, note                     |
-| bookmarks  | data/bookmarks.json | reference, article, video, site                     |
+| Category   | File                  | Valid subcategories                                   |
+|------------|-----------------------|-------------------------------------------------------|
+| ai         | data/ai.json          | tool, model, prompt, tutorial, course, research, news |
+| movies     | data/movies.json      | to-watch, watched, series, recommendation             |
+| places     | data/places.json      | restaurant, travel, experience, coffee                |
+| ideas      | data/ideas.json       | project, business, creative, note                     |
+| bookmarks  | data/bookmarks.json   | reference, article, video, stream, site               |
+| sadhguru   | data/sadhguru.json    | quote                                                 |
 
 **New categories:** If content doesn't fit any existing category, create a new JSON file:
 ```bash
@@ -105,3 +107,15 @@ Steps:
 - For YouTube videos, use the channel name as a tag
 - For places, include the city/country as a tag
 - If the user provides notes or a reason for saving, include that in `content`
+
+---
+
+## Fetching URLs
+
+- **Standard URLs:** use the `WebFetch` tool
+- **Facebook / login-walled sites:** use the Playwright MCP tool (browser automation) — it can render JS and bypass basic walls
+- **Playwright MCP install (global, one-time):**
+  ```bash
+  claude mcp add --transport stdio --scope user playwright -- npx -y @playwright/mcp@latest
+  ```
+  Verify with `claude mcp list`. Restart Claude Code after installing.
