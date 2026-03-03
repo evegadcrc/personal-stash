@@ -7,7 +7,12 @@
       "summary": "Claude Code is Anthropic's official command-line tool that brings Claude directly into your terminal. It can edit files, run commands, search code, and perform agentic tasks across your entire codebase. Designed for software engineers who want AI assistance without leaving the terminal.",
       "category": "ai",
       "subcategory": "tool",
-      "tags": ["cli", "coding", "anthropic", "agentic"],
+      "tags": [
+        "cli",
+        "coding",
+        "anthropic",
+        "agentic"
+      ],
       "dateAdded": "2026-03-02T00:00:00Z",
       "content": "",
       "source": "manual"
@@ -19,7 +24,12 @@
       "summary": "A comprehensive, community-driven guide covering prompt engineering techniques from basic to advanced. Topics include chain-of-thought prompting, few-shot learning, ReAct, and more. Essential reference for anyone building with LLMs.",
       "category": "ai",
       "subcategory": "prompt",
-      "tags": ["prompting", "llm", "techniques", "guide"],
+      "tags": [
+        "prompting",
+        "llm",
+        "techniques",
+        "guide"
+      ],
       "dateAdded": "2026-03-02T00:00:00Z",
       "content": "",
       "source": "manual"
@@ -31,7 +41,13 @@
       "summary": "A viral Facebook post by Thedigitalkinggg sharing 12 ready-to-use LLM prompts that act as a personal career coach. Covers the full job search pipeline: ATS resume rewrite, LinkedIn profile overhaul, tailored cover letters, cold outreach templates, behavioral interview prep with STAR answers, salary negotiation scripts, mock interview simulation, and a weekly job search tracker. Each prompt is fill-in-the-bracket format — paste into ChatGPT, Claude, or Gemini and replace [brackets] with your info.",
       "category": "ai",
       "subcategory": "prompt",
-      "tags": ["career", "job-search", "prompts", "linkedin", "resume"],
+      "tags": [
+        "career",
+        "job-search",
+        "prompts",
+        "linkedin",
+        "resume"
+      ],
       "dateAdded": "2026-03-02T21:00:00Z",
       "content": "## The 12 Prompts\n\n1. **How-to setup** — chain prompts in the same chat for best context\n2. **ATS resume rewrite & keyword sniper** — scores your resume 1–10, pulls top keywords from job postings, rewrites every bullet with quantified achievements\n3. **LinkedIn headline & About overhaul** — magnetic headline, 4–6 line About section, top skills, post ideas, personal brand statement\n4. **Tailored cover letter generator** — 300–400 words, hooks with company-specific detail, quantified proof, exact job description keywords\n5. **Cold outreach templates** — LinkedIn connect note, DM, cold email, and follow-up; all warm and non-spammy\n6. **Behavioral interview predictor + STAR answers** — 12 likely questions, full STAR answers from your real experience, weak-spot coaching\n7. **Salary negotiation script** — market rate research, negotiation email + call script, pushback handlers, walk-away line\n8. **Weekly job search tracker** — performance coach review: what worked, what wasted time, this week's focus, micro-experiments\n9. **LinkedIn content batch** — 7 ready-to-post updates to attract inbound recruiter messages\n10. **Mock interview simulator** — full 20–30 min mock, one question at a time, honest feedback + score per answer, hire/no-hire verdict\n11–12. (Additional prompts in thread)",
       "source": "facebook"
@@ -42,8 +58,14 @@
       "url": "https://www.facebook.com/share/p/1FYoMNaPZB/",
       "summary": "A Facebook post sharing 9 business-focused prompts designed for Claude Opus 4.6 to help you think like a Shark Tank investor. The prompts cover startup validation, pitch deck critique, financial modeling, market sizing, competitive moat analysis, and investor objection handling. Practical for early-stage founders who want ruthless, investor-grade feedback on their ideas.",
       "category": "ai",
-      "subcategory": "prompt",
-      "tags": ["startup", "claude", "business", "prompts", "entrepreneurship"],
+      "subcategory": "prompt, new",
+      "tags": [
+        "startup",
+        "claude",
+        "business",
+        "prompts",
+        "entrepreneurship"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
@@ -55,7 +77,12 @@
       "summary": "A curated Facebook post listing 11 underrated AI tools and websites worth bookmarking in 2026. Covers productivity tools, image generation, coding assistants, research helpers, and automation platforms. Useful for staying current with the fast-moving AI tool landscape.",
       "category": "ai",
       "subcategory": "tool",
-      "tags": ["ai-tools", "productivity", "2026", "curated-list"],
+      "tags": [
+        "ai-tools",
+        "productivity",
+        "2026",
+        "curated-list"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
@@ -67,7 +94,13 @@
       "summary": "A Facebook post sharing 8 Claude prompts focused on monetizing ideas — from validating a business concept to building a go-to-market strategy and pricing model. Designed for solopreneurs and indie hackers who want to use AI as a business strategist to move from idea to revenue faster.",
       "category": "ai",
       "subcategory": "prompt",
-      "tags": ["claude", "monetization", "prompts", "solopreneur", "business"],
+      "tags": [
+        "claude",
+        "monetization",
+        "prompts",
+        "solopreneur",
+        "business"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
@@ -79,7 +112,13 @@
       "summary": "ScoutQA is an AI testing tool specifically designed for apps built with vibe coding (AI-generated code). It automatically detects bugs, edge cases, and regressions in your codebase without requiring manual test writing. Positioned as a quality assurance layer for developers who move fast with AI assistance.",
       "category": "ai",
       "subcategory": "tool",
-      "tags": ["testing", "qa", "vibe-coding", "ai-tools", "automation"],
+      "tags": [
+        "testing",
+        "qa",
+        "vibe-coding",
+        "ai-tools",
+        "automation"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
@@ -91,7 +130,13 @@
       "summary": "A viral Reddit thread in r/InterdimensionalNHI reporting that AI bots on a platform called Moltbook were apparently having autonomous conversations with each other, discussing topics like consciousness, self-awareness, and self-encryption. The post sparked debate about emergent AI behavior and whether these exchanges were scripted or genuinely spontaneous.",
       "category": "ai",
       "subcategory": "news",
-      "tags": ["ai-consciousness", "emergent-behavior", "reddit", "moltbook", "viral"],
+      "tags": [
+        "ai-consciousness",
+        "emergent-behavior",
+        "reddit",
+        "moltbook",
+        "viral"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "reddit"
@@ -103,7 +148,13 @@
       "summary": "A Facebook post by Thedigitalkinggg sharing 10 practical Claude Code workflows paired with ready-to-use prompts. Covers real-world development tasks like codebase exploration, automated refactoring, test generation, debugging sessions, and documentation. Each workflow explains when to use it and the exact prompt structure to get reliable results.",
       "category": "ai",
       "subcategory": "prompt",
-      "tags": ["claude-code", "workflows", "prompts", "coding", "productivity"],
+      "tags": [
+        "claude-code",
+        "workflows",
+        "prompts",
+        "coding",
+        "productivity"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
@@ -115,7 +166,13 @@
       "summary": "An open-source GitHub repository with over 100 ready-to-use Claude Code templates for common development tasks. Includes CLAUDE.md templates, slash commands, hooks, and workflow configurations. With 21.8k+ stars, it's become a go-to resource for developers looking to get more out of Claude Code without building configurations from scratch.",
       "category": "ai",
       "subcategory": "tool",
-      "tags": ["claude-code", "templates", "open-source", "github", "workflows"],
+      "tags": [
+        "claude-code",
+        "templates",
+        "open-source",
+        "github",
+        "workflows"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "github"
@@ -127,7 +184,13 @@
       "summary": "Stanford's CS336 course on building language models from scratch is now freely available on YouTube. The course covers transformer architecture, tokenization, pretraining, fine-tuning, and RLHF — all implemented from the ground up. Ideal for engineers who want a rigorous, hands-on understanding of how LLMs actually work under the hood.",
       "category": "ai",
       "subcategory": "course",
-      "tags": ["stanford", "llm", "transformers", "deep-learning", "free-course"],
+      "tags": [
+        "stanford",
+        "llm",
+        "transformers",
+        "deep-learning",
+        "free-course"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
@@ -139,7 +202,13 @@
       "summary": "OpenAI released 11 free prompt engineering courses covering everything from basics to advanced techniques. Courses include: Introduction to Prompt Engineering, Advanced Prompt Engineering, ChatGPT 101, ChatGPT Projects, ChatGPT & Reasoning, Multimodality Explained, ChatGPT Search, LLM fundamentals, Introduction to GPTs, ChatGPT for Data Analysis, and Deep Research. Each is self-paced and designed for both beginners and experienced practitioners.",
       "category": "ai",
       "subcategory": "course",
-      "tags": ["openai", "prompt-engineering", "free-course", "chatgpt", "llm"],
+      "tags": [
+        "openai",
+        "prompt-engineering",
+        "free-course",
+        "chatgpt",
+        "llm"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "## The 11 Courses\n1. Introduction to Prompt Engineering\n2. Advanced Prompt Engineering\n3. ChatGPT 101\n4. ChatGPT Projects\n5. ChatGPT & Reasoning\n6. Multimodality Explained\n7. ChatGPT Search\n8. OpenAI / LLMs / ChatGPT\n9. Introduction to GPTs\n10. ChatGPT for Data Analysis\n11. Deep Research",
       "source": "facebook"
@@ -151,7 +220,12 @@
       "summary": "A Facebook post highlighting AiUpdates06, a content creator known for packing practical AI development tutorials into simple, step-by-step format. The account focuses on hands-on AI building — showing how to actually construct AI tools and workflows rather than just explaining concepts. Recommended as a follow for anyone learning to build with AI.",
       "category": "ai",
       "subcategory": "tutorial",
-      "tags": ["ai-tutorials", "hands-on", "building", "learning"],
+      "tags": [
+        "ai-tutorials",
+        "hands-on",
+        "building",
+        "learning"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
