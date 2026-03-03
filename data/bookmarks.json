@@ -73,12 +73,24 @@
       "source": "facebook"
     },
     {
+      "id": "1a5b07c2-e37a-489f-9172-86c9e4da8bfd",
+      "title": "The Age of Disclosure (2025)",
+      "url": "https://yflix.to/watch/the-age-of-disclosure.2jjp1b#ep=1",
+      "summary": "A 2025 documentary exploring the subject of extraterrestrial disclosure. Watch free on yFlix, an ad-free streaming platform.",
+      "category": "bookmarks",
+      "subcategory": "stream",
+      "tags": ["documentary", "disclosure", "aliens", "ufo", "yflix"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "web"
+    },
+    {
       "id": "3c8094c1-4af2-43fc-93fc-99ca1b3ad089",
       "title": "Stremio — My Watch Library",
       "url": "https://web.stremio.com/#/library?sort=lastwatched",
       "summary": "Personal Stremio library sorted by last watched. Stremio is a media center for streaming movies, TV shows, and series via community addons — accessible directly in the browser.",
       "category": "bookmarks",
-      "subcategory": "site",
+      "subcategory": "stream",
       "tags": ["stremio", "streaming", "movies", "library"],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
