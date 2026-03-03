@@ -58,7 +58,7 @@
       "url": "https://www.facebook.com/share/p/1FYoMNaPZB/",
       "summary": "A Facebook post sharing 9 business-focused prompts designed for Claude Opus 4.6 to help you think like a Shark Tank investor. The prompts cover startup validation, pitch deck critique, financial modeling, market sizing, competitive moat analysis, and investor objection handling. Practical for early-stage founders who want ruthless, investor-grade feedback on their ideas.",
       "category": "ai",
-      "subcategory": "prompt, new",
+      "subcategory": "prompt, new, test_cat",
       "tags": [
         "startup",
         "claude",
