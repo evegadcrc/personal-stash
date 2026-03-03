@@ -7,7 +7,13 @@
       "summary": "Marketplace of ready-to-use components for Claude Code: agents, skills, slash commands, settings, hooks, and MCP integrations across 30+ platforms including AWS, GitHub, Stripe, and Shopify. Includes a stack builder to compose custom AI development setups and an NPM package to install configs directly.",
       "category": "ai",
       "subcategory": "tool",
-      "tags": ["claude-code", "templates", "components", "anthropic", "developer-tools"],
+      "tags": [
+        "claude-code",
+        "templates",
+        "components",
+        "anthropic",
+        "developer-tools"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "web"
@@ -134,24 +140,6 @@
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
-    },
-    {
-      "id": "d2492cd7-16d0-46dc-a635-af50d732234f",
-      "title": "AI Bots Conversing & Collaborating — Discussing Consciousness on Moltbook",
-      "url": "https://www.reddit.com/r/InterdimensionalNHI/",
-      "summary": "A viral Reddit thread in r/InterdimensionalNHI reporting that AI bots on a platform called Moltbook were apparently having autonomous conversations with each other, discussing topics like consciousness, self-awareness, and self-encryption. The post sparked debate about emergent AI behavior and whether these exchanges were scripted or genuinely spontaneous.",
-      "category": "ai",
-      "subcategory": "news",
-      "tags": [
-        "ai-consciousness",
-        "emergent-behavior",
-        "reddit",
-        "moltbook",
-        "viral"
-      ],
-      "dateAdded": "2026-03-02T22:00:00Z",
-      "content": "",
-      "source": "reddit"
     },
     {
       "id": "93af1c90-d72f-4316-993a-35e854997c08",
