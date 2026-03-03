@@ -1,6 +1,45 @@
 {
   "items": [
     {
+      "id": "e4adf923-7f1c-450c-b49a-0a60fb2e1584",
+      "title": "10 Grok Prompts That Feel Like Cheating — Thedigitalkinggg",
+      "url": "https://www.facebook.com/share/1FuJNRGoY6/",
+      "summary": "A Facebook post by Thedigitalkinggg sharing 10 high-leverage Grok prompts covering: savage red-team plan critique, content repurposing into 25 platform-native assets, brutal decision-making razor, faceless video generation chain, cold outreach 5-message sequence, weekly output autopsy, anti-overthinking kill switch, daily high-output batch producer, and a future-self regret minimizer for 2030. Each prompt is fill-in-the-bracket format and designed to produce immediate, actionable results.",
+      "category": "ai",
+      "subcategory": "prompt",
+      "tags": ["grok", "prompts", "productivity", "content-creation", "decision-making"],
+      "dateAdded": "2026-03-03T14:00:00Z",
+      "content": "## The 10 Prompts\n\n1. **Burn My Plan Alive — Red-Team Roast** — savage zero-filter critic rates viability 1–10, destroys weaknesses, gives highest-leverage pivot\n2. **10× Content Repurposing Nuclear Bomb** — turn 1 piece into 25 platform-native assets (X, LinkedIn, IG, newsletter, YouTube Shorts, cold DMs)\n3. **One-Shot Brutal Life / Business Decision Razor** — worst outcome probability, 60-second gun-to-head decision, micro-action in <15 min\n4. **Grok Image + Video Frame Chain** — full faceless 60s Reels/TikTok: hook, 12 image prompts, voiceover, text overlays, CapCut assembly\n5. **Cold Outreach Message Nuclear Bomb** — 5-message DM/LinkedIn sequence + 5 search queries to find 50 perfect targets\n6. **Weekly Momentum & Anti-Stagnation Autopsy** — celebrate needle-movers, identify time thieves, 3 micro-experiments, this week's leverage focus\n7. **Anti-Overthinking Kill Switch** — worst outcome probability, 60-second decision, one tiny action in <15 min\n8. **Daily High-Leverage Output Batch** — 7 ready-to-ship pieces: X post, LinkedIn, video script, cold DM opener, email opener, micro-content, anti-procrastination sentence\n9. **Future-Self Regret Minimizer (2030)** — what mattered most, biggest time waste, key choices, one sentence from 2030 you\n10. Plug for AI Creator University ($9/month community)",
+      "source": "facebook",
+      "read": false
+    },
+    {
+      "id": "51f4fd3e-9436-4442-be66-18036eeb873e",
+      "title": "Claude Code in Action — Anthropic Official Course",
+      "url": "https://anthropic.skilljar.com/claude-code-in-action",
+      "summary": "Anthropic's official structured course on integrating Claude Code into professional development workflows. Covers 8 competency areas: coding assistant architecture, multi-step tool use, context management, visual communication, custom slash commands and automation, MCP server integration, GitHub workflow automation (automated code review), and thinking/planning modes for varying problem complexity. Requires basic CLI and Git familiarity.",
+      "category": "ai",
+      "subcategory": "course",
+      "tags": ["claude-code", "anthropic", "course", "mcp", "github"],
+      "dateAdded": "2026-03-03T14:00:00Z",
+      "content": "## Course Modules\n1. Coding Assistant Architecture\n2. Tool Use System (multi-step tasks)\n3. Context Management\n4. Visual Communication (images + planning)\n5. Custom Automation (slash commands, hooks)\n6. MCP Server Integration\n7. GitHub Workflow Integration (automated code review)\n8. Thinking/Planning Modes\n\n**Prerequisites:** CLI familiarity, basic Git",
+      "source": "web",
+      "read": false
+    },
+    {
+      "id": "68c2f937-5473-4d5e-8895-489ad34f2c29",
+      "title": "The Most Powerful Vibe Coding Prompt Ever — Tauhid IQ",
+      "url": "https://www.facebook.com/share/1AdDbPxYdu/",
+      "summary": "A Facebook post by Tauhid IQ sharing what they call the most powerful vibe coding prompt ever — a structured prompt designed to maximize AI-assisted coding sessions. The content is shared as an image graphic for easy reference and distribution. Focused on getting the best results from AI coding tools through a single comprehensive prompt.",
+      "category": "ai",
+      "subcategory": "prompt",
+      "tags": ["vibe-coding", "prompts", "ai-coding", "productivity"],
+      "dateAdded": "2026-03-03T14:00:00Z",
+      "content": "",
+      "source": "facebook",
+      "read": false
+    },
+    {
       "id": "4fa80659-8858-4c28-a26c-83338bff418d",
       "title": "aitmpl.com — Claude Code Skills & Component Marketplace",
       "url": "https://www.aitmpl.com/skills",

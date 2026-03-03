@@ -66,12 +66,18 @@ export async function POST(request: Request) {
     content = rawText;
   }
 
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 512,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content }],
-  });
+  let message: Anthropic.Message;
+  try {
+    message = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 512,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content }],
+    });
+  } catch (e) {
+    const err = e as { status?: number; message?: string };
+    return NextResponse.json({ error: err.message ?? "Anthropic API error" }, { status: err.status ?? 500 });
+  }
 
   const raw = (message.content[0] as { type: string; text: string }).text;
 
