@@ -90,6 +90,18 @@
       "source": "facebook"
     },
     {
+      "id": "1a5b07c2-e37a-489f-9172-86c9e4da8bfd",
+      "title": "yFlix — Free Movie & TV Streaming",
+      "url": "https://yflix.to",
+      "summary": "Free, ad-free platform to watch movies and TV shows in high quality. Wide catalog across genres with offline download support.",
+      "category": "bookmarks",
+      "subcategory": "stream",
+      "tags": ["streaming", "movies", "tv", "free", "yflix"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "web"
+    },
+    {
       "id": "3c8094c1-4af2-43fc-93fc-99ca1b3ad089",
       "title": "Stremio — My Watch Library",
       "url": "https://web.stremio.com/#/library?sort=lastwatched",
