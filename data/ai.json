@@ -1,6 +1,18 @@
 {
   "items": [
     {
+      "id": "4fa80659-8858-4c28-a26c-83338bff418d",
+      "title": "aitmpl.com — Claude Code Skills & Component Marketplace",
+      "url": "https://www.aitmpl.com/skills",
+      "summary": "Marketplace of ready-to-use components for Claude Code: agents, skills, slash commands, settings, hooks, and MCP integrations across 30+ platforms including AWS, GitHub, Stripe, and Shopify. Includes a stack builder to compose custom AI development setups and an NPM package to install configs directly.",
+      "category": "ai",
+      "subcategory": "tool",
+      "tags": ["claude-code", "templates", "components", "anthropic", "developer-tools"],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "web"
+    },
+    {
       "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "title": "Claude Code — Anthropic's CLI for Claude",
       "url": "https://www.anthropic.com/claude-code",
