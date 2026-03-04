@@ -262,25 +262,6 @@
       "read": false
     },
     {
-      "id": "bb153fa0-d303-4552-82a5-409c6713e4f4",
-      "title": "Compra de Supermercado a Domicilio",
-      "url": null,
-      "summary": "Servicio de compras de supermercado con entrega a domicilio. Permite a usuarios hacer su lista de compras desde la app y recibirlas en casa, sin filas ni traslados. Mercado en crecimiento acelerado post-pandemia.",
-      "category": "ideas",
-      "subcategory": "business",
-      "tags": [
-        "supermercado",
-        "delivery",
-        "ecommerce",
-        "groceries",
-        "logística"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "d64fe6ce-8f40-48d8-b012-43b579a81b39",
       "title": "Radar de Negocios Cercanos — Veterinarias, Bares, Guarderías",
       "url": null,
