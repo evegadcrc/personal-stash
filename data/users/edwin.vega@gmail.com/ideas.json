@@ -92,25 +92,6 @@
       "read": false
     },
     {
-      "id": "7939631a-2189-4473-87ed-d6df8c71a72e",
-      "title": "Alzheimer / Viejito Locator",
-      "url": null,
-      "summary": "Dispositivo o app para localizar a personas con Alzheimer o adultos mayores que se pierden. Similar a productos como Stick'n Find. En Costa Rica ya existía un precedente (proyecto 'Im Here' de crhoy.com, 2016) que valida la necesidad local.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "alzheimer",
-        "adultos-mayores",
-        "gps",
-        "seguridad",
-        "healthtech"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Estado:** Idea\n**Referencias:**\n- https://www.sticknfind.com/\n- http://www.crhoy.com/im-here-el-dispositivo-que-ubica-a-personas-perdidas/tecnologia/ (2016)",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "5e054c3a-12c3-47ea-b7c7-8e87d7abebb9",
       "title": "Monitoreo Cardíaco en Tiempo Real",
       "url": "http://www.lifewatch.com/",
