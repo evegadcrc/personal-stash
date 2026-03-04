@@ -262,25 +262,6 @@
       "read": false
     },
     {
-      "id": "ea1aa4eb-f16b-4e08-aa5b-88465eec186d",
-      "title": "App de Referencias de Inquilinos y Dueños",
-      "url": null,
-      "summary": "Plataforma de referencias cruzadas entre arrendatarios y propietarios. Los dueños califican a sus inquilinos y viceversa, creando un historial de confianza que facilita futuros alquileres y reduce el riesgo para ambas partes.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "alquileres",
-        "referencias",
-        "proptech",
-        "confianza",
-        "marketplace"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "f5a102f7-1c18-4627-bf86-0d8e1979c7f3",
       "title": "Entrega de Paquetes en Horario Nocturno",
       "url": "https://www.doorman.co/",
