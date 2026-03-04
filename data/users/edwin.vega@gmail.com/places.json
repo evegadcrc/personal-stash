@@ -1,0 +1,57 @@
+{
+  "items": [
+    {
+      "id": "1fcd17fd-0ef2-431e-b014-a15d2c266cac",
+      "title": "TikTok Video — Saved",
+      "url": "https://vm.tiktok.com/ZMDJs4EuL/",
+      "summary": "Cabana en CR",
+      "category": "places",
+      "subcategory": "",
+      "tags": [
+        "tiktok",
+        "video"
+      ],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "manual"
+    },
+    {
+      "id": "bfc86087-9225-4657-87b0-fd74cdeb99e8",
+      "title": "Tour de Bioluminiscencia — Isla Cedros y Playa Quesera, Costa Rica",
+      "url": "https://www.tiktok.com/@cr_viajesycultura/video/7573906478008962316",
+      "summary": "A TikTok by @cr_viajesycultura showcasing a 2-day bioluminescence tour on Isla Cedros and Playa Quesera in Costa Rica. The tour features glowing plankton in the water at night, kayaking, and beach exploration. One of Costa Rica's most magical natural experiences, best done in dry season for clear skies.",
+      "category": "places",
+      "subcategory": "travel",
+      "tags": [
+        "costa-rica",
+        "bioluminiscencia",
+        "isla-cedros",
+        "playa-quesera",
+        "nature"
+      ],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "tiktok",
+      "read": true
+    },
+    {
+      "id": "1b556d72-f557-4595-bb6e-00e6f21dd7f1",
+      "title": "Tour a Islas Murciélago y Playa Camello — Costa Rica",
+      "url": "https://www.tiktok.com/@costatours/video/7571646961120496907",
+      "summary": "A TikTok by @costatours highlighting a boat tour to Islas Murciélago and Playa Camello in Guanacaste, Costa Rica. The tour includes snorkeling, wildlife spotting (manta rays, bull sharks), and secluded beach access. Islas Murciélago is a marine reserve known for one of the best diving and snorkeling spots in Central America.",
+      "category": "places",
+      "subcategory": "travel",
+      "tags": [
+        "costa-rica",
+        "guanacaste",
+        "islas-murciélago",
+        "snorkeling",
+        "boat-tour"
+      ],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "tiktok",
+      "read": true
+    }
+  ]
+}
