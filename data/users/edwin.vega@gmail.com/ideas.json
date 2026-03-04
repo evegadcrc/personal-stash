@@ -73,25 +73,6 @@
       "read": false
     },
     {
-      "id": "d041d15a-5115-4867-90ba-cd59fdaba823",
-      "title": "Drugstore e-Recetas",
-      "url": null,
-      "summary": "La farmacia escribe la receta médica en una app y el paciente la carga en su smartphone con detalles del medicamento y recordatorios de toma. Plan piloto pensado con FISCHEL. Digitaliza el flujo receta → dispensación → adherencia.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "salud",
-        "farmacia",
-        "recetas",
-        "mobile-app",
-        "fischel"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Estado:** Idea\n**Piloto:** FISCHEL",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "fc5e577e-8ef5-4617-a557-19cb79d96a3a",
       "title": "Webcams Inteligentes para Guarderías",
       "url": null,
