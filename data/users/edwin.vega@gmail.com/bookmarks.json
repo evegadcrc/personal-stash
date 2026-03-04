@@ -1,6 +1,26 @@
 {
   "items": [
     {
+      "id": "1f61990c-dd2b-4079-9db6-d171ef1e6609",
+      "title": "5 Skills Your Boss Will Pay $150K For in 2027",
+      "url": "https://www.facebook.com/share/1CLmNBq6xU/",
+      "summary": "A viral post by Thedigitalkinggg outlining 5 AI-era skills that will separate high earners from everyone else by 2027: AI Workflow Design (structuring human/AI handoffs), No-Code Automation (n8n, Make), AI Output Quality Control (catching and fixing AI errors), Context Engineering for Business AI (setting up AI with company memory), and Business Process Mapping for Automation (designing workflows before automating them).",
+      "category": "bookmarks",
+      "subcategory": "Job Skills",
+      "tags": [
+        "ai-skills",
+        "career",
+        "automation",
+        "no-code",
+        "context-engineering",
+        "workflow"
+      ],
+      "dateAdded": "2026-03-04T15:13:00Z",
+      "content": "## The 5 Skills\n\n1. **AI Workflow Design** — Not coding. Knowing how to design processes where AI does the repetitive work and humans do the judgment calls. Map out 'AI does this, human does that, system triggers here.'\n2. **Automation System Building (No Code)** — Tools like n8n and Make. Build complex automations without writing a single line of code. Every department will need someone who saves the team 10–20 hours a week.\n3. **AI Output Quality Control** — Spot what AI gets wrong, fix it fast, and build systems that ensure consistent quality. Every team using AI will need this.\n4. **Context Engineering for Business AI** — Set up AI systems that remember your business context so they give useful output without 500-word prompts. The difference between AI that feels like Google vs. a team member who knows your company.\n5. **Business Process Mapping for Automation** — Understand the process before you automate it. Map how work actually flows, identify bottlenecks, design the automation properly. Strategy work, not technical work.",
+      "source": "facebook",
+      "read": false
+    },
+    {
       "id": "0c5bd80c-ce32-4262-b1a5-3cbc2050da68",
       "title": "The Golden Response: What to Ask When the Interviewer Says 'Do You Have Questions?'",
       "url": "https://www.facebook.com/100083408053899/posts/914547361335524/",
