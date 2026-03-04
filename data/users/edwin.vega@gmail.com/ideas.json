@@ -73,25 +73,6 @@
       "read": false
     },
     {
-      "id": "fc5e577e-8ef5-4617-a557-19cb79d96a3a",
-      "title": "Webcams Inteligentes para Guarderías",
-      "url": null,
-      "summary": "Sistema de cámaras inteligentes para guarderías donde el feed de la cámara muestra únicamente el cuarto donde se encuentra el hijo del padre que está viendo. Protege la privacidad de los demás niños al restringir lo que cada padre puede ver.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "seguridad",
-        "guarderías",
-        "privacidad",
-        "cámaras",
-        "iot"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Estado:** Idea\n**Bloqueos:** Algunos padres no quieren que otras personas vean a sus hijos en webcam — el sistema de filtro por sala resuelve exactamente este problema.",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "4b6e7473-d555-4a9b-a83a-7493fbc8683f",
       "title": "e-Newspaper para Iglesias Evangélicas",
       "url": null,
