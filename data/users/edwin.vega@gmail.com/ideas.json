@@ -186,25 +186,6 @@
       "read": false
     },
     {
-      "id": "bd514c66-94d2-42df-9b53-42d5ab16946f",
-      "title": "HR Interview System",
-      "url": null,
-      "summary": "Sistema digital para gestionar y estructurar procesos de entrevistas de recursos humanos. Podría incluir evaluación de candidatos, preguntas estandarizadas, scoring y seguimiento de pipeline de contratación.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "rrhh",
-        "entrevistas",
-        "saas",
-        "reclutamiento",
-        "hrtech"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "e1dc4451-5a80-4cb1-a3fe-12e114bab43a",
       "title": "Anuario Digital para Colegios",
       "url": null,
