@@ -224,25 +224,6 @@
       "read": false
     },
     {
-      "id": "10088d18-9ec4-4e8e-b040-cf0397293ac3",
-      "title": "Sistema de Seguridad Infantil — Rastreadores",
-      "url": null,
-      "summary": "Sistema de rastreadores GPS orientado a la seguridad de niños. Permite a padres monitorear la ubicación de sus hijos en tiempo real, con alertas si salen de zonas seguras definidas.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "seguridad",
-        "niños",
-        "gps",
-        "rastreadores",
-        "parenttech"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "c0d36d23-064b-4915-aedb-0a3617decbd1",
       "title": "Invitaciones Online para Bodas y Eventos",
       "url": null,
