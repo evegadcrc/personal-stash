@@ -149,25 +149,6 @@
       "read": false
     },
     {
-      "id": "9c2533d9-5339-42a5-b0a9-d0758625acb5",
-      "title": "LostKeyRewards",
-      "url": null,
-      "summary": "Servicio donde las personas registran sus llaves con un código, y si alguien las encuentra puede devolvérselas a cambio de una recompensa. Relevante porque reemplazar llaves de carros modernos puede costar cientos de dólares, lo que hace atractivo el incentivo de devolución.",
-      "category": "ideas",
-      "subcategory": "business",
-      "tags": [
-        "llaves",
-        "recompensa",
-        "pérdidas",
-        "startup",
-        "marketplace"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Insight:** Los carros nuevos tienen llaves con chip que cuestan muy caro reemplazar. El incentivo económico de recuperarlas es alto para el dueño y atractivo para el que la encuentra.",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "80f930b9-18be-49f5-9931-d565518c6555",
       "title": "Makey Makey para Escuelas Privadas",
       "url": null,
