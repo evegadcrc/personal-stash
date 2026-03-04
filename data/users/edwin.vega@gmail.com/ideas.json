@@ -281,25 +281,6 @@
       "read": false
     },
     {
-      "id": "7bc6f9d6-573b-46bf-9871-d50ec5837fa5",
-      "title": "App de Turismo con Realidad Aumentada para Parques y Museos",
-      "url": null,
-      "summary": "Aplicación que guía a turistas dentro de parques nacionales y museos usando realidad aumentada. Al apuntar la cámara, el usuario ve información contextual sobre fauna, flora, obras de arte o exhibiciones, enriqueciendo la experiencia sin guía humano.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "turismo",
-        "realidad-aumentada",
-        "museos",
-        "parques",
-        "costa-rica"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "efab39f1-e2bd-4478-852c-1cce15d322ad",
       "title": "Dog Food Delivery — Comida Premium para Mascotas",
       "url": "https://freshpetletters.com/",
