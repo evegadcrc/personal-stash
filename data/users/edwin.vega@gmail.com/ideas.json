@@ -73,25 +73,6 @@
       "read": false
     },
     {
-      "id": "84fee5a7-7aea-42fb-b7af-ed382ceaefd5",
-      "title": "Apartamentos Manager — Administrador de Pagos",
-      "url": null,
-      "summary": "Plataforma para administrar y realizar cobros de servicios recurrentes: apartamentos, colegios, condominios y locales comerciales. Centraliza la gestión de pagos y facilita la relación entre administradores y residentes/clientes.",
-      "category": "ideas",
-      "subcategory": "business",
-      "tags": [
-        "pagos",
-        "administración",
-        "proptech",
-        "saas",
-        "costa-rica"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Estado:** Idea\n**Bloqueos:** Cobros por medio de los bancos (integración bancaria necesaria).",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "d041d15a-5115-4867-90ba-cd59fdaba823",
       "title": "Drugstore e-Recetas",
       "url": null,
