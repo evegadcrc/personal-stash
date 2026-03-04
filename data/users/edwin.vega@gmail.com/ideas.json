@@ -92,25 +92,6 @@
       "read": false
     },
     {
-      "id": "5e054c3a-12c3-47ea-b7c7-8e87d7abebb9",
-      "title": "Monitoreo Cardíaco en Tiempo Real",
-      "url": "http://www.lifewatch.com/",
-      "summary": "Servicio de monitoreo en tiempo real para personas con problemas cardíacos, similar a LifeWatch. Permite a médicos y familiares recibir alertas y datos vitales del paciente de forma remota y continua.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "salud",
-        "cardiaco",
-        "monitoreo",
-        "iot",
-        "wearable"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Estado:** Idea\n**Referencia:** http://www.lifewatch.com/",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "78d713f6-8455-4b6f-bad1-d8ef38591721",
       "title": "RestaurantEngine — Plataforma para Negocios Locales",
       "url": "http://restaurantengine.com/",
