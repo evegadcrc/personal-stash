@@ -167,25 +167,6 @@
       "read": false
     },
     {
-      "id": "630fb958-a427-4096-9254-cd058a146a7a",
-      "title": "App para Vender Lotería Remotamente",
-      "url": null,
-      "summary": "Plataforma que conecta vendedores ambulantes de lotería con compradores remotos. El usuario busca un número específico en la app, localiza al vendedor que lo tiene, y lo compra digitalmente. Digitaliza la lotería física tradicional sin eliminar al vendedor.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "lotería",
-        "mobile-app",
-        "costa-rica",
-        "marketplace",
-        "vendedores"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "f5b66ad7-c9d9-48c0-a826-5102835d800b",
       "title": "Localización de Ganado",
       "url": null,
