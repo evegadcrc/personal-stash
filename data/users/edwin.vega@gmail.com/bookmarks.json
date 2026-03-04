@@ -7,7 +7,13 @@
       "summary": "A post by Thedigitalkinggg with 4 strategic questions to ask at the end of a job interview, designed to flip the script and position you as a high-value candidate. Questions uncover success metrics, team culture under pressure, current bottlenecks, and what happened to the last person in the role.",
       "category": "bookmarks",
       "subcategory": "article",
-      "tags": ["career", "interview", "job-search", "negotiation", "mindset"],
+      "tags": [
+        "career",
+        "interview",
+        "job-search",
+        "negotiation",
+        "mindset"
+      ],
       "dateAdded": "2026-03-04T15:14:00Z",
       "content": "## The 4 Golden Questions\n\n1. **The Success Metric Question** — \"If we are sitting here a year from now celebrating my first 12 months, what specific results will I have delivered to make you feel this was a 'home run' hire?\" Forces them to visualize you winning.\n\n2. **The Burnout Detector** — \"How does the team handle high-pressure periods or missed deadlines?\" Cuts through culture fluff to reveal how they treat humans under stress.\n\n3. **The Resourcing Reality** — \"What is the biggest bottleneck currently preventing the team from hitting its quarterly goals?\" Shows you're already thinking about clearing roadblocks.\n\n4. **The Pre-Mortem Question** — \"What happened to the last person who held this role? Did they move up, or was there a specific challenge they couldn't overcome?\" Uncovers 'ghosts' in the position before you sign.",
       "source": "facebook",
@@ -27,22 +33,6 @@
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "facebook"
-    },
-    {
-      "id": "6d63701f-5747-41a6-8275-84423da8ece3",
-      "title": "Reddit r/aliens — Saved Post",
-      "url": "https://www.reddit.com/r/aliens/s/MEPbk75tU2",
-      "summary": "Saved post from the Reddit r/aliens community.",
-      "category": "bookmarks",
-      "subcategory": "article",
-      "tags": [
-        "reddit",
-        "aliens",
-        "ufo"
-      ],
-      "dateAdded": "2026-03-02T22:00:00Z",
-      "content": "",
-      "source": "reddit"
     },
     {
       "id": "d73bb956-2d5b-4e74-92b4-4e0125f11f25",
@@ -109,7 +99,13 @@
       "summary": "Free, ad-free platform to watch movies and TV shows in high quality. Wide catalog across genres with offline download support.",
       "category": "bookmarks",
       "subcategory": "stream",
-      "tags": ["streaming", "movies", "tv", "free", "yflix"],
+      "tags": [
+        "streaming",
+        "movies",
+        "tv",
+        "free",
+        "yflix"
+      ],
       "dateAdded": "2026-03-02T22:00:00Z",
       "content": "",
       "source": "web"
