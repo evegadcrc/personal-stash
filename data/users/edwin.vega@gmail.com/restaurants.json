@@ -1,6 +1,32 @@
 {
   "items": [
     {
+      "id": "8d310319-6016-47fa-bc4b-3c7bfea0d01c",
+      "title": "Sólaz Terrace — Jazz Sessions (Hotel AC Escazú)",
+      "url": null,
+      "summary": "Terraza del Hotel AC Escazú en Avenida Escazú con noches de jazz en vivo (JAZZSTATION). Sin costo de entrada. Ambiente upscale con comida y coctelería.",
+      "category": "restaurants",
+      "subcategory": "bar",
+      "tags": ["jazz", "musica-en-vivo", "escazu", "terraza", "hotel", "costa-rica"],
+      "dateAdded": "2026-03-04T15:30:00Z",
+      "content": "**Ubicación:** Avenida Escazú — Hotel AC Escazú\n**Contacto (WhatsApp):** +506 7115 7032\n**Entrada:** Sin costo para las jazz sessions\n\nEvento JAZZSTATION: noches de jazz en vivo en la terraza. Ideal para cenar y disfrutar música en vivo.",
+      "source": "manual",
+      "read": false
+    },
+    {
+      "id": "d3dec6fd-d613-43d6-b8aa-53a0080cad5d",
+      "title": "MÍA Restaurant",
+      "url": "https://menupp.co/miarestaurant/booking",
+      "summary": "Restaurante con brunch, tapas, eventos especiales y ambiente relajado. Reservas en línea o por WhatsApp. Ofrece menú 'Bandido', tardes de tapeo y brunch los fines de semana.",
+      "category": "restaurants",
+      "subcategory": "restaurant",
+      "tags": ["brunch", "tapas", "eventos", "reservas", "costa-rica"],
+      "dateAdded": "2026-03-04T15:30:00Z",
+      "content": "**Reservas:** https://menupp.co/miarestaurant/booking\n**Contacto (WhatsApp):** +506 6266 1618\n\n**Horario:**\n- Lunes, martes y miércoles: 4:00 pm – 11:00 pm\n- Jueves y viernes: 4:00 pm – 12:30 am\n- Sábado: 11:00 am – 12:30 am\n- Domingo: 11:00 am – 9:00 pm\n\n**Opciones:** Reservas, Eventos, Bandido, Tardes de tapeo, Brunch",
+      "source": "manual",
+      "read": false
+    },
+    {
       "id": "f31e481b-cf04-4b65-8f2b-45a15284103c",
       "title": "Vinoteca 3396",
       "url": "https://www.facebook.com/people/Vinoteca-3396/61552659513541/",
