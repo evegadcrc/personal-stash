@@ -32,7 +32,8 @@
       "dateAdded": "2026-03-04T15:14:00Z",
       "content": "## What's inside\n\n1. **Document Generation** — PDFs, DOCX, PPT, CSV, Markdown. One prompt → structured formatted output.\n2. **Web Scraping & Automation** — Extract structured data, clean & normalize, schedule workflows, trigger automations.\n3. **Data Processing Pipelines** — Parse raw files, transform datasets, run analysis, generate summaries.\n4. **API Integrations** — Connect SaaS tools, push/pull structured data, automate reporting, chain multi-step workflows.\n\n**Repo:** https://github.com/BehiSecc/awesome-claude-skills",
       "source": "facebook",
-      "read": false
+      "read": false,
+      "color": "rose"
     },
     {
       "id": "75765853-f564-4b9e-b0a7-fcde2afb4f72",
