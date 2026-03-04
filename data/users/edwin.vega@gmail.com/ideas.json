@@ -262,25 +262,6 @@
       "read": false
     },
     {
-      "id": "d64fe6ce-8f40-48d8-b012-43b579a81b39",
-      "title": "Radar de Negocios Cercanos — Veterinarias, Bares, Guarderías",
-      "url": null,
-      "summary": "App de tipo radar/mapa que muestra negocios de categorías específicas cerca del usuario: veterinarias, bares, guarderías, colegios, entre otros. Funciona como un directorio local hiperlocal con filtros por categoría.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "mapa",
-        "directorio",
-        "negocios-locales",
-        "geolocalización",
-        "mobile-app"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "59115f94-7542-4169-a9c5-1aef82fe2c89",
       "title": "Sitio de Invitaciones de Bodas y Eventos Online",
       "url": "https://www.squarespace.com/",
