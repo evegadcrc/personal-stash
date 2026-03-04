@@ -91,7 +91,8 @@
       "dateAdded": "2026-03-03T14:00:00Z",
       "content": "## Course Modules\n1. Coding Assistant Architecture\n2. Tool Use System (multi-step tasks)\n3. Context Management\n4. Visual Communication (images + planning)\n5. Custom Automation (slash commands, hooks)\n6. MCP Server Integration\n7. GitHub Workflow Integration (automated code review)\n8. Thinking/Planning Modes\n\n**Prerequisites:** CLI familiarity, basic Git",
       "source": "web",
-      "read": false
+      "read": false,
+      "color": "rose"
     },
     {
       "id": "68c2f937-5473-4d5e-8895-489ad34f2c29",
