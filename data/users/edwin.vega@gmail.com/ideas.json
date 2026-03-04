@@ -92,25 +92,6 @@
       "read": false
     },
     {
-      "id": "3cbd9cb8-413a-477d-9b7a-2d7c87a55467",
-      "title": "Clinic Manager — Expediente Electrónico",
-      "url": null,
-      "summary": "Sistema de gestión clínica con expediente médico electrónico para clínicas privadas. Centraliza el historial del paciente, citas, diagnósticos y recetas en una plataforma digital.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "salud",
-        "clínica",
-        "expediente",
-        "saas",
-        "healthtech"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Estado:** Idea",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "7939631a-2189-4473-87ed-d6df8c71a72e",
       "title": "Alzheimer / Viejito Locator",
       "url": null,
