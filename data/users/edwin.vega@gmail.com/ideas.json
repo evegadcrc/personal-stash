@@ -243,25 +243,6 @@
       "read": false
     },
     {
-      "id": "907ea2dc-c119-4796-9347-c0c4eb79d6ff",
-      "title": "Transporte Escolar Locator",
-      "url": null,
-      "summary": "App para que padres rastreen en tiempo real el bus escolar y sepan exactamente cuándo llega a recoger o dejar a su hijo. Reduce la ansiedad de los padres y mejora la puntualidad del transporte escolar.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "educación",
-        "transporte",
-        "gps",
-        "padres",
-        "seguridad"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "63fb58f6-1854-4a6d-9964-e06c0b14da5b",
       "title": "Billetera Online para Comedores de Colegios",
       "url": null,
