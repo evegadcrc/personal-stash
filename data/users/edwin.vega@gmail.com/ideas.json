@@ -224,25 +224,6 @@
       "read": false
     },
     {
-      "id": "3094496a-c596-4756-b02a-2536fc3a5981",
-      "title": "Servicio de Comida Express para Oficinas",
-      "url": "https://play.google.com/store/apps/details?id=com.soin.ticoexpress",
-      "summary": "App para ordenar comida express desde restaurantes cercanos hacia oficinas. En Costa Rica ya existe TicoExpress pero el mercado no está saturado ni bien explotado, lo que deja espacio para un competidor con mejor UX o enfoque corporativo.",
-      "category": "ideas",
-      "subcategory": "project",
-      "tags": [
-        "food-delivery",
-        "oficinas",
-        "costa-rica",
-        "mobile-app",
-        "startup"
-      ],
-      "dateAdded": "2026-03-03T15:00:00Z",
-      "content": "**Competencia existente:** TicoExpress (https://play.google.com/store/apps/details?id=com.soin.ticoexpress) — no está explotada.",
-      "source": "manual",
-      "read": false
-    },
-    {
       "id": "10088d18-9ec4-4e8e-b040-cf0397293ac3",
       "title": "Sistema de Seguridad Infantil — Rastreadores",
       "url": null,
