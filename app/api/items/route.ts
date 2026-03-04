@@ -3,12 +3,16 @@ import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { NextResponse } from "next/server";
-import { Item } from "@/lib/data";
+import { Item, getUserDataDir } from "@/lib/data";
+import { auth } from "@/auth";
 
 const execAsync = promisify(exec);
-const DATA_DIR = path.join(process.cwd(), "data");
 
 export async function POST(request: Request) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = (await request.json()) as Omit<Item, "id" | "dateAdded">;
 
   const item: Item = {
@@ -17,7 +21,10 @@ export async function POST(request: Request) {
     dateAdded: new Date().toISOString(),
   };
 
-  const filePath = path.join(DATA_DIR, `${item.category}.json`);
+  const userDir = getUserDataDir(email);
+  fs.mkdirSync(userDir, { recursive: true });
+
+  const filePath = path.join(userDir, `${item.category}.json`);
 
   let data: { items: Item[] };
   if (fs.existsSync(filePath)) {

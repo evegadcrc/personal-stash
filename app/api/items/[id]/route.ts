@@ -3,26 +3,31 @@ import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { NextResponse } from "next/server";
-import { Item } from "@/lib/data";
+import { Item, getUserDataDir } from "@/lib/data";
+import { auth } from "@/auth";
 
 const execAsync = promisify(exec);
-const DATA_DIR = path.join(process.cwd(), "data");
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id } = await params;
   const body = (await request.json()) as Partial<Item>;
 
-  const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith(".json"));
+  const userDir = getUserDataDir(email);
+  const files = fs.readdirSync(userDir).filter((f) => f.endsWith(".json"));
 
   let sourceFile: string | null = null;
   let sourceData: { items: Item[] } | null = null;
   let sourceIndex = -1;
 
   for (const file of files) {
-    const filePath = path.join(DATA_DIR, file);
+    const filePath = path.join(userDir, file);
     const data = JSON.parse(fs.readFileSync(filePath, "utf-8")) as { items: Item[] };
     const idx = data.items.findIndex((i) => i.id === id);
     if (idx !== -1) {
@@ -39,18 +44,17 @@ export async function PUT(
 
   const original = sourceData.items[sourceIndex];
   const updated: Item = { ...original, ...body, id, dateAdded: original.dateAdded };
+  if (!updated.color) delete (updated as unknown as Record<string, unknown>).color;
 
   const oldCategory = path.basename(sourceFile, ".json");
   const newCategory = updated.category;
-  const sourceFilePath = path.join(DATA_DIR, sourceFile);
+  const sourceFilePath = path.join(userDir, sourceFile);
 
   if (oldCategory !== newCategory) {
-    // Remove from old file
     sourceData.items.splice(sourceIndex, 1);
     fs.writeFileSync(sourceFilePath, JSON.stringify(sourceData, null, 2) + "\n", "utf-8");
 
-    // Add to new file (create if missing)
-    const targetFilePath = path.join(DATA_DIR, `${newCategory}.json`);
+    const targetFilePath = path.join(userDir, `${newCategory}.json`);
     let targetData: { items: Item[] };
     if (fs.existsSync(targetFilePath)) {
       targetData = JSON.parse(fs.readFileSync(targetFilePath, "utf-8")) as { items: Item[] };
@@ -67,7 +71,6 @@ export async function PUT(
       );
     } catch { /* git unavailable — skip */ }
   } else {
-    // Update in place
     sourceData.items[sourceIndex] = updated;
     fs.writeFileSync(sourceFilePath, JSON.stringify(sourceData, null, 2) + "\n", "utf-8");
 
@@ -86,13 +89,18 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id } = await params;
   const { read } = (await request.json()) as { read: boolean };
 
-  const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith(".json"));
+  const userDir = getUserDataDir(email);
+  const files = fs.readdirSync(userDir).filter((f) => f.endsWith(".json"));
 
   for (const file of files) {
-    const filePath = path.join(DATA_DIR, file);
+    const filePath = path.join(userDir, file);
     const raw = fs.readFileSync(filePath, "utf-8");
     const data = JSON.parse(raw) as { items: Array<Record<string, unknown>> };
 
@@ -112,12 +120,17 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { id } = await params;
 
-  const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith(".json"));
+  const userDir = getUserDataDir(email);
+  const files = fs.readdirSync(userDir).filter((f) => f.endsWith(".json"));
 
   for (const file of files) {
-    const filePath = path.join(DATA_DIR, file);
+    const filePath = path.join(userDir, file);
     const raw = fs.readFileSync(filePath, "utf-8");
     const data = JSON.parse(raw) as { items: Array<{ id: string; title: string }> };
 

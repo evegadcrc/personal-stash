@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Item } from "@/lib/data";
 
 interface ItemCardProps {
@@ -10,6 +10,13 @@ interface ItemCardProps {
   onToggleRead: (id: string, read: boolean) => void;
   onEdit: (item: Item) => void;
   onTagClick?: (tag: string) => void;
+  canReorder?: boolean;
+  isDragging?: boolean;
+  isDragOver?: boolean;
+  onDragStart?: () => void;
+  onDragOver?: () => void;
+  onDrop?: () => void;
+  onDragEnd?: () => void;
 }
 
 function formatDate(iso: string) {
@@ -34,13 +41,57 @@ const SOURCE_LABELS: Record<string, string> = {
   manual: "Manual",
 };
 
-export default function ItemCard({ item, view, onDelete, onToggleRead, onEdit, onTagClick }: ItemCardProps) {
+function GripIcon() {
+  return (
+    <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+      <circle cx="3" cy="2" r="1.2" />
+      <circle cx="7" cy="2" r="1.2" />
+      <circle cx="3" cy="7" r="1.2" />
+      <circle cx="7" cy="7" r="1.2" />
+      <circle cx="3" cy="12" r="1.2" />
+      <circle cx="7" cy="12" r="1.2" />
+    </svg>
+  );
+}
+
+export default function ItemCard({
+  item, view, onDelete, onToggleRead, onEdit, onTagClick,
+  canReorder, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
+}: ItemCardProps) {
   const [confirming, setConfirming] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const articleRef = useRef<HTMLElement>(null);
 
   function handleCardClick() {
     if (!confirming) setExpanded((prev) => !prev);
   }
+
+  // ESC to collapse
+  useEffect(() => {
+    if (!expanded) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setExpanded(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
+  // Click outside to collapse
+  useEffect(() => {
+    if (!expanded) return;
+    function onClickOutside(e: MouseEvent) {
+      if (articleRef.current && !articleRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    }
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", onClickOutside);
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", onClickOutside);
+    };
+  }, [expanded]);
 
   const favicon = item.url ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -126,18 +177,54 @@ export default function ItemCard({ item, view, onDelete, onToggleRead, onEdit, o
     </div>
   );
 
+  const dragHandleEl = canReorder ? (
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.stopPropagation();
+        if (articleRef.current) {
+          e.dataTransfer.setDragImage(articleRef.current, 20, 20);
+        }
+        onDragStart?.();
+      }}
+      onDragEnd={(e) => { e.stopPropagation(); onDragEnd?.(); }}
+      onClick={(e) => e.stopPropagation()}
+      className="flex items-center justify-center text-zinc-500 cursor-grab active:cursor-grabbing opacity-40 hover:opacity-100 transition-all shrink-0"
+      aria-label="Drag to reorder"
+    >
+      <GripIcon />
+    </div>
+  ) : null;
+
+  const colorGrid: Record<string, string> = {
+    amber: "bg-amber-800/40 border-amber-600/70",
+    blue:  "bg-blue-800/40 border-blue-600/70",
+    rose:  "bg-rose-800/40 border-rose-600/70",
+  };
+  const colorList: Record<string, string> = {
+    amber: "bg-amber-900/50 border-amber-700/60",
+    blue:  "bg-blue-900/50 border-blue-700/60",
+    rose:  "bg-rose-900/50 border-rose-700/60",
+  };
+  const baseGrid = item.color ? colorGrid[item.color] : "bg-zinc-800/50 border-zinc-700/50";
+  const baseList = item.color ? colorList[item.color] : "";
+
   /* ── GRID VIEW ─────────────────────────────────────────────── */
   if (view === "grid") {
     return (
       <article
+        ref={articleRef}
         onClick={handleCardClick}
-        className={`group flex flex-col gap-3 rounded-xl bg-zinc-800/50 border p-4 transition-all cursor-pointer ${
-          expanded ? "border-zinc-500" : "border-zinc-700/50 hover:border-zinc-600"
-        } ${item.read ? "opacity-50 hover:opacity-80" : ""}`}
+        onDragOver={(e) => { e.preventDefault(); onDragOver?.(); }}
+        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop?.(); }}
+        className={`group flex flex-col gap-3 rounded-xl border p-4 transition-all cursor-pointer ${baseGrid} ${
+          expanded ? "border-zinc-500!" : isDragOver ? "border-zinc-400!" : ""
+        } ${isDragging ? "opacity-30" : item.read ? "opacity-50 hover:opacity-80" : ""}`}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
+            {dragHandleEl}
             {favicon}
             <h3 className={`text-sm font-semibold leading-snug line-clamp-2 ${item.read ? "text-zinc-400" : "text-zinc-100"}`}>
               {item.title}
@@ -195,13 +282,17 @@ export default function ItemCard({ item, view, onDelete, onToggleRead, onEdit, o
   /* ── LIST VIEW ─────────────────────────────────────────────── */
   return (
     <article
+      ref={articleRef}
       onClick={handleCardClick}
-      className={`group flex flex-col rounded-lg border px-4 py-2.5 transition-all cursor-pointer ${
-        expanded ? "border-zinc-600 bg-zinc-800/60" : "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/30"
-      } ${item.read ? "opacity-50 hover:opacity-80" : ""}`}
+      onDragOver={(e) => { e.preventDefault(); onDragOver?.(); }}
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop?.(); }}
+      className={`group flex flex-col rounded-lg border px-4 py-2.5 transition-all cursor-pointer ${baseList || "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/30"} ${
+        expanded ? "border-zinc-600! bg-zinc-800/60" : isDragOver ? "border-zinc-400!" : ""
+      } ${isDragging ? "opacity-30" : item.read ? "opacity-50 hover:opacity-80" : ""}`}
     >
       {/* Main row */}
       <div className="flex items-center gap-3 min-w-0">
+        {dragHandleEl}
         {favicon}
 
         <span className={`flex-1 text-sm truncate font-medium ${item.read ? "text-zinc-400" : "text-zinc-100"}`}>

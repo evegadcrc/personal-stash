@@ -12,6 +12,8 @@ interface AddItemModalProps {
 type Mode = "auto" | "manual";
 type InputTab = "url" | "text" | "image";
 
+type ItemColor = "amber" | "blue" | "rose";
+
 interface FormFields {
   title: string;
   url: string;
@@ -22,6 +24,7 @@ interface FormFields {
   tagsInput: string;   // comma-separated raw string
   source: string;
   content: string;
+  color?: ItemColor;
 }
 
 const BLANK_FIELDS: FormFields = {
@@ -34,6 +37,7 @@ const BLANK_FIELDS: FormFields = {
   tagsInput: "",
   source: "manual",
   content: "",
+  color: undefined,
 };
 
 export default function AddItemModal({ categories, onClose, onSave }: AddItemModalProps) {
@@ -125,6 +129,7 @@ export default function AddItemModal({ categories, onClose, onSave }: AddItemMod
         tagsInput: (data.tags ?? []).join(", "),
         source: data.source ?? "web",
         content: "",
+        color: undefined,
       });
       setShowForm(true);
     } catch (e) {
@@ -157,6 +162,7 @@ export default function AddItemModal({ categories, onClose, onSave }: AddItemMod
           tags: tagChips,
           source: fields.source.trim() || "manual",
           content: fields.content.trim() || undefined,
+          color: fields.color ?? null,
         }),
       });
 
@@ -490,6 +496,31 @@ export default function AddItemModal({ categories, onClose, onSave }: AddItemMod
                   value={fields.source}
                   onChange={(e) => setFields((f) => ({ ...f, source: e.target.value }))}
                 />
+              </div>
+
+              {/* Color */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs text-zinc-400">Color <span className="text-zinc-600">(priority flag)</span></label>
+                <div className="flex gap-3">
+                  {([
+                    { value: undefined,              dot: "bg-zinc-600",   title: "None" },
+                    { value: "rose"  as ItemColor,   dot: "bg-rose-500",   title: "Rose" },
+                    { value: "amber" as ItemColor,   dot: "bg-amber-500",  title: "Amber" },
+                    { value: "blue"  as ItemColor,   dot: "bg-blue-500",   title: "Blue" },
+                  ] as { value: ItemColor | undefined; dot: string; title: string }[]).map(({ value, dot, title }) => (
+                    <button
+                      key={title}
+                      type="button"
+                      title={title}
+                      onClick={() => setFields((f) => ({ ...f, color: value }))}
+                      className={`h-7 w-7 rounded-full transition-all ${dot} ${
+                        fields.color === value
+                          ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110"
+                          : "opacity-50 hover:opacity-90"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/* Notes / Content */}
