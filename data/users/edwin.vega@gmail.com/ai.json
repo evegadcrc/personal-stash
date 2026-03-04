@@ -1,13 +1,34 @@
 {
   "items": [
     {
+      "id": "220235a5-f886-495b-9261-ff68f2a2b807",
+      "title": "Facebook Post — Saved",
+      "url": "https://www.facebook.com/share/1A1Eq1tony/",
+      "summary": "Prompt para ver las fotos de una persona a lo largo de su vida",
+      "category": "ai",
+      "subcategory": "prompt",
+      "tags": [
+        "facebook"
+      ],
+      "dateAdded": "2026-03-02T22:00:00Z",
+      "content": "",
+      "source": "facebook"
+    },
+    {
       "id": "ea95cba9-0bfa-4607-b54f-92f91cf7eb16",
       "title": "Awesome Claude Skills — Open Source Library",
       "url": "https://github.com/BehiSecc/awesome-claude-skills",
       "summary": "A curated open-source GitHub repository of production-ready Claude skills you can copy-paste into your workflow. Covers document generation (PDF, DOCX, PPT, CSV, Markdown), web scraping & automation, data processing pipelines, and API integrations. No need to build Claude building blocks from scratch.",
       "category": "ai",
       "subcategory": "tool",
-      "tags": ["claude", "claude-code", "open-source", "github", "skills", "automation"],
+      "tags": [
+        "claude",
+        "claude-code",
+        "open-source",
+        "github",
+        "skills",
+        "automation"
+      ],
       "dateAdded": "2026-03-04T15:14:00Z",
       "content": "## What's inside\n\n1. **Document Generation** — PDFs, DOCX, PPT, CSV, Markdown. One prompt → structured formatted output.\n2. **Web Scraping & Automation** — Extract structured data, clean & normalize, schedule workflows, trigger automations.\n3. **Data Processing Pipelines** — Parse raw files, transform datasets, run analysis, generate summaries.\n4. **API Integrations** — Connect SaaS tools, push/pull structured data, automate reporting, chain multi-step workflows.\n\n**Repo:** https://github.com/BehiSecc/awesome-claude-skills",
       "source": "facebook",
@@ -20,7 +41,14 @@
       "summary": "A viral post by Thedigitalkinggg outlining 5 AI-era skills that will separate high earners from everyone else by 2027: AI Workflow Design (structuring human/AI handoffs), No-Code Automation (n8n, Make), AI Output Quality Control (catching and fixing AI errors), Context Engineering for Business AI (setting up AI with company memory), and Business Process Mapping for Automation (designing workflows before automating them).",
       "category": "ai",
       "subcategory": "news",
-      "tags": ["ai-skills", "career", "automation", "no-code", "context-engineering", "workflow"],
+      "tags": [
+        "ai-skills",
+        "career",
+        "automation",
+        "no-code",
+        "context-engineering",
+        "workflow"
+      ],
       "dateAdded": "2026-03-04T15:13:00Z",
       "content": "## The 5 Skills\n\n1. **AI Workflow Design** — Not coding. Knowing how to design processes where AI does the repetitive work and humans do the judgment calls. Map out 'AI does this, human does that, system triggers here.'\n2. **Automation System Building (No Code)** — Tools like n8n and Make. Build complex automations without writing a single line of code. Every department will need someone who saves the team 10–20 hours a week.\n3. **AI Output Quality Control** — Spot what AI gets wrong, fix it fast, and build systems that ensure consistent quality. Every team using AI will need this.\n4. **Context Engineering for Business AI** — Set up AI systems that remember your business context so they give useful output without 500-word prompts. The difference between AI that feels like Google vs. a team member who knows your company.\n5. **Business Process Mapping for Automation** — Understand the process before you automate it. Map how work actually flows, identify bottlenecks, design the automation properly. Strategy work, not technical work.",
       "source": "facebook",
@@ -33,7 +61,13 @@
       "summary": "A Facebook post by Tauhid IQ sharing 9 structured prompts for building professional client websites using Claude Opus 4.6 (architecture and logic) paired with Figma Make (pixel-perfect UI and deployment). The workflow was tested on 100+ prompts and reportedly produced a $5,000 client site in 118 minutes. Prompts cover the full build pipeline: architecture strategy, design system, conversion copy, component logic, and Figma-optimized prompt engineering.",
       "category": "ai",
       "subcategory": "prompt",
-      "tags": ["vibe-coding", "figma", "web-design", "claude", "prompts"],
+      "tags": [
+        "vibe-coding",
+        "figma",
+        "web-design",
+        "claude",
+        "prompts"
+      ],
       "dateAdded": "2026-03-03T14:30:00Z",
       "content": "## Stack\n- **Claude Opus 4.6** — architecture, logic & complex reasoning\n- **Figma Make** — pixel-perfect UI, interactions & deployment\n\n## The 9 Prompts\n\n1. **Architecture Strategist** — You are a Principal Architect at Vercel. Build a [WEBSITE TYPE]. Delivers: site map, 3 user flows, data models, API requirements, 30+ component inventory, page templates, tech stack rec, performance budgets, SEO structure.\n\n2. **Design System Generator** — You are Apple's Design Director. Create a system for [BRAND] with [MINIMAL/BOLD/LUXURY/PLAYFUL] attributes. Delivers: color palette (primary/secondary/semantic/dark mode), 9-level typography scale, 8px spacing grid, 30 component specs, animation guidelines, WCAG AA. Exports: design tokens (JSON), CSS variables, Figma-ready descriptions.\n\n3. **Content Architect** — You are Ogilvy's Conversion Copywriter. Write all copy for [WEBSITE TYPE]. Per page: hero (6w headline, 15w subhead, CTA), 3 feature blocks, social proof + stats, 8-item FAQ, footer. Uses emotional triggers + power words with H1/H2/body tags.\n\n4. **Component Logic Builder** — You are a Frontend Architect. Design logic for: multi-step form (validation, progress, states), dynamic pricing calculator (real-time), search with filters (faceted, sort, pagination), user dashboard (viz, CRUD), auth flow (login/signup/reset). Per component: state machine diagram, data flow, error handling, loading/empty states, edge cases. Output React structure.\n\n5. **Figma Make Prompt Engineer** — Convert technical spec from Claude into 5 Figma Make prompts. Each prompt: starts with outcome, includes brand context (colors, typography, mood), specifies interactions (hover, click, scroll, animate), defines responsive behavior, requests specific sections (hero, features, CTA, footer).\n\n6–9. (Additional prompts not fully loaded in post)",
       "source": "facebook",
@@ -46,7 +80,13 @@
       "summary": "A Facebook post by Thedigitalkinggg sharing 10 high-leverage Grok prompts covering: savage red-team plan critique, content repurposing into 25 platform-native assets, brutal decision-making razor, faceless video generation chain, cold outreach 5-message sequence, weekly output autopsy, anti-overthinking kill switch, daily high-output batch producer, and a future-self regret minimizer for 2030. Each prompt is fill-in-the-bracket format and designed to produce immediate, actionable results.",
       "category": "ai",
       "subcategory": "prompt",
-      "tags": ["grok", "prompts", "productivity", "content-creation", "decision-making"],
+      "tags": [
+        "grok",
+        "prompts",
+        "productivity",
+        "content-creation",
+        "decision-making"
+      ],
       "dateAdded": "2026-03-03T14:00:00Z",
       "content": "## The 10 Prompts\n\n1. **Burn My Plan Alive — Red-Team Roast** — savage zero-filter critic rates viability 1–10, destroys weaknesses, gives highest-leverage pivot\n2. **10× Content Repurposing Nuclear Bomb** — turn 1 piece into 25 platform-native assets (X, LinkedIn, IG, newsletter, YouTube Shorts, cold DMs)\n3. **One-Shot Brutal Life / Business Decision Razor** — worst outcome probability, 60-second gun-to-head decision, micro-action in <15 min\n4. **Grok Image + Video Frame Chain** — full faceless 60s Reels/TikTok: hook, 12 image prompts, voiceover, text overlays, CapCut assembly\n5. **Cold Outreach Message Nuclear Bomb** — 5-message DM/LinkedIn sequence + 5 search queries to find 50 perfect targets\n6. **Weekly Momentum & Anti-Stagnation Autopsy** — celebrate needle-movers, identify time thieves, 3 micro-experiments, this week's leverage focus\n7. **Anti-Overthinking Kill Switch** — worst outcome probability, 60-second decision, one tiny action in <15 min\n8. **Daily High-Leverage Output Batch** — 7 ready-to-ship pieces: X post, LinkedIn, video script, cold DM opener, email opener, micro-content, anti-procrastination sentence\n9. **Future-Self Regret Minimizer (2030)** — what mattered most, biggest time waste, key choices, one sentence from 2030 you\n10. Plug for AI Creator University ($9/month community)",
       "source": "facebook",
@@ -59,7 +99,13 @@
       "summary": "Anthropic's official structured course on integrating Claude Code into professional development workflows. Covers 8 competency areas: coding assistant architecture, multi-step tool use, context management, visual communication, custom slash commands and automation, MCP server integration, GitHub workflow automation (automated code review), and thinking/planning modes for varying problem complexity. Requires basic CLI and Git familiarity.",
       "category": "ai",
       "subcategory": "course",
-      "tags": ["claude-code", "anthropic", "course", "mcp", "github"],
+      "tags": [
+        "claude-code",
+        "anthropic",
+        "course",
+        "mcp",
+        "github"
+      ],
       "dateAdded": "2026-03-03T14:00:00Z",
       "content": "## Course Modules\n1. Coding Assistant Architecture\n2. Tool Use System (multi-step tasks)\n3. Context Management\n4. Visual Communication (images + planning)\n5. Custom Automation (slash commands, hooks)\n6. MCP Server Integration\n7. GitHub Workflow Integration (automated code review)\n8. Thinking/Planning Modes\n\n**Prerequisites:** CLI familiarity, basic Git",
       "source": "web",
@@ -72,7 +118,12 @@
       "summary": "A Facebook post by Tauhid IQ sharing what they call the most powerful vibe coding prompt ever — a structured prompt designed to maximize AI-assisted coding sessions. The content is shared as an image graphic for easy reference and distribution. Focused on getting the best results from AI coding tools through a single comprehensive prompt.",
       "category": "ai",
       "subcategory": "prompt",
-      "tags": ["vibe-coding", "prompts", "ai-coding", "productivity"],
+      "tags": [
+        "vibe-coding",
+        "prompts",
+        "ai-coding",
+        "productivity"
+      ],
       "dateAdded": "2026-03-03T14:00:00Z",
       "content": "",
       "source": "facebook",
