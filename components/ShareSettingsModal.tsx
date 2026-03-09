@@ -16,6 +16,7 @@ interface ShareSettingsModalProps {
   } | null;
   onClose: () => void;
   onSaved: () => void;
+  onDeleted?: () => void;
 }
 
 type ShareMode = "none" | "whitelist" | "public";
@@ -25,6 +26,7 @@ export default function ShareSettingsModal({
   existingShare,
   onClose,
   onSaved,
+  onDeleted,
 }: ShareSettingsModalProps) {
   const [mode, setMode] = useState<ShareMode>(existingShare?.mode ?? "none");
   const [allowedEmails, setAllowedEmails] = useState<string[]>(
@@ -57,6 +59,10 @@ export default function ShareSettingsModal({
           method: "DELETE",
         });
         if (!res.ok) throw new Error("Failed to unshare");
+        onSaved();
+        onDeleted?.();
+        onClose();
+        return;
       } else if (mode !== "none") {
         const res = existingShare
           ? await fetch(`/api/sharing/${existingShare.id}`, {

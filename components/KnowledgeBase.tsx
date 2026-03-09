@@ -15,6 +15,7 @@ import Toast from "./Toast";
 import ShareSettingsModal from "./ShareSettingsModal";
 import FriendsModal from "./FriendsModal";
 import NotificationsPanel from "./NotificationsPanel";
+import AddToShareModal from "./AddToShareModal";
 
 type ViewMode = "grid" | "list";
 type SortMode = "date" | "name" | "color";
@@ -78,7 +79,12 @@ export default function KnowledgeBase({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedShare, setSelectedShare] = useState<ShareWithOwner | null>(null);
   const [sharedItems, setSharedItems] = useState<Item[]>([]);
+  const [sharedContributors, setSharedContributors] = useState<{ email: string; name: string | null; avatar: string | null }[]>([]);
+  // Keyed by categoryName — populated eagerly when myShares loads so there's no per-click delay
+  const [categoryContributorsMap, setCategoryContributorsMap] = useState<Record<string, { email: string; name: string | null; avatar: string | null }[]>>({});
+  const [categoryMembershipItemsMap, setCategoryMembershipItemsMap] = useState<Record<string, Item[]>>({});
   const [loadingSharedItems, setLoadingSharedItems] = useState(false);
+  const [sharedUnreadCounts, setSharedUnreadCounts] = useState<Record<string, number>>({});
   const [sharedCategories, setSharedCategories] = useState<ShareWithOwner[]>(initialSharedCategories);
   const [pendingCount, setPendingCount] = useState(initialPendingCount);
   const [myShares, setMyShares] = useState<MyShare[]>([]);
@@ -95,6 +101,7 @@ export default function KnowledgeBase({
   const [notifPanelOpen, setNotifPanelOpen] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [shareSettingsCategory, setShareSettingsCategory] = useState<string | null>(null);
+  const [addToShareItem, setAddToShareItem] = useState<Item | null>(null);
   const [customOrder, setCustomOrder] = useState<Record<string, string[]>>({});
   const [dragSrcId, setDragSrcId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
@@ -110,15 +117,38 @@ export default function KnowledgeBase({
     }
   }, []);
 
-  // Load my own shares (for sidebar icons)
+  // Load my shares + prefetch membership items/contributors for all owned shares in parallel
   useEffect(() => {
     if (!currentUserEmail) return;
     fetch("/api/sharing")
       .then((r) => r.json())
       .then((data) => {
-        setMyShares(data.myShares ?? []);
-        // Refresh shared-with-me from server too
+        const shares: MyShare[] = data.myShares ?? [];
+        setMyShares(shares);
         setSharedCategories(data.sharedWithMe ?? initialSharedCategories);
+
+        // Prefetch all owned shares in parallel — no delay when user clicks a shared category
+        Promise.all(
+          shares.map((s) =>
+            fetch(`/api/sharing/${s.id}`)
+              .then((r) => r.json())
+              .then((d) => ({
+                categoryName: s.categoryName,
+                contributors: (d.contributors ?? []) as { email: string; name: string | null; avatar: string | null }[],
+                membershipItems: ((d.items ?? []) as Item[]).filter((i) => !!i.membershipId),
+              }))
+              .catch(() => ({ categoryName: s.categoryName, contributors: [], membershipItems: [] }))
+          )
+        ).then((results) => {
+          const contribMap: Record<string, { email: string; name: string | null; avatar: string | null }[]> = {};
+          const itemsMap: Record<string, Item[]> = {};
+          for (const r of results) {
+            contribMap[r.categoryName] = r.contributors;
+            itemsMap[r.categoryName] = r.membershipItems;
+          }
+          setCategoryContributorsMap(contribMap);
+          setCategoryMembershipItemsMap(itemsMap);
+        });
       })
       .catch(() => {});
   }, [currentUserEmail]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -150,20 +180,27 @@ export default function KnowledgeBase({
 
   async function handleSelectShare(share: ShareWithOwner | null) {
     setSelectedShare(share);
-    setSelectedCategory(null);
+    if (share) setSelectedCategory(null);
     setSelectedSubcategory(null);
     setSelectedTag(null);
     setSearchQuery("");
     setSidebarOpen(false);
-    if (!share) { setSharedItems([]); return; }
+    if (!share) { setSharedItems([]); setSharedContributors([]); return; }
 
     setLoadingSharedItems(true);
     try {
       const res = await fetch(`/api/sharing/${share.id}`);
-      const data = await res.json() as { items: Item[] };
-      setSharedItems(data.items ?? []);
+      const data = await res.json() as { items: Item[]; contributors?: { email: string; name: string | null; avatar: string | null }[] };
+      const items = data.items ?? [];
+      setSharedItems(items);
+      setSharedContributors(data.contributors ?? []);
+      setSharedUnreadCounts((prev) => ({
+        ...prev,
+        [share.id]: items.filter((i) => !i.read).length,
+      }));
     } catch {
       setSharedItems([]);
+      setSharedContributors([]);
     } finally {
       setLoadingSharedItems(false);
     }
@@ -174,12 +211,37 @@ export default function KnowledgeBase({
     if (res.ok) {
       if (selectedShare) {
         setSharedItems((prev) => prev.filter((item) => item.id !== id));
+        setSharedCategories((prev) =>
+          prev.map((s) => s.id === selectedShare.id ? { ...s, itemCount: Math.max(0, s.itemCount - 1) } : s)
+        );
       } else {
         setCategories((prev) =>
           prev.map((cat) => ({ ...cat, items: cat.items.filter((item) => item.id !== id) }))
         );
       }
       showToast("Item removed");
+    }
+  }
+
+  async function handleRemoveFromShare(membershipId: string) {
+    const shareId = selectedShare?.id ?? currentCategoryShare?.id;
+    if (!shareId) return;
+    const res = await fetch(`/api/sharing/${shareId}/members/${membershipId}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      if (selectedShare) {
+        setSharedItems((prev) => prev.filter((item) => item.membershipId !== membershipId));
+        setSharedCategories((prev) =>
+          prev.map((s) => s.id === shareId ? { ...s, itemCount: Math.max(0, s.itemCount - 1) } : s)
+        );
+      } else if (selectedCategory) {
+        setCategoryMembershipItemsMap((prev) => ({
+          ...prev,
+          [selectedCategory]: (prev[selectedCategory] ?? []).filter((i) => i.membershipId !== membershipId),
+        }));
+      }
+      showToast("Removed from shared category");
     }
   }
 
@@ -191,9 +253,14 @@ export default function KnowledgeBase({
     });
     if (res.ok) {
       if (selectedShare) {
-        setSharedItems((prev) =>
-          prev.map((item) => item.id === id ? { ...item, read } : item)
-        );
+        setSharedItems((prev) => {
+          const updated = prev.map((item) => item.id === id ? { ...item, read } : item);
+          setSharedUnreadCounts((counts) => ({
+            ...counts,
+            [selectedShare.id]: updated.filter((i) => !i.read).length,
+          }));
+          return updated;
+        });
       } else {
         setCategories((prev) =>
           prev.map((cat) => ({
@@ -209,7 +276,17 @@ export default function KnowledgeBase({
   function handleAdd(item: Item) {
     if (selectedShare) {
       setSharedItems((prev) => [item, ...prev]);
-    } else {
+      setSharedCategories((prev) =>
+        prev.map((s) => s.id === selectedShare.id ? { ...s, itemCount: s.itemCount + 1 } : s)
+      );
+    } else if (item.sharedOnly && item.membershipId) {
+      // Contributed to a shared category — update the map so it shows instantly
+      setCategoryMembershipItemsMap((prev) => ({
+        ...prev,
+        [item.category]: [item, ...(prev[item.category] ?? [])],
+      }));
+    } else if (!item.sharedOnly) {
+      // Only add to personal library if item is not shared-only
       setCategories((prev) => {
         const existing = prev.find((c) => c.name === item.category);
         if (existing) {
@@ -259,14 +336,22 @@ export default function KnowledgeBase({
   const unreadCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const cat of categories) {
-      counts[cat.name] = cat.items.filter((i) => !i.read).length;
+      const membershipUnread = (categoryMembershipItemsMap[cat.name] ?? []).filter((i) => !i.read).length;
+      counts[cat.name] = cat.items.filter((i) => !i.read).length + membershipUnread;
     }
     return counts;
-  }, [categories]);
+  }, [categories, categoryMembershipItemsMap]);
+
+  // Derived from map — always in memory, no per-click fetch delay
+  const categoryMembershipItems = selectedCategory ? (categoryMembershipItemsMap[selectedCategory] ?? []) : [];
+  const categoryContributors = selectedCategory ? (categoryContributorsMap[selectedCategory] ?? []) : [];
 
   const activeItems = selectedShare ? sharedItems : (
     selectedCategory
-      ? (categories.find((c) => c.name === selectedCategory)?.items ?? [])
+      ? [
+          ...(categories.find((c) => c.name === selectedCategory)?.items ?? []),
+          ...categoryMembershipItems,
+        ]
       : categories.flatMap((c) => c.items)
   );
 
@@ -300,7 +385,6 @@ export default function KnowledgeBase({
 
     const COLOR_PRIORITY: Record<string, number> = { rose: 0, amber: 1, blue: 2 };
     return items.sort((a, b) => {
-      if (!!a.read !== !!b.read) return a.read ? 1 : -1;
       if (sortMode === "name") return a.title.localeCompare(b.title);
       if (sortMode === "color") {
         const pa = COLOR_PRIORITY[a.color ?? ""] ?? 3;
@@ -353,10 +437,14 @@ export default function KnowledgeBase({
     setDragOverId(null);
   }
 
+  function titleCase(s: string) {
+    return s.split(/[-\s]+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  }
+
   const categoryLabel = selectedShare
-    ? `${selectedShare.ownerName?.split(" ")[0] ?? selectedShare.ownerEmail.split("@")[0]}'s ${selectedShare.categoryName}`
+    ? titleCase(selectedShare.categoryName)
     : selectedCategory
-    ? selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)
+    ? titleCase(selectedCategory)
     : "All";
 
   const hasActiveFilters = subcategories.length > 0 || selectedTag !== null;
@@ -365,6 +453,24 @@ export default function KnowledgeBase({
     () => new Set(myShares.map((s) => s.categoryName)),
     [myShares]
   );
+
+  // The share record for the currently selected personal category (if it's a shared category)
+  const currentCategoryShare = selectedCategory
+    ? myShares.find((s) => s.categoryName === selectedCategory) ?? null
+    : null;
+
+  // All shares the current user can contribute to (own + shared with me)
+  const allAvailableShares = useMemo(() => {
+    const ownAsShares = myShares.map((s) => ({
+      id: s.id,
+      categoryName: s.categoryName,
+      ownerName: user?.name ?? null,
+      ownerEmail: currentUserEmail,
+      ownerAvatar: user?.image ?? null,
+      isOwn: true as const,
+    }));
+    return [...ownAsShares, ...sharedCategories];
+  }, [myShares, sharedCategories, currentUserEmail, user]);
 
   // Share settings for current category (if any)
   const existingShareForCategory = shareSettingsCategory
@@ -450,17 +556,22 @@ export default function KnowledgeBase({
               {categoryLabel}
             </h2>
 
-            {/* Share settings gear — visible when own category is selected */}
+            {/* Share button — visible when own category is selected */}
             {selectedCategory && (
               <button
                 onClick={() => setShareSettingsCategory(selectedCategory)}
-                className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
-                title="Share settings"
-                aria-label="Share settings"
+                className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                title={`Share "${selectedCategory}"`}
+                aria-label="Share category"
               >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11A5.5 5.5 0 0 1 8 2.5zM8 5a1 1 0 1 0 0 2A1 1 0 0 0 8 5zm0 3a.75.75 0 0 0-.75.75v3a.75.75 0 0 0 1.5 0v-3A.75.75 0 0 0 8 8z" />
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="2" r="1.5" />
+                  <circle cx="9" cy="10" r="1.5" />
+                  <circle cx="2" cy="6" r="1.5" />
+                  <line x1="3.5" y1="6" x2="7.5" y2="2.5" />
+                  <line x1="3.5" y1="6" x2="7.5" y2="9.5" />
                 </svg>
+                Share
               </button>
             )}
 
@@ -619,6 +730,65 @@ export default function KnowledgeBase({
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
           </div>
 
+          {/* Contributor avatars — shown in shared view OR when owner views their own shared category */}
+          {(() => {
+            const raw = selectedShare ? sharedContributors : categoryContributors;
+            const ownerEmail = selectedShare?.ownerEmail ?? currentUserEmail;
+            // Sort: current user first → owner → everyone else
+            const contributors = [...raw].sort((a, b) => {
+              if (a.email === currentUserEmail) return -1;
+              if (b.email === currentUserEmail) return 1;
+              if (a.email === ownerEmail) return -1;
+              if (b.email === ownerEmail) return 1;
+              return (a.name ?? a.email).localeCompare(b.name ?? b.email);
+            });
+            if (contributors.length === 0) return null;
+            const MAX_SHOWN = 5;
+            const shown = contributors.slice(0, MAX_SHOWN);
+            const overflow = contributors.length - MAX_SHOWN;
+            return (
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-xs text-zinc-600">Contributors</span>
+                <div className="flex items-center">
+                  {shown.map((c, i) => {
+                    const label = c.name ?? c.email;
+                    const initial = label.charAt(0).toUpperCase();
+                    return (
+                      <div
+                        key={c.email}
+                        className="group relative"
+                        style={{ marginLeft: i === 0 ? 0 : -8, zIndex: shown.length - i }}
+                      >
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full overflow-hidden bg-zinc-700 border-2 border-zinc-950 text-[10px] font-semibold text-zinc-200 cursor-default select-none">
+                          {c.avatar ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={c.avatar} alt={label} className="h-full w-full object-cover" />
+                          ) : (
+                            initial
+                          )}
+                        </div>
+                        <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-800 border border-zinc-700 px-2 py-1 text-xs text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" style={{ zIndex: 50 }}>
+                          {label}
+                          {c.email === ownerEmail && (
+                            <span className="ml-1 text-zinc-500">· owner</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {overflow > 0 && (
+                    <div
+                      className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-zinc-700 border-2 border-zinc-950 px-1.5 text-[9px] font-bold text-zinc-400 cursor-default"
+                      style={{ marginLeft: -8 }}
+                    >
+                      +{overflow}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Filters row */}
           {hasActiveFilters && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -650,9 +820,22 @@ export default function KnowledgeBase({
             </div>
           ) : displayedItems.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-              <p className="text-zinc-400">No items found</p>
-              {(searchQuery || selectedTag) && (
-                <p className="text-sm text-zinc-600">Try a different search term</p>
+              {searchQuery || selectedTag || selectedSubcategory ? (
+                <>
+                  <p className="text-zinc-400">No items found</p>
+                  <p className="text-sm text-zinc-600">Try a different search term</p>
+                </>
+              ) : selectedShare ? (
+                <>
+                  <p className="text-2xl">📭</p>
+                  <p className="text-zinc-400">Nothing here yet</p>
+                  <p className="text-sm text-zinc-600">Be the first to add something to this shared category</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-zinc-400">No items found</p>
+                  <p className="text-sm text-zinc-600">Add your first item with the + button</p>
+                </>
               )}
             </div>
           ) : (
@@ -682,6 +865,11 @@ export default function KnowledgeBase({
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}
                       currentUserEmail={currentUserEmail}
+                      isSharedView={!!selectedShare || !!currentCategoryShare}
+                      shareOwnerEmail={selectedShare?.ownerEmail ?? (currentCategoryShare ? currentUserEmail : undefined)}
+                      onRemoveFromShare={handleRemoveFromShare}
+                      onAddToShare={setAddToShareItem}
+                      hasAvailableShares={sharedCategories.length > 0}
                     />
                   ))}
                 </div>
@@ -704,6 +892,11 @@ export default function KnowledgeBase({
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}
                       currentUserEmail={currentUserEmail}
+                      isSharedView={!!selectedShare || !!currentCategoryShare}
+                      shareOwnerEmail={selectedShare?.ownerEmail ?? (currentCategoryShare ? currentUserEmail : undefined)}
+                      onRemoveFromShare={handleRemoveFromShare}
+                      onAddToShare={setAddToShareItem}
+                      hasAvailableShares={sharedCategories.length > 0}
                     />
                   ))}
                 </div>
@@ -720,6 +913,7 @@ export default function KnowledgeBase({
           onSave={handleAdd}
           shareId={selectedShare?.id}
           shareCategory={selectedShare?.categoryName}
+          availableShares={selectedShare ? undefined : allAvailableShares}
         />
       )}
 
@@ -746,6 +940,13 @@ export default function KnowledgeBase({
           }
           onClose={() => setShareSettingsCategory(null)}
           onSaved={handleShareSaved}
+          onDeleted={() => {
+            // If viewing this category as a shared view, navigate away
+            if (selectedShare?.id === existingShareForCategory?.id) {
+              handleSelectShare(null);
+            }
+            handleShareSaved();
+          }}
         />
       )}
 
@@ -753,6 +954,15 @@ export default function KnowledgeBase({
         <FriendsModal
           onClose={() => setShowFriendsModal(false)}
           onPendingChange={setPendingCount}
+        />
+      )}
+
+      {addToShareItem && (
+        <AddToShareModal
+          item={addToShareItem}
+          availableShares={sharedCategories}
+          onClose={() => setAddToShareItem(null)}
+          onAdded={() => showToast("Added to shared category ✓")}
         />
       )}
 

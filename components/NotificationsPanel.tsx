@@ -23,6 +23,7 @@ export default function NotificationsPanel({
 }: NotificationsPanelProps) {
   const [requests, setRequests] = useState<FriendData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [responding, setResponding] = useState<string | null>(null);
 
   async function loadRequests() {
     try {
@@ -43,12 +44,17 @@ export default function NotificationsPanel({
   useEffect(() => { loadRequests(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleRespond(friendshipId: string, action: "accept" | "decline") {
-    await fetch(`/api/friends/${friendshipId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
-    });
-    await loadRequests();
+    setResponding(friendshipId);
+    try {
+      await fetch(`/api/friends/${friendshipId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      await loadRequests();
+    } finally {
+      setResponding(null);
+    }
   }
 
   return (
@@ -86,15 +92,17 @@ export default function NotificationsPanel({
                   <div className="flex gap-1.5 shrink-0 mt-0.5">
                     <button
                       onClick={() => handleRespond(r.friendshipId, "accept")}
-                      className="rounded-md bg-emerald-900/60 px-2 py-0.5 text-xs text-emerald-300 hover:bg-emerald-800 transition-colors"
+                      disabled={responding === r.friendshipId}
+                      className="rounded-md bg-emerald-900/60 px-2 py-0.5 text-xs text-emerald-300 hover:bg-emerald-800 disabled:opacity-50 transition-colors"
                     >
-                      Accept
+                      {responding === r.friendshipId ? "…" : "Accept"}
                     </button>
                     <button
                       onClick={() => handleRespond(r.friendshipId, "decline")}
-                      className="rounded-md bg-zinc-700 px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-600 transition-colors"
+                      disabled={responding === r.friendshipId}
+                      className="rounded-md bg-zinc-700 px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-600 disabled:opacity-50 transition-colors"
                     >
-                      Decline
+                      {responding === r.friendshipId ? "…" : "Decline"}
                     </button>
                   </div>
                 </div>

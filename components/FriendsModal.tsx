@@ -21,6 +21,8 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
   const [emailInput, setEmailInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [responding, setResponding] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -67,17 +69,27 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
   }
 
   async function handleRespond(friendshipId: string, action: "accept" | "decline") {
-    await fetch(`/api/friends/${friendshipId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
-    });
-    await loadFriends();
+    setResponding(friendshipId);
+    try {
+      await fetch(`/api/friends/${friendshipId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      await loadFriends();
+    } finally {
+      setResponding(null);
+    }
   }
 
   async function handleRemove(friendshipId: string) {
-    await fetch(`/api/friends/${friendshipId}`, { method: "DELETE" });
-    await loadFriends();
+    setRemoving(friendshipId);
+    try {
+      await fetch(`/api/friends/${friendshipId}`, { method: "DELETE" });
+      await loadFriends();
+    } finally {
+      setRemoving(null);
+    }
   }
 
   const accepted = friends.filter((f) => f.status === "accepted");
@@ -158,15 +170,17 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
                       <div className="flex gap-1.5 shrink-0">
                         <button
                           onClick={() => handleRespond(f.friendshipId, "accept")}
-                          className="rounded-md bg-emerald-900/60 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-800 transition-colors"
+                          disabled={responding === f.friendshipId}
+                          className="rounded-md bg-emerald-900/60 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-800 disabled:opacity-50 transition-colors"
                         >
-                          Accept
+                          {responding === f.friendshipId ? "…" : "Accept"}
                         </button>
                         <button
                           onClick={() => handleRespond(f.friendshipId, "decline")}
-                          className="rounded-md bg-zinc-700 px-2.5 py-1 text-xs text-zinc-400 hover:bg-zinc-600 transition-colors"
+                          disabled={responding === f.friendshipId}
+                          className="rounded-md bg-zinc-700 px-2.5 py-1 text-xs text-zinc-400 hover:bg-zinc-600 disabled:opacity-50 transition-colors"
                         >
-                          Decline
+                          {responding === f.friendshipId ? "…" : "Decline"}
                         </button>
                       </div>
                     </div>
@@ -209,9 +223,10 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
                       </div>
                       <button
                         onClick={() => handleRemove(f.friendshipId)}
-                        className="shrink-0 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+                        disabled={removing === f.friendshipId}
+                        className="shrink-0 text-xs text-zinc-600 hover:text-zinc-400 disabled:opacity-50 transition-colors"
                       >
-                        Remove
+                        {removing === f.friendshipId ? "…" : "Remove"}
                       </button>
                     </div>
                   ))
@@ -236,9 +251,10 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
                         <span className="text-xs text-zinc-600">Pending</span>
                         <button
                           onClick={() => handleRemove(f.friendshipId)}
-                          className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+                          disabled={removing === f.friendshipId}
+                          className="text-xs text-zinc-600 hover:text-zinc-400 disabled:opacity-50 transition-colors"
                         >
-                          Cancel
+                          {removing === f.friendshipId ? "…" : "Cancel"}
                         </button>
                       </div>
                     </div>
