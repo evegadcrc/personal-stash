@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { signOut } from "next-auth/react";
 import { CategoryData, Item } from "@/lib/data";
+import { ShareWithOwner } from "@/lib/sharing";
 import Sidebar from "./Sidebar";
 import SearchBar from "./SearchBar";
 import SubcategoryFilter from "./SubcategoryFilter";
@@ -11,13 +12,26 @@ import AddItemModal from "./AddItemModal";
 import EditItemModal from "./EditItemModal";
 import ThemeToggle from "./ThemeToggle";
 import Toast from "./Toast";
+import ShareSettingsModal from "./ShareSettingsModal";
+import FriendsModal from "./FriendsModal";
+import NotificationsPanel from "./NotificationsPanel";
 
 type ViewMode = "grid" | "list";
 type SortMode = "date" | "name" | "color";
 
+interface MyShare {
+  id: string;
+  categoryName: string;
+  mode: string;
+  allowedEmails: string[];
+}
+
 interface KnowledgeBaseProps {
   categories: CategoryData[];
   user?: { name?: string | null; email?: string | null; image?: string | null };
+  sharedCategories: ShareWithOwner[];
+  pendingCount: number;
+  currentUserEmail: string;
 }
 
 function GridIcon({ active }: { active: boolean }) {
@@ -53,9 +67,21 @@ function MenuIcon() {
   );
 }
 
-export default function KnowledgeBase({ categories: initialCategories, user }: KnowledgeBaseProps) {
+export default function KnowledgeBase({
+  categories: initialCategories,
+  user,
+  sharedCategories: initialSharedCategories,
+  pendingCount: initialPendingCount,
+  currentUserEmail,
+}: KnowledgeBaseProps) {
   const [categories, setCategories] = useState<CategoryData[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedShare, setSelectedShare] = useState<ShareWithOwner | null>(null);
+  const [sharedItems, setSharedItems] = useState<Item[]>([]);
+  const [loadingSharedItems, setLoadingSharedItems] = useState(false);
+  const [sharedCategories, setSharedCategories] = useState<ShareWithOwner[]>(initialSharedCategories);
+  const [pendingCount, setPendingCount] = useState(initialPendingCount);
+  const [myShares, setMyShares] = useState<MyShare[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -66,12 +92,15 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
   const [toast, setToast] = useState<{ msg: string; id: number } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifPanelOpen, setNotifPanelOpen] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [shareSettingsCategory, setShareSettingsCategory] = useState<string | null>(null);
   const [customOrder, setCustomOrder] = useState<Record<string, string[]>>({});
   const [dragSrcId, setDragSrcId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted view mode and custom order from localStorage
+  // Load persisted view mode, custom order, and my shares
   useEffect(() => {
     const savedView = localStorage.getItem("stash-view-mode") as ViewMode | null;
     if (savedView === "grid" || savedView === "list") setViewMode(savedView);
@@ -80,6 +109,19 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
       try { setCustomOrder(JSON.parse(savedOrder)); } catch { /* ignore */ }
     }
   }, []);
+
+  // Load my own shares (for sidebar icons)
+  useEffect(() => {
+    if (!currentUserEmail) return;
+    fetch("/api/sharing")
+      .then((r) => r.json())
+      .then((data) => {
+        setMyShares(data.myShares ?? []);
+        // Refresh shared-with-me from server too
+        setSharedCategories(data.sharedWithMe ?? initialSharedCategories);
+      })
+      .catch(() => {});
+  }, [currentUserEmail]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSetViewMode(mode: ViewMode) {
     setViewMode(mode);
@@ -106,12 +148,37 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
     setToast({ msg, id: Date.now() });
   }
 
+  async function handleSelectShare(share: ShareWithOwner | null) {
+    setSelectedShare(share);
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setSelectedTag(null);
+    setSearchQuery("");
+    setSidebarOpen(false);
+    if (!share) { setSharedItems([]); return; }
+
+    setLoadingSharedItems(true);
+    try {
+      const res = await fetch(`/api/sharing/${share.id}`);
+      const data = await res.json() as { items: Item[] };
+      setSharedItems(data.items ?? []);
+    } catch {
+      setSharedItems([]);
+    } finally {
+      setLoadingSharedItems(false);
+    }
+  }
+
   async function handleDelete(id: string) {
     const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setCategories((prev) =>
-        prev.map((cat) => ({ ...cat, items: cat.items.filter((item) => item.id !== id) }))
-      );
+      if (selectedShare) {
+        setSharedItems((prev) => prev.filter((item) => item.id !== id));
+      } else {
+        setCategories((prev) =>
+          prev.map((cat) => ({ ...cat, items: cat.items.filter((item) => item.id !== id) }))
+        );
+      }
       showToast("Item removed");
     }
   }
@@ -123,48 +190,66 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
       body: JSON.stringify({ read }),
     });
     if (res.ok) {
-      setCategories((prev) =>
-        prev.map((cat) => ({
-          ...cat,
-          items: cat.items.map((item) => item.id === id ? { ...item, read } : item),
-        }))
-      );
+      if (selectedShare) {
+        setSharedItems((prev) =>
+          prev.map((item) => item.id === id ? { ...item, read } : item)
+        );
+      } else {
+        setCategories((prev) =>
+          prev.map((cat) => ({
+            ...cat,
+            items: cat.items.map((item) => item.id === id ? { ...item, read } : item),
+          }))
+        );
+      }
       showToast(read ? "Marked as read ✓" : "Marked as unread");
     }
   }
 
   function handleAdd(item: Item) {
-    setCategories((prev) => {
-      const existing = prev.find((c) => c.name === item.category);
-      if (existing) {
-        return prev.map((c) =>
-          c.name === item.category ? { ...c, items: [item, ...c.items] } : c
-        );
-      }
-      return [...prev, { name: item.category, items: [item] }];
-    });
+    if (selectedShare) {
+      setSharedItems((prev) => [item, ...prev]);
+    } else {
+      setCategories((prev) => {
+        const existing = prev.find((c) => c.name === item.category);
+        if (existing) {
+          return prev.map((c) =>
+            c.name === item.category ? { ...c, items: [item, ...c.items] } : c
+          );
+        }
+        return [...prev, { name: item.category, items: [item] }];
+      });
+    }
     showToast("Item saved ✓");
   }
 
   function handleEditSave(updated: Item) {
-    setCategories((prev) => {
-      const removed = prev.map((cat) => ({
-        ...cat,
-        items: cat.items.filter((i) => i.id !== updated.id),
-      }));
-      const targetExists = removed.find((c) => c.name === updated.category);
-      if (targetExists) {
-        return removed.map((c) =>
-          c.name === updated.category ? { ...c, items: [updated, ...c.items] } : c
-        );
-      }
-      return [...removed, { name: updated.category, items: [updated] }];
-    });
+    if (selectedShare) {
+      setSharedItems((prev) =>
+        prev.map((item) => item.id === updated.id ? updated : item)
+      );
+    } else {
+      setCategories((prev) => {
+        const removed = prev.map((cat) => ({
+          ...cat,
+          items: cat.items.filter((i) => i.id !== updated.id),
+        }));
+        const targetExists = removed.find((c) => c.name === updated.category);
+        if (targetExists) {
+          return removed.map((c) =>
+            c.name === updated.category ? { ...c, items: [updated, ...c.items] } : c
+          );
+        }
+        return [...removed, { name: updated.category, items: [updated] }];
+      });
+    }
     showToast("Changes saved ✓");
   }
 
   function handleCategoryChange(cat: string | null) {
     setSelectedCategory(cat);
+    setSelectedShare(null);
+    setSharedItems([]);
     setSelectedSubcategory(null);
     setSelectedTag(null);
     setSearchQuery("");
@@ -179,26 +264,29 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
     return counts;
   }, [categories]);
 
+  const activeItems = selectedShare ? sharedItems : (
+    selectedCategory
+      ? (categories.find((c) => c.name === selectedCategory)?.items ?? [])
+      : categories.flatMap((c) => c.items)
+  );
+
   const subcategories = useMemo(() => {
+    if (selectedShare) return [...new Set(sharedItems.map((i) => i.subcategory))].sort();
     if (!selectedCategory) return [];
     const cat = categories.find((c) => c.name === selectedCategory);
     if (!cat) return [];
     return [...new Set(cat.items.map((i) => i.subcategory))].sort();
-  }, [categories, selectedCategory]);
+  }, [categories, selectedCategory, selectedShare, sharedItems]);
 
   const filteredItems = useMemo(() => {
-    let items: Item[] = selectedCategory
-      ? (categories.find((c) => c.name === selectedCategory)?.items ?? [])
-      : categories.flatMap((c) => c.items);
+    let items = [...activeItems];
 
     if (selectedSubcategory) {
       items = items.filter((i) => i.subcategory === selectedSubcategory);
     }
-
     if (selectedTag) {
       items = items.filter((i) => i.tags.includes(selectedTag));
     }
-
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       items = items.filter(
@@ -221,10 +309,11 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
       }
       return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
     });
-  }, [categories, selectedCategory, selectedSubcategory, selectedTag, searchQuery, sortMode]);
+  }, [activeItems, selectedSubcategory, selectedTag, searchQuery, sortMode]);
 
   const canReorder =
     selectedCategory !== null &&
+    selectedShare === null &&
     !searchQuery.trim() &&
     !selectedSubcategory &&
     !selectedTag;
@@ -264,11 +353,34 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
     setDragOverId(null);
   }
 
-  const categoryLabel = selectedCategory
+  const categoryLabel = selectedShare
+    ? `${selectedShare.ownerName?.split(" ")[0] ?? selectedShare.ownerEmail.split("@")[0]}'s ${selectedShare.categoryName}`
+    : selectedCategory
     ? selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)
     : "All";
 
   const hasActiveFilters = subcategories.length > 0 || selectedTag !== null;
+
+  const mySharedCategoryNames = useMemo(
+    () => new Set(myShares.map((s) => s.categoryName)),
+    [myShares]
+  );
+
+  // Share settings for current category (if any)
+  const existingShareForCategory = shareSettingsCategory
+    ? myShares.find((s) => s.categoryName === shareSettingsCategory) ?? null
+    : null;
+
+  function handleShareSaved() {
+    // Refresh my shares
+    fetch("/api/sharing")
+      .then((r) => r.json())
+      .then((data) => {
+        setMyShares(data.myShares ?? []);
+        setSharedCategories(data.sharedWithMe ?? sharedCategories);
+      })
+      .catch(() => {});
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-950">
@@ -309,6 +421,10 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
           selected={selectedCategory}
           onSelect={handleCategoryChange}
           unreadCounts={unreadCounts}
+          sharedCategories={sharedCategories}
+          selectedShareId={selectedShare?.id ?? null}
+          onSelectShare={handleSelectShare}
+          mySharedCategoryNames={mySharedCategoryNames}
         />
       </nav>
 
@@ -334,6 +450,20 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
               {categoryLabel}
             </h2>
 
+            {/* Share settings gear — visible when own category is selected */}
+            {selectedCategory && (
+              <button
+                onClick={() => setShareSettingsCategory(selectedCategory)}
+                className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
+                title="Share settings"
+                aria-label="Share settings"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11A5.5 5.5 0 0 1 8 2.5zM8 5a1 1 0 1 0 0 2A1 1 0 0 0 8 5zm0 3a.75.75 0 0 0-.75.75v3a.75.75 0 0 0 1.5 0v-3A.75.75 0 0 0 8 8z" />
+                </svg>
+              </button>
+            )}
+
             {/* Search bar — desktop inline */}
             <div className="hidden md:block flex-1 max-w-xs">
               <SearchBar value={searchQuery} onChange={setSearchQuery} inputRef={searchRef} />
@@ -343,20 +473,70 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
             <div className="flex items-center gap-1.5 shrink-0 ml-auto md:ml-0">
               {user && (
                 <div className="relative">
-                  <button
-                    onClick={() => setUserMenuOpen((o) => !o)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 overflow-hidden hover:border-zinc-500 transition-colors"
-                    aria-label="User menu"
-                    title={user.email ?? "Account"}
-                  >
-                    {user.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={user.image} alt={user.name ?? "User"} className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-xs font-medium text-zinc-300">
-                        {(user.name ?? user.email ?? "U").charAt(0).toUpperCase()}
+                  {/* Notification badge button */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setNotifPanelOpen((o) => !o);
+                        setUserMenuOpen(false);
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 overflow-hidden hover:border-zinc-500 transition-colors"
+                      aria-label="User menu"
+                      title={user.email ?? "Account"}
+                    >
+                      {user.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={user.image} alt={user.name ?? "User"} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-medium text-zinc-300">
+                          {(user.name ?? user.email ?? "U").charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </button>
+                    {pendingCount > 0 && (
+                      <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none pointer-events-none">
+                        {pendingCount > 9 ? "9+" : pendingCount}
                       </span>
                     )}
+                  </div>
+
+                  {/* Notifications panel */}
+                  {notifPanelOpen && (
+                    <NotificationsPanel
+                      onClose={() => setNotifPanelOpen(false)}
+                      onPendingChange={setPendingCount}
+                      onOpenFriends={() => {
+                        setNotifPanelOpen(false);
+                        setShowFriendsModal(true);
+                      }}
+                    />
+                  )}
+
+                  {/* User dropdown — opens on second click or separately */}
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen((o) => !o);
+                      setNotifPanelOpen(false);
+                    }}
+                    className="sr-only"
+                    aria-label="User menu options"
+                  />
+                </div>
+              )}
+
+              {/* User name dropdown (separate from avatar) */}
+              {user && (
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen((o) => !o);
+                      setNotifPanelOpen(false);
+                    }}
+                    className="hidden sm:flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                    title={user.email ?? "Account"}
+                  >
+                    {user.name?.split(" ")[0] ?? user.email?.split("@")[0] ?? "Account"}
+                    <span className="text-zinc-600">▾</span>
                   </button>
                   {userMenuOpen && (
                     <>
@@ -366,6 +546,25 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
                           {user.name && <p className="text-xs font-medium text-zinc-200 truncate">{user.name}</p>}
                           {user.email && <p className="text-xs text-zinc-500 truncate">{user.email}</p>}
                         </div>
+                        <button
+                          onClick={() => { setUserMenuOpen(false); setShowFriendsModal(true); }}
+                          className="w-full px-3 py-2 text-left text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
+                        >
+                          Friends
+                          {pendingCount > 0 && (
+                            <span className="ml-2 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] text-white font-bold">
+                              {pendingCount}
+                            </span>
+                          )}
+                        </button>
+                        {selectedCategory && (
+                          <button
+                            onClick={() => { setUserMenuOpen(false); setShareSettingsCategory(selectedCategory); }}
+                            className="w-full px-3 py-2 text-left text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
+                          >
+                            Share &quot;{selectedCategory}&quot;…
+                          </button>
+                        )}
                         <button
                           onClick={() => signOut({ callbackUrl: "/login" })}
                           className="w-full px-3 py-2 text-left text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
@@ -377,6 +576,7 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
                   )}
                 </div>
               )}
+
               <ThemeToggle />
               <button
                 onClick={() => setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date")}
@@ -444,7 +644,11 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
 
         {/* Item list */}
         <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6">
-          {displayedItems.length === 0 ? (
+          {loadingSharedItems ? (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-zinc-500 text-sm">Loading…</p>
+            </div>
+          ) : displayedItems.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
               <p className="text-zinc-400">No items found</p>
               {(searchQuery || selectedTag) && (
@@ -477,6 +681,7 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
                       onDragOver={() => handleDragOverItem(item.id)}
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}
+                      currentUserEmail={currentUserEmail}
                     />
                   ))}
                 </div>
@@ -498,6 +703,7 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
                       onDragOver={() => handleDragOverItem(item.id)}
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}
+                      currentUserEmail={currentUserEmail}
                     />
                   ))}
                 </div>
@@ -512,6 +718,8 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
           categories={categories}
           onClose={() => setShowAddModal(false)}
           onSave={handleAdd}
+          shareId={selectedShare?.id}
+          shareCategory={selectedShare?.categoryName}
         />
       )}
 
@@ -521,6 +729,30 @@ export default function KnowledgeBase({ categories: initialCategories, user }: K
           categories={categories}
           onClose={() => setEditingItem(null)}
           onSave={(updated) => { handleEditSave(updated); setEditingItem(null); }}
+        />
+      )}
+
+      {shareSettingsCategory && (
+        <ShareSettingsModal
+          categoryName={shareSettingsCategory}
+          existingShare={
+            existingShareForCategory
+              ? {
+                  id: existingShareForCategory.id,
+                  mode: existingShareForCategory.mode as "whitelist" | "public",
+                  allowedEmails: existingShareForCategory.allowedEmails,
+                }
+              : null
+          }
+          onClose={() => setShareSettingsCategory(null)}
+          onSaved={handleShareSaved}
+        />
+      )}
+
+      {showFriendsModal && (
+        <FriendsModal
+          onClose={() => setShowFriendsModal(false)}
+          onPendingChange={setPendingCount}
         />
       )}
 

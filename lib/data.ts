@@ -1,8 +1,8 @@
-import fs from "fs";
-import path from "path";
+import { prisma } from "./db";
 
 export interface Item {
   id: string;
+  ownerEmail?: string;
   title: string;
   url: string | null;
   summary: string;
@@ -14,6 +14,9 @@ export interface Item {
   source: string;
   read?: boolean;
   color?: "amber" | "blue" | "rose";
+  sortOrder?: number;
+  addedBy?: string;
+  shareId?: string;
 }
 
 export interface CategoryData {
@@ -21,10 +24,44 @@ export interface CategoryData {
   items: Item[];
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
+type PrismaItem = {
+  id: string;
+  ownerEmail: string;
+  title: string;
+  url: string | null;
+  summary: string;
+  category: string;
+  subcategory: string;
+  tags: string[];
+  dateAdded: Date;
+  content: string | null;
+  source: string;
+  read: boolean;
+  color: string | null;
+  sortOrder: number | null;
+  addedBy: string | null;
+  shareId: string | null;
+};
 
-export function getUserDataDir(email: string): string {
-  return path.join(DATA_DIR, "users", email);
+export function prismaToItem(p: PrismaItem): Item {
+  return {
+    id: p.id,
+    ownerEmail: p.ownerEmail,
+    title: p.title,
+    url: p.url,
+    summary: p.summary,
+    category: p.category,
+    subcategory: p.subcategory,
+    tags: p.tags,
+    dateAdded: p.dateAdded.toISOString(),
+    content: p.content ?? undefined,
+    source: p.source,
+    read: p.read,
+    color: (p.color as "amber" | "blue" | "rose") ?? undefined,
+    sortOrder: p.sortOrder ?? undefined,
+    addedBy: p.addedBy ?? undefined,
+    shareId: p.shareId ?? undefined,
+  };
 }
 
 const PLACEHOLDER_CATEGORIES: CategoryData[] = [
@@ -61,38 +98,40 @@ const PLACEHOLDER_CATEGORIES: CategoryData[] = [
   },
 ];
 
-export function getAllCategories(email: string): CategoryData[] {
-  const userDir = getUserDataDir(email);
+export async function getAllCategories(email: string): Promise<CategoryData[]> {
+  if (!email) return PLACEHOLDER_CATEGORIES;
 
-  if (!fs.existsSync(userDir)) {
-    return PLACEHOLDER_CATEGORIES;
-  }
-
-  const files = fs
-    .readdirSync(userDir)
-    .filter((f) => f.endsWith(".json"))
-    .sort();
-
-  if (files.length === 0) {
-    return PLACEHOLDER_CATEGORIES;
-  }
-
-  return files.map((file) => {
-    const name = path.basename(file, ".json");
-    const raw = fs.readFileSync(path.join(userDir, file), "utf-8");
-    const { items } = JSON.parse(raw) as { items: Item[] };
-    return { name, items };
+  const items = await prisma.item.findMany({
+    where: { ownerEmail: email, shareId: null },
+    orderBy: { dateAdded: "desc" },
   });
+
+  if (items.length === 0) return PLACEHOLDER_CATEGORIES;
+
+  const categoryMap = new Map<string, Item[]>();
+  for (const item of items) {
+    const arr = categoryMap.get(item.category) ?? [];
+    arr.push(prismaToItem(item));
+    categoryMap.set(item.category, arr);
+  }
+
+  return Array.from(categoryMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, items]) => ({ name, items }));
 }
 
-export function getAllItems(email: string): Item[] {
-  return getAllCategories(email).flatMap((c) => c.items);
+export async function getAllItems(email: string): Promise<Item[]> {
+  const categories = await getAllCategories(email);
+  return categories.flatMap((c) => c.items);
 }
 
-export function getCategoryItems(email: string, category: string): Item[] {
-  const filePath = path.join(getUserDataDir(email), `${category}.json`);
-  if (!fs.existsSync(filePath)) return [];
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { items } = JSON.parse(raw) as { items: Item[] };
-  return items;
+export async function getCategoryItems(
+  email: string,
+  category: string
+): Promise<Item[]> {
+  const items = await prisma.item.findMany({
+    where: { ownerEmail: email, category, shareId: null },
+    orderBy: { dateAdded: "desc" },
+  });
+  return items.map(prismaToItem);
 }

@@ -7,6 +7,8 @@ interface AddItemModalProps {
   categories: CategoryData[];
   onClose: () => void;
   onSave: (item: Item) => void;
+  shareId?: string;
+  shareCategory?: string;
 }
 
 type Mode = "auto" | "manual";
@@ -40,7 +42,7 @@ const BLANK_FIELDS: FormFields = {
   color: undefined,
 };
 
-export default function AddItemModal({ categories, onClose, onSave }: AddItemModalProps) {
+export default function AddItemModal({ categories, onClose, onSave, shareId, shareCategory }: AddItemModalProps) {
   const [mode, setMode] = useState<Mode | null>(null);
   const [inputTab, setInputTab] = useState<InputTab>("url");
 
@@ -150,14 +152,16 @@ export default function AddItemModal({ categories, onClose, onSave }: AddItemMod
     setSaveError("");
     setSaving(true);
     try {
-      const res = await fetch("/api/items", {
+      const endpoint = shareId ? "/api/items/shared" : "/api/items";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(shareId ? { shareId } : {}),
           title: fields.title.trim(),
           url: fields.url.trim() || null,
           summary: fields.summary.trim(),
-          category: effectiveCategoryName,
+          category: shareCategory ?? effectiveCategoryName,
           subcategory: fields.subcategory.trim(),
           tags: tagChips,
           source: fields.source.trim() || "manual",

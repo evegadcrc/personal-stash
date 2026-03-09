@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  email        String   @id
+  name         String?
+  avatar       String?
+  createdAt    DateTime @default(now())
+
+  items            Item[]       @relation("owner")
+  contributed      Item[]       @relation("contributor")
+  sentRequests     Friendship[] @relation("sender")
+  receivedRequests Friendship[] @relation("receiver")
+  shares           Share[]
+}
+
+model Item {
+  id          String   @id @default(uuid())
+  ownerEmail  String
+  title       String
+  url         String?
+  summary     String
+  category    String
+  subcategory String
+  tags        String[]
+  dateAdded   DateTime @default(now())
+  content     String?
+  source      String
+  read        Boolean  @default(false)
+  color       String?
+  sortOrder   Int?
+
+  // Sharing fields
+  addedBy String? // contributor email; null = category owner
+  shareId String? // if item was added via a share
+
+  owner       User   @relation("owner", fields: [ownerEmail], references: [email])
+  contributor User?  @relation("contributor", fields: [addedBy], references: [email])
+  share       Share? @relation(fields: [shareId], references: [id])
+
+  @@index([ownerEmail, category])
+  @@index([shareId])
+}
+
+model Friendship {
+  id         String    @id @default(uuid())
+  fromEmail  String
+  toEmail    String
+  status     String    @default("pending") // "pending" | "accepted" | "declined"
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  sender   User @relation("sender", fields: [fromEmail], references: [email])
+  receiver User @relation("receiver", fields: [toEmail], references: [email])
+
+  @@unique([fromEmail, toEmail])
+  @@index([toEmail, status])
+}
+
+model Share {
+  id            String   @id @default(uuid())
+  ownerEmail    String
+  categoryName  String
+  mode          String // "whitelist" | "public"
+  allowedEmails String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner User   @relation(fields: [ownerEmail], references: [email])
+  items Item[]
+
+  @@unique([ownerEmail, categoryName])
+  @@index([mode])
+}

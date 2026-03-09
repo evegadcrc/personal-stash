@@ -17,6 +17,7 @@ interface ItemCardProps {
   onDragOver?: () => void;
   onDrop?: () => void;
   onDragEnd?: () => void;
+  currentUserEmail?: string;
 }
 
 function formatDate(iso: string) {
@@ -57,7 +58,10 @@ function GripIcon() {
 export default function ItemCard({
   item, view, onDelete, onToggleRead, onEdit, onTagClick,
   canReorder, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
+  currentUserEmail,
 }: ItemCardProps) {
+  // Can edit/delete only if: no addedBy (personal item) OR addedBy matches current user
+  const canModify = !item.addedBy || item.addedBy === currentUserEmail;
   const [confirming, setConfirming] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
@@ -116,7 +120,7 @@ export default function ItemCard({
     </a>
   ) : null;
 
-  const deleteButton = !confirming ? (
+  const deleteButton = !confirming && canModify ? (
     <button
       onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
       className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
@@ -141,7 +145,7 @@ export default function ItemCard({
     </button>
   ) : null;
 
-  const editButton = !confirming ? (
+  const editButton = !confirming && canModify ? (
     <button
       onClick={(e) => { e.stopPropagation(); onEdit(item); }}
       className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
@@ -275,6 +279,13 @@ export default function ItemCard({
             via {SOURCE_LABELS[item.source] ?? item.source}
           </p>
         )}
+
+        {/* Added by */}
+        {!confirming && item.addedBy && item.addedBy !== currentUserEmail && (
+          <p className="text-xs text-zinc-600">
+            added by {item.addedBy.split("@")[0]}
+          </p>
+        )}
       </article>
     );
   }
@@ -365,6 +376,11 @@ export default function ItemCard({
             {item.source && item.source !== "manual" && (
               <span className="text-xs text-zinc-600">
                 via {SOURCE_LABELS[item.source] ?? item.source}
+              </span>
+            )}
+            {item.addedBy && item.addedBy !== currentUserEmail && (
+              <span className="text-xs text-zinc-600">
+                added by {item.addedBy.split("@")[0]}
               </span>
             )}
           </div>
