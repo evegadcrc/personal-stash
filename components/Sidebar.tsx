@@ -2,6 +2,7 @@
 
 import { CategoryData } from "@/lib/data";
 import { ShareWithOwner } from "@/lib/sharing";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SidebarProps {
   categories: CategoryData[];
@@ -12,6 +13,8 @@ interface SidebarProps {
   selectedShareId: string | null;
   onSelectShare: (share: ShareWithOwner) => void;
   mySharedCategoryNames: Set<string>;
+  emptyCategoryNames: Set<string>;
+  onDeleteCategory: (name: string) => void;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -22,7 +25,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   bookmarks: "🔖",
 };
 
-function capitalize(s: string) {
+function titleCase(s: string) {
   return s.split(/[-\s]+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
@@ -58,7 +61,11 @@ export default function Sidebar({
   selectedShareId,
   onSelectShare,
   mySharedCategoryNames,
+  emptyCategoryNames,
+  onDeleteCategory,
 }: SidebarProps) {
+  const { t } = useLanguage();
+
   const totalCount = categories.reduce((sum, c) => sum + c.items.length, 0);
   const totalUnread = Object.values(unreadCounts).reduce((sum, n) => sum + n, 0);
 
@@ -79,7 +86,7 @@ export default function Sidebar({
       >
         <span className="flex items-center gap-2 min-w-0">
           <span>{icon}</span>
-          <span className="truncate">{capitalize(share.categoryName)}</span>
+          <span className="truncate">{titleCase(share.categoryName)}</span>
         </span>
         <span className="text-xs text-zinc-600 shrink-0">{share.itemCount}</span>
       </button>
@@ -89,7 +96,7 @@ export default function Sidebar({
   return (
     <aside className="w-full flex flex-col gap-1">
       <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 px-3 mb-2">
-        Library
+        {t.library}
       </p>
 
       {/* All */}
@@ -103,7 +110,7 @@ export default function Sidebar({
       >
         <span className="flex items-center gap-2">
           <span>📚</span>
-          <span>All</span>
+          <span>{t.all}</span>
         </span>
         <span className="flex items-center gap-1.5">
           {totalUnread > 0 ? (
@@ -121,22 +128,35 @@ export default function Sidebar({
       {categories.map((cat) => {
         const unread = unreadCounts[cat.name] ?? 0;
         const isShared = mySharedCategoryNames.has(cat.name);
+        const isEmpty = emptyCategoryNames.has(cat.name);
+        const canDelete = isEmpty && !isShared;
+        const deleteHint = !isEmpty
+          ? t.categoryHasItemsHint
+          : isShared
+          ? t.categoryIsSharedHint
+          : t.deleteCategoryTitle;
+
         return (
-          <button
+          <div
             key={cat.name}
-            onClick={() => onSelect(cat.name)}
-            className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+            className={`group flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
               selected === cat.name
                 ? "bg-zinc-800 text-white"
                 : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
             }`}
           >
-            <span className="flex items-center gap-2">
+            {/* Main clickable area */}
+            <button
+              onClick={() => onSelect(cat.name)}
+              className="flex items-center gap-2 flex-1 min-w-0 text-left"
+            >
               <span>{CATEGORY_ICONS[cat.name] ?? "📁"}</span>
-              <span>{capitalize(cat.name)}</span>
+              <span className="truncate">{titleCase(cat.name)}</span>
               {isShared && <ShareIcon />}
-            </span>
-            <span className="flex items-center gap-1.5">
+            </button>
+
+            {/* Right side: count/badge + delete X */}
+            <div className="flex items-center gap-1 shrink-0">
               {unread > 0 ? (
                 <>
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
@@ -145,8 +165,25 @@ export default function Sidebar({
               ) : (
                 <span className="text-xs text-zinc-600">{cat.items.length}</span>
               )}
-            </span>
-          </button>
+              {/* X button — fades in on row hover */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (canDelete) onDeleteCategory(cat.name);
+                }}
+                disabled={!canDelete}
+                title={deleteHint}
+                className={`opacity-0 group-hover:opacity-100 ml-1 flex h-4 w-4 items-center justify-center rounded text-[10px] transition-all ${
+                  canDelete
+                    ? "text-zinc-500 hover:text-white hover:bg-zinc-700 cursor-pointer"
+                    : "text-zinc-700 cursor-not-allowed"
+                }`}
+                aria-label={deleteHint}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
         );
       })}
 
@@ -155,7 +192,7 @@ export default function Sidebar({
         <>
           <div className="mt-3 mb-1 border-t border-zinc-800 pt-3">
             <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 px-3">
-              Shared with me
+              {t.sharedWithMe}
             </p>
           </div>
           {whitelistShares.map(shareButton)}
@@ -167,7 +204,7 @@ export default function Sidebar({
         <>
           <div className="mt-3 mb-1 border-t border-zinc-800 pt-3">
             <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 px-3">
-              Public
+              {t.publicSection}
             </p>
           </div>
           {publicShares.map(shareButton)}

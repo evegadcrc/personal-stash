@@ -1,7 +1,17 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { CategoryData, Item } from "@/lib/data";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+interface AvailableShare {
+  id: string;
+  categoryName: string;
+  ownerName: string | null;
+  ownerEmail: string;
+  ownerAvatar: string | null;
+  isOwn?: boolean;
+}
 
 interface AddItemModalProps {
   categories: CategoryData[];
@@ -9,6 +19,7 @@ interface AddItemModalProps {
   onSave: (item: Item) => void;
   shareId?: string;
   shareCategory?: string;
+  availableShares?: AvailableShare[];
 }
 
 type Mode = "auto" | "manual";
@@ -42,7 +53,16 @@ const BLANK_FIELDS: FormFields = {
   color: undefined,
 };
 
-export default function AddItemModal({ categories, onClose, onSave, shareId, shareCategory }: AddItemModalProps) {
+export default function AddItemModal({ categories, onClose, onSave, shareId, shareCategory, availableShares }: AddItemModalProps) {
+  const { t } = useLanguage();
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const [mode, setMode] = useState<Mode | null>(null);
   const [inputTab, setInputTab] = useState<InputTab>("url");
 
@@ -64,9 +84,12 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
   // Derived values
   const existingCategoryNames = categories.map((c) => c.name);
+  const isShareCategory = !shareId && fields.category.startsWith("share:");
   const effectiveCategoryName =
     fields.category === "__new__"
       ? fields.newCategory.trim().toLowerCase().replace(/\s+/g, "-")
+      : isShareCategory
+      ? fields.category.split(":")[2]
       : fields.category;
   const selectedCatData = categories.find((c) => c.name === effectiveCategoryName);
   const subcategorySuggestions = selectedCatData
@@ -151,17 +174,23 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   async function handleSave() {
     setSaveError("");
     setSaving(true);
+    // Detect if user picked a shared category from the dropdown
+    const contribShareId = isShareCategory ? fields.category.split(":")[1] : null;
+    const activeShareId = shareId ?? contribShareId;
+    const activeShareCategory = shareCategory ?? (isShareCategory ? effectiveCategoryName : undefined);
     try {
-      const endpoint = shareId ? "/api/items/shared" : "/api/items";
+      const endpoint = activeShareId ? "/api/items/shared" : "/api/items";
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...(shareId ? { shareId } : {}),
+          ...(activeShareId ? { shareId: activeShareId } : {}),
+          // Hide from personal library when contributing via dropdown
+          ...(contribShareId ? { sharedOnly: true } : {}),
           title: fields.title.trim(),
           url: fields.url.trim() || null,
           summary: fields.summary.trim(),
-          category: shareCategory ?? effectiveCategoryName,
+          category: activeShareCategory ?? effectiveCategoryName,
           subcategory: fields.subcategory.trim(),
           tags: tagChips,
           source: fields.source.trim() || "manual",
@@ -195,10 +224,10 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
     "rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-100 outline-none focus:border-zinc-500 transition-colors w-full";
 
   const modalTitle =
-    mode === null ? "Add item"
-    : mode === "auto" && !showForm ? "Auto — AI analysis"
-    : mode === "auto" && showForm ? "Review & save"
-    : "Manual entry";
+    mode === null ? (shareCategory ? `${t.addToCategory} ${shareCategory}` : t.addItemTitle)
+    : mode === "auto" && !showForm ? t.autoAI
+    : mode === "auto" && showForm ? t.reviewAndSave
+    : t.manualEntry;
 
   const canAnalyze =
     (inputTab === "url" && urlInput.trim() !== "") ||
@@ -247,10 +276,8 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
             >
               <span className="shrink-0 mt-0.5 text-lg text-zinc-400 group-hover:text-zinc-200 transition-colors">✦</span>
               <div>
-                <p className="text-sm font-medium text-zinc-100">Auto — AI analysis</p>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Paste a URL, raw text, or drop an image. Claude will infer title, summary, category, and tags.
-                </p>
+                <p className="text-sm font-medium text-zinc-100">{t.autoAI}</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{t.autoAIDesc}</p>
               </div>
             </button>
             <button
@@ -259,10 +286,8 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
             >
               <span className="shrink-0 mt-0.5 text-lg text-zinc-400 group-hover:text-zinc-200 transition-colors">✎</span>
               <div>
-                <p className="text-sm font-medium text-zinc-100">Manual entry</p>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Fill in all fields yourself. Pick an existing category or create a new one.
-                </p>
+                <p className="text-sm font-medium text-zinc-100">{t.manualEntry}</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{t.manualEntryDesc}</p>
               </div>
             </button>
           </div>
@@ -326,7 +351,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                   <p className="text-sm text-zinc-300">{imageName}</p>
                 ) : (
                   <>
-                    <p className="text-sm text-zinc-400">Drop image here or click to upload</p>
+                    <p className="text-sm text-zinc-400">{t.dropImageHere}</p>
                     <p className="text-xs text-zinc-600">PNG, JPG, GIF, WEBP</p>
                   </>
                 )}
@@ -350,7 +375,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
               disabled={analyzing || !canAnalyze}
               className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {analyzing ? "Analyzing…" : "Analyze →"}
+              {analyzing ? t.analyzing : t.analyze}
             </button>
           </>
         )}
@@ -362,7 +387,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Title */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">Title <span className="text-zinc-600">*</span></label>
+                <label className="text-xs text-zinc-400">{t.titleLabel} <span className="text-zinc-600">*</span></label>
                 <input
                   className={inputCls}
                   value={fields.title}
@@ -373,7 +398,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* URL */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">URL</label>
+                <label className="text-xs text-zinc-400">{t.urlLabel}</label>
                 <input
                   className={inputCls}
                   placeholder="https://…"
@@ -384,7 +409,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Summary */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">Summary</label>
+                <label className="text-xs text-zinc-400">{t.summaryLabel}</label>
                 <textarea
                   className={`${inputCls} resize-none`}
                   rows={3}
@@ -395,20 +420,46 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Category */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">Category <span className="text-zinc-600">*</span></label>
-                <select
-                  className={inputCls}
-                  value={fields.category}
-                  onChange={(e) =>
-                    setFields((f) => ({ ...f, category: e.target.value, subcategory: "" }))
-                  }
-                >
-                  {existingCategoryNames.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                  <option value="__new__">+ New category…</option>
-                </select>
-                {fields.category === "__new__" && (
+                <label className="text-xs text-zinc-400">{t.categoryLabel} <span className="text-zinc-600">*</span></label>
+                {shareCategory ? (
+                  <div className={`${inputCls} text-zinc-500 cursor-not-allowed`}>
+                    {shareCategory}
+                    <span className="ml-2 text-xs text-zinc-600">(shared category)</span>
+                  </div>
+                ) : (
+                  <select
+                    className={inputCls}
+                    value={fields.category}
+                    onChange={(e) =>
+                      setFields((f) => ({ ...f, category: e.target.value, subcategory: "" }))
+                    }
+                  >
+                    <optgroup label={t.myLibrary}>
+                      {existingCategoryNames.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                      <option value="__new__">+ New category…</option>
+                    </optgroup>
+                    {availableShares && availableShares.length > 0 && (
+                      <optgroup label={t.sharedCategoriesGroup}>
+                        {availableShares.map((s) => {
+                          const label = s.isOwn
+                            ? `My ${s.categoryName} (shared)`
+                            : `${s.ownerName?.split(" ")[0] ?? s.ownerEmail.split("@")[0]}'s ${s.categoryName}`;
+                          return (
+                            <option key={s.id} value={`share:${s.id}:${s.categoryName}`}>
+                              {label}
+                            </option>
+                          );
+                        })}
+                      </optgroup>
+                    )}
+                  </select>
+                )}
+                {isShareCategory && (
+                  <p className="text-xs text-zinc-500 mt-0.5">{t.sharedCategoryHint}</p>
+                )}
+                {!shareCategory && fields.category === "__new__" && (
                   <input
                     className={`${inputCls} mt-1`}
                     placeholder="new-category-name (lowercase)"
@@ -430,10 +481,10 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
               {/* Subcategory */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-zinc-400">
-                  Subcategory
+                  {t.subcategoryLabel}
                   {subcategorySuggestions.length > 0 && (
                     <span className="ml-1 text-zinc-600">
-                      — existing: {subcategorySuggestions.slice(0, 4).join(", ")}
+                      — {t.existingSubcategories} {subcategorySuggestions.slice(0, 4).join(", ")}
                       {subcategorySuggestions.length > 4 ? "…" : ""}
                     </span>
                   )}
@@ -456,7 +507,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Tags */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">Tags</label>
+                <label className="text-xs text-zinc-400">{t.tagsLabel}</label>
                 <input
                   className={inputCls}
                   placeholder="react, typescript, open-source"
@@ -493,7 +544,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Source */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">Source</label>
+                <label className="text-xs text-zinc-400">{t.sourceLabel}</label>
                 <input
                   className={inputCls}
                   placeholder="manual, web, youtube, book…"
@@ -504,7 +555,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Color */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs text-zinc-400">Color <span className="text-zinc-600">(priority flag)</span></label>
+                <label className="text-xs text-zinc-400">{t.colorLabel} <span className="text-zinc-600">(priority flag)</span></label>
                 <div className="flex gap-3">
                   {([
                     { value: undefined,              dot: "bg-zinc-600",   title: "None" },
@@ -529,7 +580,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Notes / Content */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">Notes <span className="text-zinc-600">(optional)</span></label>
+                <label className="text-xs text-zinc-400">{t.notesLabel} <span className="text-zinc-600">(optional)</span></label>
                 <textarea
                   className={`${inputCls} resize-none`}
                   rows={2}
@@ -548,7 +599,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
               disabled={saving || !canSave}
               className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {saving ? "Saving…" : "Save"}
+              {saving ? t.saving : t.save}
             </button>
           </>
         )}

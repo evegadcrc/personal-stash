@@ -16,6 +16,7 @@ import ShareSettingsModal from "./ShareSettingsModal";
 import FriendsModal from "./FriendsModal";
 import NotificationsPanel from "./NotificationsPanel";
 import AddToShareModal from "./AddToShareModal";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 
 type ViewMode = "grid" | "list";
 type SortMode = "date" | "name" | "color";
@@ -68,13 +69,22 @@ function MenuIcon() {
   );
 }
 
-export default function KnowledgeBase({
+export default function KnowledgeBase(props: KnowledgeBaseProps) {
+  return (
+    <LanguageProvider>
+      <KnowledgeBaseContent {...props} />
+    </LanguageProvider>
+  );
+}
+
+function KnowledgeBaseContent({
   categories: initialCategories,
   user,
   sharedCategories: initialSharedCategories,
   pendingCount: initialPendingCount,
   currentUserEmail,
 }: KnowledgeBaseProps) {
+  const { lang, setLang, t } = useLanguage();
   const [categories, setCategories] = useState<CategoryData[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedShare, setSelectedShare] = useState<ShareWithOwner | null>(null);
@@ -102,6 +112,7 @@ export default function KnowledgeBase({
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [shareSettingsCategory, setShareSettingsCategory] = useState<string | null>(null);
   const [addToShareItem, setAddToShareItem] = useState<Item | null>(null);
+  const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<string | null>(null);
   const [customOrder, setCustomOrder] = useState<Record<string, string[]>>({});
   const [dragSrcId, setDragSrcId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
@@ -219,7 +230,7 @@ export default function KnowledgeBase({
           prev.map((cat) => ({ ...cat, items: cat.items.filter((item) => item.id !== id) }))
         );
       }
-      showToast("Item removed");
+      showToast(t.itemRemoved);
     }
   }
 
@@ -241,7 +252,7 @@ export default function KnowledgeBase({
           [selectedCategory]: (prev[selectedCategory] ?? []).filter((i) => i.membershipId !== membershipId),
         }));
       }
-      showToast("Removed from shared category");
+      showToast(t.removedFromShared);
     }
   }
 
@@ -269,7 +280,7 @@ export default function KnowledgeBase({
           }))
         );
       }
-      showToast(read ? "Marked as read ✓" : "Marked as unread");
+      showToast(read ? t.markedAsRead : t.markedAsUnread);
     }
   }
 
@@ -297,7 +308,7 @@ export default function KnowledgeBase({
         return [...prev, { name: item.category, items: [item] }];
       });
     }
-    showToast("Item saved ✓");
+    showToast(t.itemSaved);
   }
 
   function handleEditSave(updated: Item) {
@@ -320,7 +331,7 @@ export default function KnowledgeBase({
         return [...removed, { name: updated.category, items: [updated] }];
       });
     }
-    showToast("Changes saved ✓");
+    showToast(t.changesSaved);
   }
 
   function handleCategoryChange(cat: string | null) {
@@ -454,6 +465,16 @@ export default function KnowledgeBase({
     [myShares]
   );
 
+  const emptyCategoryNames = useMemo(() => {
+    const set = new Set<string>();
+    for (const cat of categories) {
+      if (cat.items.length === 0 && (categoryMembershipItemsMap[cat.name] ?? []).length === 0) {
+        set.add(cat.name);
+      }
+    }
+    return set;
+  }, [categories, categoryMembershipItemsMap]);
+
   // The share record for the currently selected personal category (if it's a shared category)
   const currentCategoryShare = selectedCategory
     ? myShares.find((s) => s.categoryName === selectedCategory) ?? null
@@ -531,6 +552,8 @@ export default function KnowledgeBase({
           selectedShareId={selectedShare?.id ?? null}
           onSelectShare={handleSelectShare}
           mySharedCategoryNames={mySharedCategoryNames}
+          emptyCategoryNames={emptyCategoryNames}
+          onDeleteCategory={setConfirmDeleteCategory}
         />
       </nav>
 
@@ -547,7 +570,7 @@ export default function KnowledgeBase({
             <button
               className="md:hidden flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
               onClick={() => setSidebarOpen(true)}
-              aria-label="Open menu"
+              aria-label={t.openMenu}
             >
               <MenuIcon />
             </button>
@@ -561,8 +584,8 @@ export default function KnowledgeBase({
               <button
                 onClick={() => setShareSettingsCategory(selectedCategory)}
                 className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
-                title={`Share "${selectedCategory}"`}
-                aria-label="Share category"
+                title={`${t.share} "${selectedCategory}"`}
+                aria-label={t.share}
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="9" cy="2" r="1.5" />
@@ -571,7 +594,7 @@ export default function KnowledgeBase({
                   <line x1="3.5" y1="6" x2="7.5" y2="2.5" />
                   <line x1="3.5" y1="6" x2="7.5" y2="9.5" />
                 </svg>
-                Share
+                {t.share}
               </button>
             )}
 
@@ -661,7 +684,7 @@ export default function KnowledgeBase({
                           onClick={() => { setUserMenuOpen(false); setShowFriendsModal(true); }}
                           className="w-full px-3 py-2 text-left text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
                         >
-                          Friends
+                          {t.friends}
                           {pendingCount > 0 && (
                             <span className="ml-2 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] text-white font-bold">
                               {pendingCount}
@@ -673,14 +696,14 @@ export default function KnowledgeBase({
                             onClick={() => { setUserMenuOpen(false); setShareSettingsCategory(selectedCategory); }}
                             className="w-full px-3 py-2 text-left text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
                           >
-                            Share &quot;{selectedCategory}&quot;…
+                            {t.share} &quot;{selectedCategory}&quot;…
                           </button>
                         )}
                         <button
                           onClick={() => signOut({ callbackUrl: "/login" })}
                           className="w-full px-3 py-2 text-left text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
                         >
-                          Sign out
+                          {t.signOut}
                         </button>
                       </div>
                     </>
@@ -689,18 +712,31 @@ export default function KnowledgeBase({
               )}
 
               <ThemeToggle />
+              {/* Language toggle */}
+              <div className="hidden sm:flex items-center rounded-lg border border-zinc-700 p-0.5">
+                <button
+                  onClick={() => setLang("en")}
+                  className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${lang === "en" ? "bg-zinc-700 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
+                  title="English"
+                >EN</button>
+                <button
+                  onClick={() => setLang("es")}
+                  className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${lang === "es" ? "bg-zinc-700 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
+                  title="Español"
+                >ES</button>
+              </div>
               <button
                 onClick={() => setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date")}
                 className="hidden sm:flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
                 title={`Sorted by ${sortMode} — click to toggle`}
               >
-                {sortMode === "date" ? "↓ Date" : sortMode === "name" ? "↑ Name" : "◉ Color"}
+                {sortMode === "date" ? t.sortDate : sortMode === "name" ? t.sortName : t.sortColor}
               </button>
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors text-lg leading-none"
-                aria-label="Add item"
-                title="Add item"
+                aria-label={t.addItem}
+                title={t.addItem}
               >
                 +
               </button>
@@ -708,16 +744,16 @@ export default function KnowledgeBase({
                 <button
                   onClick={() => handleSetViewMode("grid")}
                   className={`rounded-md p-1.5 transition-colors ${viewMode === "grid" ? "bg-zinc-700" : "hover:bg-zinc-800"}`}
-                  aria-label="Grid view"
-                  title="Grid view"
+                  aria-label={t.gridView}
+                  title={t.gridView}
                 >
                   <GridIcon active={viewMode === "grid"} />
                 </button>
                 <button
                   onClick={() => handleSetViewMode("list")}
                   className={`rounded-md p-1.5 transition-colors ${viewMode === "list" ? "bg-zinc-700" : "hover:bg-zinc-800"}`}
-                  aria-label="List view"
-                  title="List view"
+                  aria-label={t.listView}
+                  title={t.listView}
                 >
                   <ListIcon active={viewMode === "list"} />
                 </button>
@@ -748,7 +784,7 @@ export default function KnowledgeBase({
             const overflow = contributors.length - MAX_SHOWN;
             return (
               <div className="mt-3 flex items-center gap-2">
-                <span className="text-xs text-zinc-600">Contributors</span>
+                <span className="text-xs text-zinc-600">{t.contributors}</span>
                 <div className="flex items-center">
                   {shown.map((c, i) => {
                     const label = c.name ?? c.email;
@@ -770,7 +806,7 @@ export default function KnowledgeBase({
                         <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-800 border border-zinc-700 px-2 py-1 text-xs text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" style={{ zIndex: 50 }}>
                           {label}
                           {c.email === ownerEmail && (
-                            <span className="ml-1 text-zinc-500">· owner</span>
+                            <span className="ml-1 text-zinc-500">· {t.owner}</span>
                           )}
                         </div>
                       </div>
@@ -816,34 +852,34 @@ export default function KnowledgeBase({
         <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6">
           {loadingSharedItems ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-zinc-500 text-sm">Loading…</p>
+              <p className="text-zinc-500 text-sm">{t.loading}</p>
             </div>
           ) : displayedItems.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
               {searchQuery || selectedTag || selectedSubcategory ? (
                 <>
-                  <p className="text-zinc-400">No items found</p>
-                  <p className="text-sm text-zinc-600">Try a different search term</p>
+                  <p className="text-zinc-400">{t.noItemsFound}</p>
+                  <p className="text-sm text-zinc-600">{t.tryDifferentSearch}</p>
                 </>
               ) : selectedShare ? (
                 <>
                   <p className="text-2xl">📭</p>
-                  <p className="text-zinc-400">Nothing here yet</p>
-                  <p className="text-sm text-zinc-600">Be the first to add something to this shared category</p>
+                  <p className="text-zinc-400">{t.nothingHereYet}</p>
+                  <p className="text-sm text-zinc-600">{t.beFirstToAdd}</p>
                 </>
               ) : (
                 <>
-                  <p className="text-zinc-400">No items found</p>
-                  <p className="text-sm text-zinc-600">Add your first item with the + button</p>
+                  <p className="text-zinc-400">{t.noItemsFound}</p>
+                  <p className="text-sm text-zinc-600">{t.addFirstItem}</p>
                 </>
               )}
             </div>
           ) : (
             <>
               <p className="mb-4 text-xs text-zinc-600">
-                {displayedItems.length} {displayedItems.length === 1 ? "item" : "items"}
+                {displayedItems.length} {displayedItems.length === 1 ? t.item : t.items}
                 {selectedTag && (
-                  <span> tagged <span className="text-zinc-400">#{selectedTag}</span></span>
+                  <span> {t.tagged} <span className="text-zinc-400">#{selectedTag}</span></span>
                 )}
               </p>
               {viewMode === "grid" ? (
@@ -962,8 +998,38 @@ export default function KnowledgeBase({
           item={addToShareItem}
           availableShares={sharedCategories}
           onClose={() => setAddToShareItem(null)}
-          onAdded={() => showToast("Added to shared category ✓")}
+          onAdded={() => showToast(t.addedToShared)}
         />
+      )}
+
+      {/* Category delete confirmation */}
+      {confirmDeleteCategory && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-zinc-900 border border-zinc-700 p-6 shadow-2xl">
+            <h2 className="text-base font-semibold text-zinc-100">{t.deleteCategoryTitle}</h2>
+            <p className="text-sm text-zinc-400">{t.deleteCategoryNote}</p>
+            <p className="text-xs font-medium text-zinc-300">&quot;{titleCase(confirmDeleteCategory)}&quot;</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmDeleteCategory(null)}
+                className="flex-1 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 transition-colors"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedCategory === confirmDeleteCategory) handleCategoryChange(null);
+                  setCategories((prev) => prev.filter((c) => c.name !== confirmDeleteCategory));
+                  setConfirmDeleteCategory(null);
+                  showToast(t.categoryRemoved);
+                }}
+                className="flex-1 rounded-lg bg-red-900 px-4 py-2 text-sm font-semibold text-red-100 hover:bg-red-800 transition-colors"
+              >
+                {t.delete}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {toast && <Toast key={toast.id} message={toast.msg} onDone={() => setToast(null)} />}

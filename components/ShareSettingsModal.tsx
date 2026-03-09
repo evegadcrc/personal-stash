@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Friend {
   email: string;
@@ -28,6 +29,7 @@ export default function ShareSettingsModal({
   onSaved,
   onDeleted,
 }: ShareSettingsModalProps) {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<ShareMode>(existingShare?.mode ?? "none");
   const [allowedEmails, setAllowedEmails] = useState<string[]>(
     existingShare?.allowedEmails ?? []
@@ -106,7 +108,7 @@ export default function ShareSettingsModal({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-zinc-100">
-              Share settings
+              {t.shareSettings}
             </h2>
             <p className="text-xs text-zinc-500 mt-0.5">
               {categoryName}
@@ -124,9 +126,9 @@ export default function ShareSettingsModal({
         <div className="flex flex-col gap-2">
           {(
             [
-              { value: "none", label: "Not shared", desc: "Only you can see this category" },
-              { value: "whitelist", label: "Friends only", desc: "Specific friends can view and contribute" },
-              { value: "public", label: "Public", desc: "Any logged-in user can view and contribute" },
+              { value: "none", label: t.notShared, desc: t.onlyYouCanSee },
+              { value: "whitelist", label: t.friendsOnly, desc: t.specificFriendsCanView },
+              { value: "public", label: t.publicMode, desc: t.anyUserCanView },
             ] as { value: ShareMode; label: string; desc: string }[]
           ).map(({ value, label, desc }) => (
             <button
@@ -161,11 +163,11 @@ export default function ShareSettingsModal({
         {mode === "whitelist" && (
           <div className="flex flex-col gap-2">
             <p className="text-xs text-zinc-400">
-              Select friends who can access this category:
+              {t.selectFriendsAccess}
             </p>
             {friends.length === 0 ? (
               <p className="text-xs text-zinc-600 italic">
-                No friends yet — add friends from the user menu first.
+                {t.noFriendsYetAddFirst}
               </p>
             ) : (
               <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
@@ -200,14 +202,14 @@ export default function ShareSettingsModal({
             onClick={onClose}
             className="flex-1 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
           >
-            Cancel
+            {t.cancel}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className="flex-1 rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-white disabled:opacity-40 transition-colors"
           >
-            {saving ? "Saving…" : "Save"}
+            {saving ? t.saving : t.save}
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FriendData {
   email: string;
@@ -21,6 +22,7 @@ export default function NotificationsPanel({
   onPendingChange,
   onOpenFriends,
 }: NotificationsPanelProps) {
+  const { t } = useLanguage();
   const [requests, setRequests] = useState<FriendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState<string | null>(null);
@@ -62,20 +64,20 @@ export default function NotificationsPanel({
       <div className="fixed inset-0 z-10" onClick={onClose} />
       <div className="absolute right-0 top-10 z-20 w-72 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden">
         <div className="border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-zinc-200">Notifications</p>
+          <p className="text-sm font-semibold text-zinc-200">{t.notifications}</p>
           <button
             onClick={onOpenFriends}
             className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
           >
-            Manage friends →
+            {t.manageFriends}
           </button>
         </div>
 
         <div className="max-h-80 overflow-y-auto py-2">
           {loading ? (
-            <p className="px-4 py-3 text-xs text-zinc-500">Loading…</p>
+            <p className="px-4 py-3 text-xs text-zinc-500">{t.loading}</p>
           ) : requests.length === 0 ? (
-            <p className="px-4 py-3 text-xs text-zinc-600">No pending notifications</p>
+            <p className="px-4 py-3 text-xs text-zinc-600">{t.noPendingNotifications}</p>
           ) : (
             requests.map((r) => (
               <div key={r.friendshipId} className="px-4 py-2.5 hover:bg-zinc-800/40 transition-colors">
@@ -83,7 +85,7 @@ export default function NotificationsPanel({
                   <div className="min-w-0">
                     <p className="text-xs text-zinc-300">
                       <span className="font-medium">{r.name ?? r.email}</span>{" "}
-                      wants to be friends
+                      {t.wantsToBeeFriends}
                     </p>
                     {r.name && (
                       <p className="text-xs text-zinc-600 truncate">{r.email}</p>
@@ -95,14 +97,14 @@ export default function NotificationsPanel({
                       disabled={responding === r.friendshipId}
                       className="rounded-md bg-emerald-900/60 px-2 py-0.5 text-xs text-emerald-300 hover:bg-emerald-800 disabled:opacity-50 transition-colors"
                     >
-                      {responding === r.friendshipId ? "…" : "Accept"}
+                      {responding === r.friendshipId ? "…" : t.accept}
                     </button>
                     <button
                       onClick={() => handleRespond(r.friendshipId, "decline")}
                       disabled={responding === r.friendshipId}
                       className="rounded-md bg-zinc-700 px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-600 disabled:opacity-50 transition-colors"
                     >
-                      {responding === r.friendshipId ? "…" : "Decline"}
+                      {responding === r.friendshipId ? "…" : t.decline}
                     </button>
                   </div>
                 </div>

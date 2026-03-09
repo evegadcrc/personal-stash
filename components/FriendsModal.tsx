@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface FriendData {
   email: string;
@@ -17,6 +18,7 @@ interface FriendsModalProps {
 }
 
 export default function FriendsModal({ onClose, onPendingChange }: FriendsModalProps) {
+  const { t } = useLanguage();
   const [friends, setFriends] = useState<FriendData[]>([]);
   const [emailInput, setEmailInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -58,7 +60,7 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
         const d = await res.json() as { error?: string };
         throw new Error(d.error ?? "Failed to send request");
       }
-      setSuccessMsg(`Friend request sent to ${emailInput.trim()}`);
+      setSuccessMsg(`${t.addFriendByEmail}: ${emailInput.trim()}`);
       setEmailInput("");
       await loadFriends();
     } catch (e) {
@@ -112,7 +114,7 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
     >
       <div className="flex w-full max-w-md flex-col gap-5 rounded-2xl bg-zinc-900 border border-zinc-700 p-6 shadow-2xl max-h-[80vh] overflow-hidden">
         <div className="flex items-center justify-between shrink-0">
-          <h2 className="text-base font-semibold text-zinc-100">Friends</h2>
+          <h2 className="text-base font-semibold text-zinc-100">{t.friendsTitle}</h2>
           <button
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
@@ -123,7 +125,7 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
 
         {/* Add friend */}
         <div className="shrink-0 flex flex-col gap-2">
-          <p className="text-xs text-zinc-400">Add friend by email</p>
+          <p className="text-xs text-zinc-400">{t.addFriendByEmail}</p>
           <div className="flex gap-2">
             <input
               className={inputCls}
@@ -138,7 +140,7 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
               disabled={sending || !emailInput.trim()}
               className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-white disabled:opacity-40 transition-colors shrink-0"
             >
-              {sending ? "…" : "Send"}
+              {sending ? "…" : t.send}
             </button>
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
@@ -154,7 +156,7 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
               {pendingReceived.length > 0 && (
                 <section className="flex flex-col gap-2">
                   <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                    Requests ({pendingReceived.length})
+                    {t.requests} ({pendingReceived.length})
                   </p>
                   {pendingReceived.map((f) => (
                     <div
@@ -173,14 +175,14 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
                           disabled={responding === f.friendshipId}
                           className="rounded-md bg-emerald-900/60 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-800 disabled:opacity-50 transition-colors"
                         >
-                          {responding === f.friendshipId ? "…" : "Accept"}
+                          {responding === f.friendshipId ? "…" : t.accept}
                         </button>
                         <button
                           onClick={() => handleRespond(f.friendshipId, "decline")}
                           disabled={responding === f.friendshipId}
                           className="rounded-md bg-zinc-700 px-2.5 py-1 text-xs text-zinc-400 hover:bg-zinc-600 disabled:opacity-50 transition-colors"
                         >
-                          {responding === f.friendshipId ? "…" : "Decline"}
+                          {responding === f.friendshipId ? "…" : t.decline}
                         </button>
                       </div>
                     </div>
@@ -191,10 +193,10 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
               {/* Accepted friends */}
               <section className="flex flex-col gap-2">
                 <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                  Friends ({accepted.length})
+                  {t.friendsTitle} ({accepted.length})
                 </p>
                 {accepted.length === 0 ? (
-                  <p className="text-xs text-zinc-600 italic">No friends yet</p>
+                  <p className="text-xs text-zinc-600 italic">{t.noFriendsYet}</p>
                 ) : (
                   accepted.map((f) => (
                     <div
@@ -226,7 +228,7 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
                         disabled={removing === f.friendshipId}
                         className="shrink-0 text-xs text-zinc-600 hover:text-zinc-400 disabled:opacity-50 transition-colors"
                       >
-                        {removing === f.friendshipId ? "…" : "Remove"}
+                        {removing === f.friendshipId ? "…" : t.remove}
                       </button>
                     </div>
                   ))
@@ -237,7 +239,7 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
               {pendingSent.length > 0 && (
                 <section className="flex flex-col gap-2">
                   <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-                    Sent requests ({pendingSent.length})
+                    {t.sentRequests} ({pendingSent.length})
                   </p>
                   {pendingSent.map((f) => (
                     <div
@@ -248,13 +250,13 @@ export default function FriendsModal({ onClose, onPendingChange }: FriendsModalP
                         <p className="text-xs text-zinc-400 truncate">{f.email}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs text-zinc-600">Pending</span>
+                        <span className="text-xs text-zinc-600">{t.pending}</span>
                         <button
                           onClick={() => handleRemove(f.friendshipId)}
                           disabled={removing === f.friendshipId}
                           className="text-xs text-zinc-600 hover:text-zinc-400 disabled:opacity-50 transition-colors"
                         >
-                          {removing === f.friendshipId ? "…" : "Cancel"}
+                          {removing === f.friendshipId ? "…" : t.cancel}
                         </button>
                       </div>
                     </div>
