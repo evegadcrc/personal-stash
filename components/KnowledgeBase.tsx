@@ -498,6 +498,36 @@ function KnowledgeBaseContent({
     ? myShares.find((s) => s.categoryName === shareSettingsCategory) ?? null
     : null;
 
+  async function handleRenameCategory(oldName: string, newName: string): Promise<boolean> {
+    const res = await fetch(`/api/categories/${encodeURIComponent(oldName)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newName }),
+    });
+    if (!res.ok) {
+      const d = await res.json() as { error?: string };
+      showToast(d.error ?? "Rename failed");
+      return false;
+    }
+    const data = await res.json() as { newName: string };
+    const finalName = data.newName;
+    setCategories((prev) =>
+      prev.map((c) => c.name === oldName ? { ...c, name: finalName } : c)
+    );
+    if (selectedCategory === oldName) setSelectedCategory(finalName);
+    setMyShares((prev) =>
+      prev.map((s) => s.categoryName === oldName ? { ...s, categoryName: finalName } : s)
+    );
+    setCategoryMembershipItemsMap((prev) => {
+      if (!(oldName in prev)) return prev;
+      const updated = { ...prev };
+      updated[finalName] = updated[oldName];
+      delete updated[oldName];
+      return updated;
+    });
+    return true;
+  }
+
   function handleShareSaved() {
     // Refresh my shares
     fetch("/api/sharing")
@@ -554,6 +584,7 @@ function KnowledgeBaseContent({
           mySharedCategoryNames={mySharedCategoryNames}
           emptyCategoryNames={emptyCategoryNames}
           onDeleteCategory={setConfirmDeleteCategory}
+          onRenameCategory={handleRenameCategory}
         />
       </nav>
 
