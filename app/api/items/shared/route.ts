@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { prismaToItem } from "@/lib/data";
+import { hasShareAccess } from "@/lib/sharing";
 import { auth } from "@/auth";
 
+// POST — create a brand-new item and add it to a shared category
 export async function POST(request: Request) {
   const session = await auth();
   const email = session?.user?.email;
@@ -19,32 +21,23 @@ export async function POST(request: Request) {
     source?: string;
     content?: string;
     color?: string | null;
+    sharedOnly?: boolean;
   };
 
-  if (!body.shareId) {
-    return NextResponse.json({ error: "shareId is required" }, { status: 400 });
-  }
-
-  // Verify share exists and user has access
-  const share = await prisma.share.findUnique({ where: { id: body.shareId } });
+  const { hasAccess, share } = await hasShareAccess(body.shareId, email);
   if (!share) return NextResponse.json({ error: "Share not found" }, { status: 404 });
-
-  const hasAccess =
-    share.mode === "public" || share.allowedEmails.includes(email);
   if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Ensure contributor user exists
   await prisma.user.upsert({
     where: { email },
     update: {},
     create: { email },
   });
 
+  // Create item — optionally hidden from contributor's personal library
   const item = await prisma.item.create({
     data: {
       ownerEmail: email,
-      addedBy: email,
-      shareId: body.shareId,
       title: body.title,
       url: body.url ?? null,
       summary: body.summary,
@@ -54,8 +47,17 @@ export async function POST(request: Request) {
       source: body.source ?? "manual",
       content: body.content ?? null,
       color: body.color ?? null,
+      sharedOnly: body.sharedOnly ?? false,
     },
   });
 
-  return NextResponse.json({ success: true, item: prismaToItem(item) });
+  // Create membership linking item to the shared category
+  const membership = await prisma.sharedMembership.create({
+    data: { itemId: item.id, shareId: body.shareId, addedBy: email },
+  });
+
+  return NextResponse.json({
+    success: true,
+    item: prismaToItem(item, { addedBy: email, membershipId: membership.id }),
+  });
 }

@@ -28,7 +28,7 @@ export async function PUT(
   if (!existing) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
   // Only the owner (or contributor) can edit
-  const canEdit = existing.ownerEmail === email || existing.addedBy === email;
+  const canEdit = existing.ownerEmail === email;
   if (!canEdit) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const updated = await prisma.item.update({
@@ -63,7 +63,7 @@ export async function PATCH(
   const existing = await prisma.item.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
-  const canEdit = existing.ownerEmail === email || existing.addedBy === email;
+  const canEdit = existing.ownerEmail === email;
   if (!canEdit) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   await prisma.item.update({ where: { id }, data: { read } });
@@ -83,7 +83,7 @@ export async function DELETE(
   const existing = await prisma.item.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
-  const canDelete = existing.ownerEmail === email || existing.addedBy === email;
+  const canDelete = existing.ownerEmail === email;
   if (!canDelete) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   await prisma.item.delete({ where: { id } });

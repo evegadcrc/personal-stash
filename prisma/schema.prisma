@@ -13,11 +13,11 @@ model User {
   avatar       String?
   createdAt    DateTime @default(now())
 
-  items            Item[]       @relation("owner")
-  contributed      Item[]       @relation("contributor")
-  sentRequests     Friendship[] @relation("sender")
-  receivedRequests Friendship[] @relation("receiver")
+  items            Item[]             @relation("owner")
+  sentRequests     Friendship[]       @relation("sender")
+  receivedRequests Friendship[]       @relation("receiver")
   shares           Share[]
+  memberships      SharedMembership[] @relation("adder")
 }
 
 model Item {
@@ -35,16 +35,26 @@ model Item {
   read        Boolean  @default(false)
   color       String?
   sortOrder   Int?
+  sharedOnly  Boolean  @default(false) // true = not shown in personal library, only via SharedMembership
 
-  // Sharing fields
-  addedBy String? // contributor email; null = category owner
-  shareId String? // if item was added via a share
-
-  owner       User   @relation("owner", fields: [ownerEmail], references: [email])
-  contributor User?  @relation("contributor", fields: [addedBy], references: [email])
-  share       Share? @relation(fields: [shareId], references: [id])
+  owner       User               @relation("owner", fields: [ownerEmail], references: [email])
+  memberships SharedMembership[]
 
   @@index([ownerEmail, category])
+}
+
+model SharedMembership {
+  id      String   @id @default(uuid())
+  itemId  String
+  shareId String
+  addedBy String
+  addedAt DateTime @default(now())
+
+  item  Item  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  share Share @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  adder User  @relation("adder", fields: [addedBy], references: [email])
+
+  @@unique([itemId, shareId])
   @@index([shareId])
 }
 
@@ -72,8 +82,8 @@ model Share {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  owner User   @relation(fields: [ownerEmail], references: [email])
-  items Item[]
+  owner       User               @relation(fields: [ownerEmail], references: [email])
+  memberships SharedMembership[]
 
   @@unique([ownerEmail, categoryName])
   @@index([mode])

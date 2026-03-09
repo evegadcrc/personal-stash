@@ -15,8 +15,10 @@ export interface Item {
   read?: boolean;
   color?: "amber" | "blue" | "rose";
   sortOrder?: number;
+  sharedOnly?: boolean;
+  // Virtual fields — set when fetched via SharedMembership
   addedBy?: string;
-  shareId?: string;
+  membershipId?: string;
 }
 
 export interface CategoryData {
@@ -39,11 +41,10 @@ type PrismaItem = {
   read: boolean;
   color: string | null;
   sortOrder: number | null;
-  addedBy: string | null;
-  shareId: string | null;
+  sharedOnly: boolean;
 };
 
-export function prismaToItem(p: PrismaItem): Item {
+export function prismaToItem(p: PrismaItem, virtual?: { addedBy?: string; membershipId?: string }): Item {
   return {
     id: p.id,
     ownerEmail: p.ownerEmail,
@@ -59,17 +60,17 @@ export function prismaToItem(p: PrismaItem): Item {
     read: p.read,
     color: (p.color as "amber" | "blue" | "rose") ?? undefined,
     sortOrder: p.sortOrder ?? undefined,
-    addedBy: p.addedBy ?? undefined,
-    shareId: p.shareId ?? undefined,
+    sharedOnly: p.sharedOnly,
+    addedBy: virtual?.addedBy,
+    membershipId: virtual?.membershipId,
   };
 }
 
-const PLACEHOLDER_CATEGORIES: CategoryData[] = [
-  {
-    name: "bookmarks",
-    items: [
+async function seedWelcomeItems(email: string): Promise<void> {
+  await prisma.item.createMany({
+    data: [
       {
-        id: "welcome-1",
+        ownerEmail: email,
         title: "Welcome to Stash",
         url: null,
         summary:
@@ -77,12 +78,11 @@ const PLACEHOLDER_CATEGORIES: CategoryData[] = [
         category: "bookmarks",
         subcategory: "reference",
         tags: ["welcome", "getting-started"],
-        dateAdded: new Date().toISOString(),
         source: "stash",
         read: false,
       },
       {
-        id: "welcome-2",
+        ownerEmail: email,
         title: "How to add items",
         url: null,
         summary:
@@ -90,23 +90,25 @@ const PLACEHOLDER_CATEGORIES: CategoryData[] = [
         category: "bookmarks",
         subcategory: "reference",
         tags: ["welcome", "guide"],
-        dateAdded: new Date().toISOString(),
         source: "stash",
         read: false,
       },
     ],
-  },
-];
+  });
+}
 
 export async function getAllCategories(email: string): Promise<CategoryData[]> {
-  if (!email) return PLACEHOLDER_CATEGORIES;
+  if (!email) return [];
 
   const items = await prisma.item.findMany({
-    where: { ownerEmail: email, shareId: null },
+    where: { ownerEmail: email, sharedOnly: false },
     orderBy: { dateAdded: "desc" },
   });
 
-  if (items.length === 0) return PLACEHOLDER_CATEGORIES;
+  if (items.length === 0) {
+    await seedWelcomeItems(email);
+    return getAllCategories(email);
+  }
 
   const categoryMap = new Map<string, Item[]>();
   for (const item of items) {
@@ -125,13 +127,10 @@ export async function getAllItems(email: string): Promise<Item[]> {
   return categories.flatMap((c) => c.items);
 }
 
-export async function getCategoryItems(
-  email: string,
-  category: string
-): Promise<Item[]> {
+export async function getCategoryItems(email: string, category: string): Promise<Item[]> {
   const items = await prisma.item.findMany({
-    where: { ownerEmail: email, category, shareId: null },
+    where: { ownerEmail: email, category, sharedOnly: false },
     orderBy: { dateAdded: "desc" },
   });
-  return items.map(prismaToItem);
+  return items.map((i) => prismaToItem(i));
 }

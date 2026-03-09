@@ -27,7 +27,24 @@ export async function GET(
   if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const items = await assembleSharedCategoryItems(share);
-  return NextResponse.json({ share, items });
+
+  // Collect all participant emails: owner + allowedEmails + membership contributors
+  const membershipAdders = await prisma.sharedMembership.findMany({
+    where: { shareId },
+    select: { addedBy: true },
+    distinct: ["addedBy"],
+  });
+  const allEmails = new Set<string>([
+    share.ownerEmail,
+    ...share.allowedEmails,
+    ...membershipAdders.map((m) => m.addedBy),
+  ]);
+  const contributors = await prisma.user.findMany({
+    where: { email: { in: [...allEmails] } },
+    select: { email: true, name: true, avatar: true },
+  });
+
+  return NextResponse.json({ share, items, contributors });
 }
 
 export async function PUT(

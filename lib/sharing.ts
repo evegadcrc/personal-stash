@@ -21,9 +21,7 @@ export interface FriendData {
   direction: "sent" | "received";
 }
 
-export async function getSharedCategoriesForUser(
-  email: string
-): Promise<ShareWithOwner[]> {
+export async function getSharedCategoriesForUser(email: string): Promise<ShareWithOwner[]> {
   const shares = await prisma.share.findMany({
     where: {
       OR: [
@@ -37,17 +35,13 @@ export async function getSharedCategoriesForUser(
 
   const result: ShareWithOwner[] = [];
   for (const share of shares) {
-    const itemCount = await prisma.item.count({
-      where: {
-        OR: [
-          {
-            ownerEmail: share.ownerEmail,
-            category: share.categoryName,
-            shareId: null,
-          },
-          { shareId: share.id },
-        ],
-      },
+    // Owner's items in the category
+    const ownerCount = await prisma.item.count({
+      where: { ownerEmail: share.ownerEmail, category: share.categoryName },
+    });
+    // Contributed items via memberships
+    const memberCount = await prisma.sharedMembership.count({
+      where: { shareId: share.id },
     });
     result.push({
       id: share.id,
@@ -57,7 +51,7 @@ export async function getSharedCategoriesForUser(
       categoryName: share.categoryName,
       mode: share.mode as "whitelist" | "public",
       allowedEmails: share.allowedEmails,
-      itemCount,
+      itemCount: ownerCount + memberCount,
     });
   }
   return result;
@@ -97,20 +91,26 @@ export async function assembleSharedCategoryItems(share: {
   ownerEmail: string;
   categoryName: string;
 }): Promise<Item[]> {
-  const items = await prisma.item.findMany({
-    where: {
-      OR: [
-        {
-          ownerEmail: share.ownerEmail,
-          category: share.categoryName,
-          shareId: null,
-        },
-        { shareId: share.id },
-      ],
-    },
+  // Owner's items in their category (always included, no membership needed)
+  const ownerItems = await prisma.item.findMany({
+    where: { ownerEmail: share.ownerEmail, category: share.categoryName },
     orderBy: { dateAdded: "desc" },
   });
-  return items.map(prismaToItem);
+
+  // Items added by contributors via SharedMembership
+  const memberships = await prisma.sharedMembership.findMany({
+    where: { shareId: share.id },
+    include: { item: true },
+    orderBy: { addedAt: "desc" },
+  });
+
+  // Exclude any membership items that are already owner items (edge case: owner links own item)
+  const ownerItemIds = new Set(ownerItems.map((i) => i.id));
+  const contributedItems = memberships
+    .filter((m) => !ownerItemIds.has(m.itemId))
+    .map((m) => prismaToItem(m.item, { addedBy: m.addedBy, membershipId: m.id }));
+
+  return [...ownerItems.map((i) => prismaToItem(i)), ...contributedItems];
 }
 
 export async function getMyShares(email: string) {
@@ -118,4 +118,19 @@ export async function getMyShares(email: string) {
     where: { ownerEmail: email },
     orderBy: { categoryName: "asc" },
   });
+}
+
+export async function hasShareAccess(shareId: string, email: string): Promise<{
+  hasAccess: boolean;
+  share: { id: string; ownerEmail: string; categoryName: string; mode: string; allowedEmails: string[] } | null;
+}> {
+  const share = await prisma.share.findUnique({ where: { id: shareId } });
+  if (!share) return { hasAccess: false, share: null };
+
+  const hasAccess =
+    share.ownerEmail === email ||
+    share.mode === "public" ||
+    share.allowedEmails.includes(email);
+
+  return { hasAccess, share };
 }

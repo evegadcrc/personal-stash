@@ -18,6 +18,12 @@ interface ItemCardProps {
   onDrop?: () => void;
   onDragEnd?: () => void;
   currentUserEmail?: string;
+  // Sharing actions
+  isSharedView?: boolean;
+  shareOwnerEmail?: string;
+  onRemoveFromShare?: (membershipId: string) => void;
+  onAddToShare?: (item: Item) => void;
+  hasAvailableShares?: boolean;
 }
 
 function formatDate(iso: string) {
@@ -58,16 +64,26 @@ function GripIcon() {
 export default function ItemCard({
   item, view, onDelete, onToggleRead, onEdit, onTagClick,
   canReorder, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
-  currentUserEmail,
+  currentUserEmail, isSharedView, shareOwnerEmail, onRemoveFromShare, onAddToShare,
+  hasAvailableShares,
 }: ItemCardProps) {
-  // Can edit/delete only if: no addedBy (personal item) OR addedBy matches current user
-  const canModify = !item.addedBy || item.addedBy === currentUserEmail;
+  const isItemOwner = item.ownerEmail === currentUserEmail;
+  const isShareOwner = shareOwnerEmail === currentUserEmail;
+  // In personal view: owner can edit/delete. In shared view: only item owner can edit.
+  const canModify = isItemOwner;
+  // Can remove from share: item owner OR share owner, only when there's a membership
+  const canRemoveFromShare = isSharedView && !!item.membershipId && (isItemOwner || isShareOwner);
   const [confirming, setConfirming] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
 
   function handleCardClick() {
-    if (!confirming) setExpanded((prev) => !prev);
+    if (!confirming) {
+      const opening = !expanded;
+      setExpanded(opening);
+      // Auto-mark as read when opening the card (like email)
+      if (opening && !item.read) onToggleRead(item.id, true);
+    }
   }
 
   // ESC to collapse
@@ -120,7 +136,9 @@ export default function ItemCard({
     </a>
   ) : null;
 
-  const deleteButton = !confirming && canModify ? (
+  // In shared view: "remove from share" replaces delete for membership items
+  // In shared view, owner can still delete their own items; only hides for non-owner items
+  const deleteButton = !confirming && canModify && (!isSharedView || isShareOwner) ? (
     <button
       onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
       className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
@@ -130,13 +148,41 @@ export default function ItemCard({
     </button>
   ) : null;
 
+  const removeFromShareButton = !confirming && canRemoveFromShare ? (
+    <button
+      onClick={(e) => { e.stopPropagation(); onRemoveFromShare!(item.membershipId!); }}
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      aria-label="Remove from shared category"
+      title="Remove from shared category"
+    >
+      ✕
+    </button>
+  ) : null;
+
+  const addToShareButton = !confirming && !isSharedView && hasAvailableShares && isItemOwner ? (
+    <button
+      onClick={(e) => { e.stopPropagation(); onAddToShare?.(item); }}
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      aria-label="Add to shared category"
+      title="Add to shared category"
+    >
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="2" r="1.5" />
+        <circle cx="9" cy="10" r="1.5" />
+        <circle cx="2" cy="6" r="1.5" />
+        <line x1="3.5" y1="6" x2="7.5" y2="2.5" />
+        <line x1="3.5" y1="6" x2="7.5" y2="9.5" />
+      </svg>
+    </button>
+  ) : null;
+
   const readButton = !confirming ? (
     <button
       onClick={(e) => { e.stopPropagation(); onToggleRead(item.id, !item.read); }}
       className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
         item.read
-          ? "text-emerald-500 opacity-60 hover:opacity-100"
-          : "text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300"
+          ? "text-emerald-500 opacity-70 hover:opacity-100"
+          : "text-zinc-600 opacity-20 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300"
       }`}
       aria-label={item.read ? "Mark as unread" : "Mark as read"}
       title={item.read ? "Mark as unread" : "Mark as read"}
@@ -147,7 +193,7 @@ export default function ItemCard({
 
   const editButton = !confirming && canModify ? (
     <button
-      onClick={(e) => { e.stopPropagation(); onEdit(item); }}
+      onClick={(e) => { e.stopPropagation(); if (!item.read) onToggleRead(item.id, true); onEdit(item); }}
       className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
       aria-label="Edit item"
       title="Edit item"
@@ -223,21 +269,23 @@ export default function ItemCard({
         onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop?.(); }}
         className={`group flex flex-col gap-3 rounded-xl border p-4 transition-all cursor-pointer ${baseGrid} ${
           expanded ? "border-zinc-500!" : isDragOver ? "border-zinc-400!" : ""
-        } ${isDragging ? "opacity-30" : item.read ? "opacity-50 hover:opacity-80" : ""}`}
+        } ${isDragging ? "opacity-30" : ""}`}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {dragHandleEl}
             {favicon}
-            <h3 className={`text-sm font-semibold leading-snug line-clamp-2 ${item.read ? "text-zinc-400" : "text-zinc-100"}`}>
+            <h3 className={`text-sm leading-snug line-clamp-2 ${item.read ? "font-medium text-zinc-500" : "font-bold text-zinc-100"}`}>
               {item.title}
             </h3>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {readButton}
             {editButton}
+            {addToShareButton}
             {deleteButton}
+            {removeFromShareButton}
             {openLink}
           </div>
         </div>
@@ -299,14 +347,14 @@ export default function ItemCard({
       onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop?.(); }}
       className={`group flex flex-col rounded-lg border px-4 py-2.5 transition-all cursor-pointer ${baseList || "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/30"} ${
         expanded ? "border-zinc-600! bg-zinc-800/60" : isDragOver ? "border-zinc-400!" : ""
-      } ${isDragging ? "opacity-30" : item.read ? "opacity-50 hover:opacity-80" : ""}`}
+      } ${isDragging ? "opacity-30" : ""}`}
     >
       {/* Main row */}
       <div className="flex items-center gap-3 min-w-0">
         {dragHandleEl}
         {favicon}
 
-        <span className={`flex-1 text-sm truncate font-medium ${item.read ? "text-zinc-400" : "text-zinc-100"}`}>
+        <span className={`flex-1 text-sm truncate ${item.read ? "font-normal text-zinc-500" : "font-bold text-zinc-100"}`}>
           {item.title}
         </span>
 
@@ -348,7 +396,9 @@ export default function ItemCard({
           <div className="flex shrink-0 items-center gap-1">
             {readButton}
             {editButton}
+            {addToShareButton}
             {deleteButton}
+            {removeFromShareButton}
             {openLink}
           </div>
         )}
