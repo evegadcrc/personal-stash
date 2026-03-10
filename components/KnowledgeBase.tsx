@@ -34,6 +34,9 @@ interface KnowledgeBaseProps {
   sharedCategories: ShareWithOwner[];
   pendingCount: number;
   currentUserEmail: string;
+  aiAvailable: boolean;
+  shareUrl?: string;
+  shareText?: string;
 }
 
 function GridIcon({ active }: { active: boolean }) {
@@ -83,6 +86,9 @@ function KnowledgeBaseContent({
   sharedCategories: initialSharedCategories,
   pendingCount: initialPendingCount,
   currentUserEmail,
+  aiAvailable,
+  shareUrl,
+  shareText,
 }: KnowledgeBaseProps) {
   const { lang, setLang, t } = useLanguage();
   const [categories, setCategories] = useState<CategoryData[]>(initialCategories);
@@ -103,7 +109,10 @@ function KnowledgeBaseContent({
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sortMode, setSortMode] = useState<SortMode>("date");
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(!!(shareUrl || shareText));
+  const [sharePreFill, setSharePreFill] = useState<{ url?: string; text?: string } | undefined>(
+    shareUrl || shareText ? { url: shareUrl, text: shareText } : undefined
+  );
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [toast, setToast] = useState<{ msg: string; id: number } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -562,8 +571,8 @@ function KnowledgeBaseContent({
       >
         <div className="px-3 flex items-start justify-between">
           <div>
-            <h1 className="text-base font-bold text-zinc-100">Stash</h1>
-            <p className="text-xs text-zinc-500">Personal knowledge base</p>
+            <h1 className="text-base font-bold text-zinc-100">Personal Stash</h1>
+            <p className="text-xs text-zinc-500">Your digital memory</p>
           </div>
           <button
             className="md:hidden -mr-1 flex h-7 w-7 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-300 transition-colors"
@@ -976,11 +985,13 @@ function KnowledgeBaseContent({
       {showAddModal && (
         <AddItemModal
           categories={categories}
-          onClose={() => setShowAddModal(false)}
+          onClose={() => { setShowAddModal(false); setSharePreFill(undefined); }}
           onSave={handleAdd}
           shareId={selectedShare?.id}
           shareCategory={selectedShare?.categoryName}
           availableShares={selectedShare ? undefined : allAvailableShares}
+          aiAvailable={aiAvailable}
+          preFill={sharePreFill}
         />
       )}
 

@@ -71,10 +71,10 @@ async function seedWelcomeItems(email: string): Promise<void> {
     data: [
       {
         ownerEmail: email,
-        title: "Welcome to Stash",
+        title: "Welcome to Personal Stash",
         url: null,
         summary:
-          "Stash is your personal knowledge base. Save links, notes, ideas, movies, places — anything you want to keep and find later.",
+          "Personal Stash is your digital memory. Save links, notes, ideas, movies, places — anything worth keeping, always at your fingertips.",
         category: "bookmarks",
         subcategory: "reference",
         tags: ["welcome", "getting-started"],
@@ -86,7 +86,7 @@ async function seedWelcomeItems(email: string): Promise<void> {
         title: "How to add items",
         url: null,
         summary:
-          "Click the + button in the top right corner to add a new item. Paste a URL or describe something and Stash will analyze it automatically using AI.",
+          "Click the + button in the top right corner to add a new item. Paste a URL or describe something and Personal Stash will analyze it automatically using AI.",
         category: "bookmarks",
         subcategory: "reference",
         tags: ["welcome", "guide"],

@@ -3,9 +3,14 @@ import { getSharedCategoriesForUser, getPendingRequestsCount } from "@/lib/shari
 import KnowledgeBase from "@/components/KnowledgeBase";
 import { auth } from "@/auth";
 
-export default async function Home() {
+interface HomeProps {
+  searchParams: Promise<{ shareUrl?: string; shareText?: string }>;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
   const session = await auth();
   const email = session?.user?.email ?? "";
+  const params = await searchParams;
 
   const [categories, sharedCategories, pendingCount] = await Promise.all([
     getAllCategories(email),
@@ -20,6 +25,9 @@ export default async function Home() {
       sharedCategories={sharedCategories}
       pendingCount={pendingCount}
       currentUserEmail={email}
+      aiAvailable={!!process.env.ANTHROPIC_API_KEY}
+      shareUrl={params.shareUrl}
+      shareText={params.shareText}
     />
   );
 }

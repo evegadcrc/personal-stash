@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Stash — Personal Knowledge Base",
-  description: "Personal knowledge base for AI, movies, places, ideas and bookmarks.",
+  title: "Personal Stash",
+  description: "Your digital memory. Save links, notes, ideas, movies, places — anything worth keeping.",
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#09090b",
 };
 
 // Runs before first paint — prevents flash of wrong theme.
@@ -32,6 +37,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: ANTI_FLASH_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js');}` }} />
       </head>
       <body className="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
         {children}

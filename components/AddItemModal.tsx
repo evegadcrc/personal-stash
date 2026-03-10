@@ -20,6 +20,8 @@ interface AddItemModalProps {
   shareId?: string;
   shareCategory?: string;
   availableShares?: AvailableShare[];
+  aiAvailable?: boolean;
+  preFill?: { url?: string; text?: string };
 }
 
 type Mode = "auto" | "manual";
@@ -53,7 +55,7 @@ const BLANK_FIELDS: FormFields = {
   color: undefined,
 };
 
-export default function AddItemModal({ categories, onClose, onSave, shareId, shareCategory, availableShares }: AddItemModalProps) {
+export default function AddItemModal({ categories, onClose, onSave, shareId, shareCategory, availableShares, aiAvailable = true, preFill }: AddItemModalProps) {
   const { t } = useLanguage();
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -63,12 +65,12 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const [mode, setMode] = useState<Mode | null>(null);
-  const [inputTab, setInputTab] = useState<InputTab>("url");
+  const [mode, setMode] = useState<Mode | null>(preFill ? "auto" : null);
+  const [inputTab, setInputTab] = useState<InputTab>(preFill?.url ? "url" : preFill?.text ? "text" : "url");
 
   // Auto step inputs
-  const [urlInput, setUrlInput] = useState("");
-  const [textInput, setTextInput] = useState("");
+  const [urlInput, setUrlInput] = useState(preFill?.url ?? "");
+  const [textInput, setTextInput] = useState(preFill?.text ?? "");
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [imageMediaType, setImageMediaType] = useState("");
   const [imageName, setImageName] = useState("");
@@ -271,13 +273,21 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
         {mode === null && (
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => setMode("auto")}
-              className="flex items-start gap-4 rounded-xl border border-zinc-700 p-4 text-left hover:border-zinc-500 hover:bg-zinc-800/40 transition-all group"
+              onClick={() => aiAvailable && setMode("auto")}
+              disabled={!aiAvailable}
+              title={!aiAvailable ? "AI analysis unavailable — ANTHROPIC_API_KEY not configured" : undefined}
+              className={`flex items-start gap-4 rounded-xl border p-4 text-left transition-all group ${
+                aiAvailable
+                  ? "border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/40 cursor-pointer"
+                  : "border-zinc-800 opacity-40 cursor-not-allowed"
+              }`}
             >
-              <span className="shrink-0 mt-0.5 text-lg text-zinc-400 group-hover:text-zinc-200 transition-colors">✦</span>
+              <span className={`shrink-0 mt-0.5 text-lg transition-colors ${aiAvailable ? "text-zinc-400 group-hover:text-zinc-200" : "text-zinc-600"}`}>✦</span>
               <div>
-                <p className="text-sm font-medium text-zinc-100">{t.autoAI}</p>
-                <p className="text-xs text-zinc-500 mt-0.5">{t.autoAIDesc}</p>
+                <p className={`text-sm font-medium ${aiAvailable ? "text-zinc-100" : "text-zinc-500"}`}>{t.autoAI}</p>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  {aiAvailable ? t.autoAIDesc : "AI analysis unavailable — API key not configured"}
+                </p>
               </div>
             </button>
             <button
