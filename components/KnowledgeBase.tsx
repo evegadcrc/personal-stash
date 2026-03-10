@@ -125,6 +125,10 @@ function KnowledgeBaseContent({
   const [customOrder, setCustomOrder] = useState<Record<string, string[]>>({});
   const [dragSrcId, setDragSrcId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [showAllShared, setShowAllShared] = useState(false);
+  const [allSharedItems, setAllSharedItems] = useState<Item[]>([]);
+  const [loadingAllShared, setLoadingAllShared] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   // Load persisted view mode, custom order, and my shares
@@ -200,10 +204,13 @@ function KnowledgeBaseContent({
 
   async function handleSelectShare(share: ShareWithOwner | null) {
     setSelectedShare(share);
+    setShowAllShared(false);
+    setAllSharedItems([]);
     if (share) setSelectedCategory(null);
     setSelectedSubcategory(null);
     setSelectedTag(null);
     setSearchQuery("");
+    setShowUnreadOnly(false);
     setSidebarOpen(false);
     if (!share) { setSharedItems([]); setSharedContributors([]); return; }
 
@@ -266,13 +273,17 @@ function KnowledgeBaseContent({
   }
 
   async function handleToggleRead(id: string, read: boolean) {
+    // Pass shareId so server knows to use UserItemRead path for non-owners
+    const shareId = selectedShare?.id ?? (showAllShared ? "all-shared" : undefined);
     const res = await fetch(`/api/items/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ read }),
+      body: JSON.stringify({ read, ...(shareId ? { shareId } : {}) }),
     });
     if (res.ok) {
-      if (selectedShare) {
+      if (showAllShared) {
+        setAllSharedItems((prev) => prev.map((item) => item.id === id ? { ...item, read } : item));
+      } else if (selectedShare) {
         setSharedItems((prev) => {
           const updated = prev.map((item) => item.id === id ? { ...item, read } : item);
           setSharedUnreadCounts((counts) => ({
@@ -347,10 +358,57 @@ function KnowledgeBaseContent({
     setSelectedCategory(cat);
     setSelectedShare(null);
     setSharedItems([]);
+    setShowAllShared(false);
+    setAllSharedItems([]);
     setSelectedSubcategory(null);
     setSelectedTag(null);
     setSearchQuery("");
+    setShowUnreadOnly(false);
     setSidebarOpen(false);
+  }
+
+  async function handleSelectAllShared() {
+    setShowAllShared(true);
+    setSelectedShare(null);
+    setSelectedCategory(null);
+    setSharedItems([]);
+    setSelectedSubcategory(null);
+    setSelectedTag(null);
+    setSearchQuery("");
+    setShowUnreadOnly(false);
+    setSidebarOpen(false);
+
+    setLoadingAllShared(true);
+    try {
+      const results = await Promise.all(
+        sharedCategories.map((s) =>
+          fetch(`/api/sharing/${s.id}`)
+            .then((r) => r.json())
+            .then((d) => ({ shareId: s.id, items: (d.items ?? []) as Item[] }))
+            .catch(() => ({ shareId: s.id, items: [] as Item[] }))
+        )
+      );
+      // Dedupe by id, combine all
+      const seen = new Set<string>();
+      const combined: Item[] = [];
+      for (const { shareId, items } of results) {
+        for (const item of items) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            combined.push(item);
+          }
+        }
+        // Update unread counts per share
+        setSharedUnreadCounts((prev) => ({
+          ...prev,
+          [shareId]: items.filter((i) => !i.read).length,
+        }));
+      }
+      combined.sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime());
+      setAllSharedItems(combined);
+    } finally {
+      setLoadingAllShared(false);
+    }
   }
 
   const unreadCounts = useMemo(() => {
@@ -366,7 +424,7 @@ function KnowledgeBaseContent({
   const categoryMembershipItems = selectedCategory ? (categoryMembershipItemsMap[selectedCategory] ?? []) : [];
   const categoryContributors = selectedCategory ? (categoryContributorsMap[selectedCategory] ?? []) : [];
 
-  const activeItems = selectedShare ? sharedItems : (
+  const activeItems = showAllShared ? allSharedItems : selectedShare ? sharedItems : (
     selectedCategory
       ? [
           ...(categories.find((c) => c.name === selectedCategory)?.items ?? []),
@@ -386,6 +444,9 @@ function KnowledgeBaseContent({
   const filteredItems = useMemo(() => {
     let items = [...activeItems];
 
+    if (showUnreadOnly) {
+      items = items.filter((i) => !i.read);
+    }
     if (selectedSubcategory) {
       items = items.filter((i) => i.subcategory === selectedSubcategory);
     }
@@ -413,7 +474,7 @@ function KnowledgeBaseContent({
       }
       return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
     });
-  }, [activeItems, selectedSubcategory, selectedTag, searchQuery, sortMode]);
+  }, [activeItems, showUnreadOnly, selectedSubcategory, selectedTag, searchQuery, sortMode]);
 
   const canReorder =
     selectedCategory !== null &&
@@ -461,7 +522,9 @@ function KnowledgeBaseContent({
     return s.split(/[-\s]+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   }
 
-  const categoryLabel = selectedShare
+  const categoryLabel = showAllShared
+    ? "All Shared"
+    : selectedShare
     ? titleCase(selectedShare.categoryName)
     : selectedCategory
     ? titleCase(selectedCategory)
@@ -595,6 +658,8 @@ function KnowledgeBaseContent({
           emptyCategoryNames={emptyCategoryNames}
           onDeleteCategory={setConfirmDeleteCategory}
           onRenameCategory={handleRenameCategory}
+          showAllShared={showAllShared}
+          onSelectAllShared={handleSelectAllShared}
         />
       </nav>
 
@@ -767,6 +832,18 @@ function KnowledgeBaseContent({
                 >ES</button>
               </div>
               <button
+                onClick={() => setShowUnreadOnly((v) => !v)}
+                className={`hidden sm:flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs transition-colors ${
+                  showUnreadOnly
+                    ? "border-emerald-600 bg-emerald-900/40 text-emerald-400"
+                    : "border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                }`}
+                title="Show unread only"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                Unread
+              </button>
+              <button
                 onClick={() => setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date")}
                 className="hidden sm:flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
                 title={`Sorted by ${sortMode} — click to toggle`}
@@ -891,7 +968,7 @@ function KnowledgeBaseContent({
 
         {/* Item list */}
         <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6">
-          {loadingSharedItems ? (
+          {loadingSharedItems || loadingAllShared ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-zinc-500 text-sm">{t.loading}</p>
             </div>
@@ -942,7 +1019,7 @@ function KnowledgeBaseContent({
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}
                       currentUserEmail={currentUserEmail}
-                      isSharedView={!!selectedShare || !!currentCategoryShare}
+                      isSharedView={!!selectedShare || !!currentCategoryShare || showAllShared}
                       shareOwnerEmail={selectedShare?.ownerEmail ?? (currentCategoryShare ? currentUserEmail : undefined)}
                       onRemoveFromShare={handleRemoveFromShare}
                       onAddToShare={setAddToShareItem}
@@ -969,7 +1046,7 @@ function KnowledgeBaseContent({
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}
                       currentUserEmail={currentUserEmail}
-                      isSharedView={!!selectedShare || !!currentCategoryShare}
+                      isSharedView={!!selectedShare || !!currentCategoryShare || showAllShared}
                       shareOwnerEmail={selectedShare?.ownerEmail ?? (currentCategoryShare ? currentUserEmail : undefined)}
                       onRemoveFromShare={handleRemoveFromShare}
                       onAddToShare={setAddToShareItem}

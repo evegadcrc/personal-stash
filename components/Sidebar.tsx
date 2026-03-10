@@ -19,6 +19,8 @@ interface SidebarProps {
   emptyCategoryNames: Set<string>;
   onDeleteCategory: (name: string) => void;
   onRenameCategory: (oldName: string, newName: string) => Promise<boolean>;
+  showAllShared: boolean;
+  onSelectAllShared: () => void;
 }
 
 function titleCase(s: string) {
@@ -61,6 +63,8 @@ export default function Sidebar({
   emptyCategoryNames,
   onDeleteCategory,
   onRenameCategory,
+  showAllShared,
+  onSelectAllShared,
 }: SidebarProps) {
   const { t } = useLanguage();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -239,6 +243,34 @@ export default function Sidebar({
               {t.sharedWithMe}
             </p>
           </div>
+          {/* All shared — aggregate view */}
+          {sharedCategories.length > 1 && (
+            <button
+              onClick={onSelectAllShared}
+              className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                showAllShared
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+              }`}
+            >
+              <span className="flex items-center gap-2 min-w-0">
+                <span>🗂️</span>
+                <span className="truncate">All</span>
+              </span>
+              {(() => {
+                const totalUnread = Object.values(sharedUnreadCounts).reduce((s, n) => s + n, 0);
+                const totalItems = sharedCategories.reduce((s, sh) => s + sh.itemCount, 0);
+                return totalUnread > 0 ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="text-xs font-semibold text-emerald-400">{totalUnread}</span>
+                  </span>
+                ) : (
+                  <span className="text-xs text-zinc-600 shrink-0">{totalItems}</span>
+                );
+              })()}
+            </button>
+          )}
           {whitelistShares.map(shareButton)}
         </>
       )}
@@ -251,6 +283,24 @@ export default function Sidebar({
               {t.publicSection}
             </p>
           </div>
+          {publicShares.length > 1 && (
+            <button
+              onClick={onSelectAllShared}
+              className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                showAllShared
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+              }`}
+            >
+              <span className="flex items-center gap-2 min-w-0">
+                <span>🗂️</span>
+                <span className="truncate">All</span>
+              </span>
+              <span className="text-xs text-zinc-600 shrink-0">
+                {publicShares.reduce((s, sh) => s + sh.itemCount, 0)}
+              </span>
+            </button>
+          )}
           {publicShares.map(shareButton)}
         </>
       )}
