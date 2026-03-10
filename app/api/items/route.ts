@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     source?: string;
     content?: string;
     color?: string | null;
+    attachments?: { url: string; type: string; name: string; size: number }[];
   };
 
   // Ensure user exists
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
       source: body.source ?? "manual",
       content: body.content ?? null,
       color: body.color ?? null,
+      attachments: body.attachments ?? [],
     },
   });
 

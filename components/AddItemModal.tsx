@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { CategoryData, Item } from "@/lib/data";
+import { CategoryData, Item, Attachment } from "@/lib/data";
 import { useLanguage } from "@/contexts/LanguageContext";
+import AttachmentsField from "./AttachmentsField";
 
 interface AvailableShare {
   id: string;
@@ -83,6 +84,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   const [fields, setFields] = useState<FormFields>(BLANK_FIELDS);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   // Derived values
   const existingCategoryNames = categories.map((c) => c.name);
@@ -141,6 +143,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
       const data = (await res.json()) as {
         title?: string; summary?: string; category?: string;
         subcategory?: string; tags?: string[]; url?: string; source?: string;
+        attachments?: Attachment[];
       };
 
       const aiCat = data.category ?? "bookmarks";
@@ -158,6 +161,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
         content: "",
         color: undefined,
       });
+      if (data.attachments?.length) setAttachments(data.attachments);
       setShowForm(true);
     } catch (e) {
       setAnalyzeError((e as Error).message);
@@ -198,6 +202,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
           source: fields.source.trim() || "manual",
           content: fields.content.trim() || undefined,
           color: fields.color ?? null,
+          attachments,
         }),
       });
 
@@ -599,6 +604,9 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                   onChange={(e) => setFields((f) => ({ ...f, content: e.target.value }))}
                 />
               </div>
+
+              {/* Attachments */}
+              <AttachmentsField attachments={attachments} onChange={setAttachments} />
 
             </div>
 

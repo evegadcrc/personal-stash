@@ -1,5 +1,12 @@
 import { prisma } from "./db";
 
+export interface Attachment {
+  url: string;
+  type: "image" | "pdf";
+  name: string;
+  size: number;
+}
+
 export interface Item {
   id: string;
   ownerEmail?: string;
@@ -16,6 +23,7 @@ export interface Item {
   color?: "amber" | "blue" | "rose";
   sortOrder?: number;
   sharedOnly?: boolean;
+  attachments?: Attachment[];
   // Virtual fields — set when fetched via SharedMembership
   addedBy?: string;
   membershipId?: string;
@@ -42,6 +50,7 @@ type PrismaItem = {
   color: string | null;
   sortOrder: number | null;
   sharedOnly: boolean;
+  attachments: unknown;
 };
 
 export function prismaToItem(p: PrismaItem, virtual?: { addedBy?: string; membershipId?: string }): Item {
@@ -61,6 +70,7 @@ export function prismaToItem(p: PrismaItem, virtual?: { addedBy?: string; member
     color: (p.color as "amber" | "blue" | "rose") ?? undefined,
     sortOrder: p.sortOrder ?? undefined,
     sharedOnly: p.sharedOnly,
+    attachments: (p.attachments as Attachment[] | null) ?? undefined,
     addedBy: virtual?.addedBy,
     membershipId: virtual?.membershipId,
   };

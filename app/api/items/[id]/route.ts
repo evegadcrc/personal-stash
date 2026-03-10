@@ -22,6 +22,7 @@ export async function PUT(
     source?: string;
     content?: string | null;
     color?: string | null;
+    attachments?: { url: string; type: string; name: string; size: number }[];
   };
 
   const existing = await prisma.item.findUnique({ where: { id } });
@@ -43,6 +44,8 @@ export async function PUT(
       source: body.source ?? existing.source,
       content: "content" in body ? (body.content ?? null) : existing.content,
       color: "color" in body ? (body.color ?? null) : existing.color,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      attachments: "attachments" in body ? (body.attachments ?? []) : (existing.attachments as any),
     },
   });
 

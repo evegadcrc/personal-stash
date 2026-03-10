@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CategoryData, Item } from "@/lib/data";
+import { CategoryData, Item, Attachment } from "@/lib/data";
+import AttachmentsField from "./AttachmentsField";
 
 interface EditItemModalProps {
   item: Item;
@@ -43,6 +44,7 @@ export default function EditItemModal({ item, categories, onClose, onSave }: Edi
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>(item.attachments ?? []);
 
   // ESC to close
   useEffect(() => {
@@ -87,6 +89,7 @@ export default function EditItemModal({ item, categories, onClose, onSave }: Edi
           source: fields.source.trim() || "manual",
           content: fields.content.trim() || undefined,
           color: fields.color ?? null,
+          attachments,
         }),
       });
 
@@ -303,6 +306,9 @@ export default function EditItemModal({ item, categories, onClose, onSave }: Edi
               onChange={(e) => setFields((f) => ({ ...f, content: e.target.value }))}
             />
           </div>
+
+          {/* Attachments */}
+          <AttachmentsField attachments={attachments} onChange={setAttachments} />
 
         </div>
 

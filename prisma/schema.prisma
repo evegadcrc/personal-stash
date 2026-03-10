@@ -36,6 +36,7 @@ model Item {
   color       String?
   sortOrder   Int?
   sharedOnly  Boolean  @default(false) // true = not shown in personal library, only via SharedMembership
+  attachments Json?    // [{ url, type: "image"|"pdf", name, size }]
 
   owner       User               @relation("owner", fields: [ownerEmail], references: [email])
   memberships SharedMembership[]

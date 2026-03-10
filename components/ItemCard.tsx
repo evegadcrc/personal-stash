@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Item } from "@/lib/data";
+import { Item, Attachment } from "@/lib/data";
 
 interface ItemCardProps {
   item: Item;
@@ -47,6 +47,37 @@ const SOURCE_LABELS: Record<string, string> = {
   youtube: "YouTube",
   manual: "Manual",
 };
+
+function AttachmentsPreview({ attachments }: { attachments: Attachment[] }) {
+  if (!attachments || attachments.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {attachments.map((att, i) => (
+        att.type === "image" ? (
+          <a key={i} href={att.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={att.url} alt={att.name} className="h-20 w-20 rounded-lg object-cover border border-zinc-700 hover:border-zinc-500 transition-colors" />
+          </a>
+        ) : (
+          <a
+            key={i}
+            href={att.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs text-zinc-300 hover:border-zinc-500 hover:text-zinc-100 transition-colors"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 shrink-0">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span className="max-w-[140px] truncate">{att.name}</span>
+          </a>
+        )
+      ))}
+    </div>
+  );
+}
 
 function GripIcon() {
   return (
@@ -112,6 +143,12 @@ export default function ItemCard({
       document.removeEventListener("mousedown", onClickOutside);
     };
   }, [expanded]);
+
+  const attachmentBadge = item.attachments && item.attachments.length > 0 ? (
+    <span title={`${item.attachments.length} attachment${item.attachments.length > 1 ? "s" : ""}`} className="text-zinc-600 text-xs">
+      📎{item.attachments.length > 1 ? ` ${item.attachments.length}` : ""}
+    </span>
+  ) : null;
 
   const favicon = item.url ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -276,6 +313,7 @@ export default function ItemCard({
           <div className="flex items-center gap-2 min-w-0">
             {dragHandleEl}
             {favicon}
+            {attachmentBadge}
             <h3 className={`text-sm leading-snug line-clamp-2 ${item.read ? "font-medium text-zinc-500" : "font-bold text-zinc-100"}`}>
               {item.title}
             </h3>
@@ -300,6 +338,13 @@ export default function ItemCard({
           <p className="text-xs text-zinc-500 leading-relaxed border-t border-zinc-700 pt-2 whitespace-pre-wrap">
             {item.content}
           </p>
+        )}
+
+        {/* Attachments */}
+        {expanded && item.attachments && item.attachments.length > 0 && (
+          <div className="border-t border-zinc-700 pt-2">
+            <AttachmentsPreview attachments={item.attachments} />
+          </div>
         )}
 
         {/* Footer */}
@@ -412,6 +457,9 @@ export default function ItemCard({
             <p className="text-xs text-zinc-500 leading-relaxed whitespace-pre-wrap">
               {item.content}
             </p>
+          )}
+          {item.attachments && item.attachments.length > 0 && (
+            <AttachmentsPreview attachments={item.attachments} />
           )}
           <div className="flex flex-wrap gap-1.5 mt-1">
             {item.tags.map((tag) => (

@@ -1,5 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -26,12 +28,38 @@ function stripHtml(html: string): string {
 }
 
 export async function POST(request: Request) {
+  const session = await auth();
+  const email = session?.user?.email;
+
   const { url, text, imageBase64, mediaType } = (await request.json()) as {
     url?: string;
     text?: string;
     imageBase64?: string;
     mediaType?: string;
   };
+
+  // Auto-download PDF URLs and store in Blob
+  let pdfAttachment: { url: string; type: string; name: string; size: number } | null = null;
+  if (url && email && /\.pdf(\?.*)?$/i.test(url)) {
+    try {
+      const pdfRes = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; StashBot/1.0)" },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (pdfRes.ok) {
+        const buffer = await pdfRes.arrayBuffer();
+        const fileName = url.split("/").pop()?.split("?")[0] ?? "document.pdf";
+        const safeName = `${email}/${Date.now()}-${Math.random().toString(36).slice(2)}.pdf`;
+        const blob = await put(safeName, Buffer.from(buffer), {
+          access: "public",
+          contentType: "application/pdf",
+        });
+        pdfAttachment = { url: blob.url, type: "pdf", name: fileName, size: buffer.byteLength };
+      }
+    } catch {
+      // non-fatal — continue without PDF attachment
+    }
+  }
 
   let content: Anthropic.MessageParam["content"];
 
@@ -86,6 +114,7 @@ export async function POST(request: Request) {
 
   try {
     const parsed = JSON.parse(jsonStr);
+    if (pdfAttachment) parsed.attachments = [pdfAttachment];
     return NextResponse.json(parsed);
   } catch {
     return NextResponse.json({ error: "Failed to parse AI response", raw }, { status: 500 });
