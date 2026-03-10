@@ -86,11 +86,10 @@ export async function getFriendsForUser(email: string): Promise<FriendData[]> {
   });
 }
 
-export async function assembleSharedCategoryItems(share: {
-  id: string;
-  ownerEmail: string;
-  categoryName: string;
-}): Promise<Item[]> {
+export async function assembleSharedCategoryItems(
+  share: { id: string; ownerEmail: string; categoryName: string },
+  viewerEmail?: string
+): Promise<Item[]> {
   // Owner's items in their category (always included, no membership needed)
   const ownerItems = await prisma.item.findMany({
     where: { ownerEmail: share.ownerEmail, category: share.categoryName },
@@ -110,7 +109,19 @@ export async function assembleSharedCategoryItems(share: {
     .filter((m) => !ownerItemIds.has(m.itemId))
     .map((m) => prismaToItem(m.item, { addedBy: m.addedBy, membershipId: m.id }));
 
-  return [...ownerItems.map((i) => prismaToItem(i)), ...contributedItems];
+  const allItems = [...ownerItems.map((i) => prismaToItem(i)), ...contributedItems];
+
+  // Overlay per-user read status for non-owner viewers
+  if (viewerEmail && viewerEmail !== share.ownerEmail) {
+    const readRecords = await prisma.userItemRead.findMany({
+      where: { userEmail: viewerEmail, itemId: { in: allItems.map((i) => i.id) } },
+      select: { itemId: true },
+    });
+    const readSet = new Set(readRecords.map((r) => r.itemId));
+    return allItems.map((i) => ({ ...i, read: readSet.has(i.id) }));
+  }
+
+  return allItems;
 }
 
 export async function getMyShares(email: string) {

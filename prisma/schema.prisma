@@ -18,6 +18,51 @@ model User {
   receivedRequests Friendship[]       @relation("receiver")
   shares           Share[]
   memberships      SharedMembership[] @relation("adder")
+  itemReads        UserItemRead[]
+  ratings          ItemRating[]
+  comments         ItemComment[]
+}
+
+// Per-user read tracking for shared library viewers (owner uses Item.read)
+model UserItemRead {
+  userEmail String
+  itemId    String
+  readAt    DateTime @default(now())
+
+  user User @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([userEmail, itemId])
+  @@index([itemId])
+}
+
+// Star rating (1–5) per user per item
+model ItemRating {
+  userEmail String
+  itemId    String
+  rating    Int
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([userEmail, itemId])
+  @@index([itemId])
+}
+
+// Comments on items
+model ItemComment {
+  id        String   @id @default(uuid())
+  itemId    String
+  userEmail String
+  userName  String?
+  content   String
+  createdAt DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+
+  @@index([itemId])
 }
 
 model Item {
@@ -40,6 +85,9 @@ model Item {
 
   owner       User               @relation("owner", fields: [ownerEmail], references: [email])
   memberships SharedMembership[]
+  userReads   UserItemRead[]
+  ratings     ItemRating[]
+  comments    ItemComment[]
 
   @@index([ownerEmail, category])
 }

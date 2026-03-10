@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { CategoryData } from "@/lib/data";
 import { ShareWithOwner } from "@/lib/sharing";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getCategoryIcon } from "@/lib/categories";
 
 interface SidebarProps {
   categories: CategoryData[];
@@ -13,19 +14,12 @@ interface SidebarProps {
   sharedCategories: ShareWithOwner[];
   selectedShareId: string | null;
   onSelectShare: (share: ShareWithOwner) => void;
+  sharedUnreadCounts: Record<string, number>;
   mySharedCategoryNames: Set<string>;
   emptyCategoryNames: Set<string>;
   onDeleteCategory: (name: string) => void;
   onRenameCategory: (oldName: string, newName: string) => Promise<boolean>;
 }
-
-const CATEGORY_ICONS: Record<string, string> = {
-  ai: "🤖",
-  movies: "🎬",
-  places: "📍",
-  ideas: "💡",
-  bookmarks: "🔖",
-};
 
 function titleCase(s: string) {
   return s.split(/[-\s]+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
@@ -62,6 +56,7 @@ export default function Sidebar({
   sharedCategories,
   selectedShareId,
   onSelectShare,
+  sharedUnreadCounts,
   mySharedCategoryNames,
   emptyCategoryNames,
   onDeleteCategory,
@@ -78,7 +73,8 @@ export default function Sidebar({
   const publicShares = sharedCategories.filter((s) => s.mode === "public");
 
   function shareButton(share: ShareWithOwner) {
-    const icon = CATEGORY_ICONS[share.categoryName] ?? "📁";
+    const icon = getCategoryIcon(share.categoryName);
+    const unread = sharedUnreadCounts[share.id] ?? 0;
     return (
       <button
         key={share.id}
@@ -93,7 +89,16 @@ export default function Sidebar({
           <span>{icon}</span>
           <span className="truncate">{titleCase(share.categoryName)}</span>
         </span>
-        <span className="text-xs text-zinc-600 shrink-0">{share.itemCount}</span>
+        <span className="flex items-center gap-1.5">
+          {unread > 0 ? (
+            <>
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+              <span className="text-xs font-semibold text-emerald-400">{unread}</span>
+            </>
+          ) : (
+            <span className="text-xs text-zinc-600 shrink-0">{share.itemCount}</span>
+          )}
+        </span>
       </button>
     );
   }
@@ -153,7 +158,7 @@ export default function Sidebar({
           >
             {/* Main clickable area / inline edit */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <span>{CATEGORY_ICONS[cat.name] ?? "📁"}</span>
+              <span>{getCategoryIcon(cat.name)}</span>
               {isEditing ? (
                 <input
                   ref={inputRef}

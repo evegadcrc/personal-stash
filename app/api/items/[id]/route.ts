@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { prismaToItem } from "@/lib/data";
+import { normalizeCategory } from "@/lib/categories";
 import { auth } from "@/auth";
 
 export async function PUT(
@@ -38,7 +39,7 @@ export async function PUT(
       title: body.title ?? existing.title,
       url: "url" in body ? (body.url ?? null) : existing.url,
       summary: body.summary ?? existing.summary,
-      category: body.category ?? existing.category,
+      category: body.category ? normalizeCategory(body.category) : existing.category,
       subcategory: body.subcategory ?? existing.subcategory,
       tags: body.tags ?? existing.tags,
       source: body.source ?? existing.source,
@@ -61,15 +62,29 @@ export async function PATCH(
   if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const { read } = await request.json() as { read: boolean };
+  const { read, shareId } = await request.json() as { read: boolean; shareId?: string };
 
   const existing = await prisma.item.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
-  const canEdit = existing.ownerEmail === email;
-  if (!canEdit) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (existing.ownerEmail === email) {
+    // Owner: update Item.read directly
+    await prisma.item.update({ where: { id }, data: { read } });
+  } else if (shareId) {
+    // Shared viewer: track per-user read in UserItemRead
+    if (read) {
+      await prisma.userItemRead.upsert({
+        where: { userEmail_itemId: { userEmail: email, itemId: id } },
+        update: {},
+        create: { userEmail: email, itemId: id },
+      });
+    } else {
+      await prisma.userItemRead.deleteMany({ where: { userEmail: email, itemId: id } });
+    }
+  } else {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-  await prisma.item.update({ where: { id }, data: { read } });
   return NextResponse.json({ success: true });
 }
 

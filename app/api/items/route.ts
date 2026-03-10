@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { prismaToItem } from "@/lib/data";
+import { normalizeCategory } from "@/lib/categories";
 import { auth } from "@/auth";
 
 export async function POST(request: Request) {
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       title: body.title,
       url: body.url ?? null,
       summary: body.summary,
-      category: body.category,
+      category: normalizeCategory(body.category),
       subcategory: body.subcategory,
       tags: body.tags ?? [],
       source: body.source ?? "manual",

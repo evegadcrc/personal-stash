@@ -26,7 +26,7 @@ export async function GET(
     share.allowedEmails.includes(email);
   if (!hasAccess) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const items = await assembleSharedCategoryItems(share);
+  const items = await assembleSharedCategoryItems(share, email);
 
   // Collect all participant emails: owner + allowedEmails + membership contributors
   const membershipAdders = await prisma.sharedMembership.findMany({

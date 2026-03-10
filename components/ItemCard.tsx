@@ -2,6 +2,23 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Item, Attachment } from "@/lib/data";
+import StarRating from "./StarRating";
+import CommentsSection from "./CommentsSection";
+
+interface Comment {
+  id: string;
+  userEmail: string;
+  userName: string | null;
+  content: string;
+  createdAt: string;
+}
+
+interface Interactions {
+  myRating: number | null;
+  avgRating: number | null;
+  ratingCount: number;
+  comments: Comment[];
+}
 
 interface ItemCardProps {
   item: Item;
@@ -106,6 +123,7 @@ export default function ItemCard({
   const canRemoveFromShare = isSharedView && !!item.membershipId && (isItemOwner || isShareOwner);
   const [confirming, setConfirming] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [interactions, setInteractions] = useState<Interactions | null>(null);
   const articleRef = useRef<HTMLElement>(null);
 
   function handleCardClick() {
@@ -114,6 +132,13 @@ export default function ItemCard({
       setExpanded(opening);
       // Auto-mark as read when opening the card (like email)
       if (opening && !item.read) onToggleRead(item.id, true);
+      // Lazy-load interactions on first expand
+      if (opening && !interactions) {
+        fetch(`/api/items/${item.id}/interactions`)
+          .then((r) => r.ok ? r.json() : null)
+          .then((data) => { if (data) setInteractions(data); })
+          .catch(() => {});
+      }
     }
   }
 
@@ -347,6 +372,29 @@ export default function ItemCard({
           </div>
         )}
 
+        {/* Ratings & Comments */}
+        {expanded && interactions && currentUserEmail && (
+          <div className="border-t border-zinc-700 pt-2 flex flex-col gap-2">
+            <StarRating
+              itemId={item.id}
+              myRating={interactions.myRating}
+              avgRating={interactions.avgRating}
+              ratingCount={interactions.ratingCount}
+              onRatingChange={(myRating, avgRating, ratingCount) =>
+                setInteractions((prev) => prev ? { ...prev, myRating, avgRating, ratingCount } : prev)
+              }
+            />
+            <CommentsSection
+              itemId={item.id}
+              comments={interactions.comments}
+              currentUserEmail={currentUserEmail}
+              onCommentsChange={(comments) =>
+                setInteractions((prev) => prev ? { ...prev, comments } : prev)
+              }
+            />
+          </div>
+        )}
+
         {/* Footer */}
         {confirming ? confirmFooter : (
           <div className="flex flex-wrap items-center gap-2 mt-auto">
@@ -460,6 +508,27 @@ export default function ItemCard({
           )}
           {item.attachments && item.attachments.length > 0 && (
             <AttachmentsPreview attachments={item.attachments} />
+          )}
+          {interactions && currentUserEmail && (
+            <div className="flex flex-col gap-2 pt-1 border-t border-zinc-700/60">
+              <StarRating
+                itemId={item.id}
+                myRating={interactions.myRating}
+                avgRating={interactions.avgRating}
+                ratingCount={interactions.ratingCount}
+                onRatingChange={(myRating, avgRating, ratingCount) =>
+                  setInteractions((prev) => prev ? { ...prev, myRating, avgRating, ratingCount } : prev)
+                }
+              />
+              <CommentsSection
+                itemId={item.id}
+                comments={interactions.comments}
+                currentUserEmail={currentUserEmail}
+                onCommentsChange={(comments) =>
+                  setInteractions((prev) => prev ? { ...prev, comments } : prev)
+                }
+              />
+            </div>
           )}
           <div className="flex flex-wrap gap-1.5 mt-1">
             {item.tags.map((tag) => (

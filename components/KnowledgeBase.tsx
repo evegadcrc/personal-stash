@@ -590,6 +590,7 @@ function KnowledgeBaseContent({
           sharedCategories={sharedCategories}
           selectedShareId={selectedShare?.id ?? null}
           onSelectShare={handleSelectShare}
+          sharedUnreadCounts={sharedUnreadCounts}
           mySharedCategoryNames={mySharedCategoryNames}
           emptyCategoryNames={emptyCategoryNames}
           onDeleteCategory={setConfirmDeleteCategory}
