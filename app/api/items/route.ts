@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { prismaToItem } from "@/lib/data";
 import { normalizeCategory } from "@/lib/categories";
 import { auth } from "@/auth";
+import { notifyShareMembers } from "@/lib/notifications";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -44,6 +45,24 @@ export async function POST(request: Request) {
       attachments: body.attachments ?? [],
     },
   });
+
+  // If this category is shared, notify members
+  const share = await prisma.share.findUnique({
+    where: { ownerEmail_categoryName: { ownerEmail: email, categoryName: item.category } },
+  });
+  if (share && (share.allowedEmails.length > 0 || share.mode === "public")) {
+    const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
+    await notifyShareMembers({
+      shareId: share.id,
+      ownerEmail: share.ownerEmail,
+      allowedEmails: share.allowedEmails,
+      categoryName: share.categoryName,
+      actorEmail: email,
+      actorName: actor?.name ?? null,
+      itemId: item.id,
+      itemTitle: item.title,
+    });
+  }
 
   return NextResponse.json({ success: true, item: prismaToItem(item) });
 }
