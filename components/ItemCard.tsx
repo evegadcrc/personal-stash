@@ -28,6 +28,7 @@ interface ItemCardProps {
   onEdit: (item: Item) => void;
   onTagClick?: (tag: string) => void;
   canReorder?: boolean;
+  canDrag?: boolean;
   isDragging?: boolean;
   isDragOver?: boolean;
   onDragStart?: () => void;
@@ -134,7 +135,7 @@ function computeRelated(item: Item, siblings: Item[]): Item[] {
 
 export default function ItemCard({
   item, view, onDelete, onToggleRead, onEdit, onTagClick,
-  canReorder, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
+  canReorder, canDrag, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
   currentUserEmail, isSharedView, shareOwnerEmail, onRemoveFromShare, onAddToShare,
   hasAvailableShares, siblingItems, onAddToCollection, autoFocus,
 }: ItemCardProps) {
@@ -343,11 +344,12 @@ export default function ItemCard({
     </div>
   );
 
-  const dragHandleEl = canReorder ? (
+  const dragHandleEl = (canReorder || canDrag) ? (
     <div
       draggable
       onDragStart={(e) => {
         e.stopPropagation();
+        e.dataTransfer.setData("text/plain", item.id);
         if (articleRef.current) {
           e.dataTransfer.setDragImage(articleRef.current, 20, 20);
         }
@@ -356,7 +358,7 @@ export default function ItemCard({
       onDragEnd={(e) => { e.stopPropagation(); onDragEnd?.(); }}
       onClick={(e) => e.stopPropagation()}
       className="flex items-center justify-center text-zinc-500 cursor-grab active:cursor-grabbing opacity-40 hover:opacity-100 transition-all shrink-0"
-      aria-label="Drag to reorder"
+      aria-label={canReorder ? "Drag to reorder" : "Drag to move to another category"}
     >
       <GripIcon />
     </div>

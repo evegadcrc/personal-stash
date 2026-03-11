@@ -666,7 +666,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
               disabled={saving || !canSave}
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
                 canSave
-                  ? "bg-zinc-100 text-zinc-900 hover:bg-white"
+                  ? "bg-zinc-100 text-zinc-900"
                   : "bg-zinc-100 text-zinc-900 opacity-40 cursor-not-allowed"
               }`}
             >

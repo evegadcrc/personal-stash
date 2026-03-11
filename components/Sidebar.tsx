@@ -32,6 +32,12 @@ interface SidebarProps {
   selectedCollectionId: string | null;
   onSelectCollection: (col: CollectionMeta) => void;
   onCollectionsChange: (cols: CollectionMeta[]) => void;
+  // Cross-category drag & drop
+  dragSourceCategory?: string | null;
+  dragOverCategory?: string | null;
+  onDragOverCategory?: (cat: string) => void;
+  onDragLeaveCategory?: () => void;
+  onDropOnCategory?: (cat: string) => void;
 }
 
 function titleCase(s: string) {
@@ -85,6 +91,11 @@ export default function Sidebar({
   selectedCollectionId,
   onSelectCollection,
   onCollectionsChange,
+  dragSourceCategory,
+  dragOverCategory,
+  onDragOverCategory,
+  onDragLeaveCategory,
+  onDropOnCategory,
 }: SidebarProps) {
   const { t } = useLanguage();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -169,11 +180,23 @@ export default function Sidebar({
           ? t.categoryIsSharedHint
           : t.deleteCategoryTitle;
 
+        const isValidDropTarget = !!dragSourceCategory && dragSourceCategory !== cat.name;
+        const isDraggedOver = dragOverCategory === cat.name && isValidDropTarget;
+
         return (
           <div
             key={cat.name}
+            onDragOver={(e) => {
+              if (!isValidDropTarget) return;
+              e.preventDefault();
+              onDragOverCategory?.(cat.name);
+            }}
+            onDragLeave={() => { if (dragOverCategory === cat.name) onDragLeaveCategory?.(); }}
+            onDrop={(e) => { e.preventDefault(); if (isValidDropTarget) onDropOnCategory?.(cat.name); }}
             className={`group flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
-              selected === cat.name
+              isDraggedOver
+                ? "bg-zinc-700 ring-1 ring-zinc-500 text-white"
+                : selected === cat.name
                 ? "bg-zinc-800 text-white"
                 : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
             }`}

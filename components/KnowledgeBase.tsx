@@ -146,6 +146,8 @@ function KnowledgeBaseContent({
   const [customOrder, setCustomOrder] = useState<Record<string, string[]>>({});
   const [dragSrcId, setDragSrcId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [dragSourceCategory, setDragSourceCategory] = useState<string | null>(null);
+  const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [collections, setCollections] = useState<CollectionMeta[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<CollectionMeta | null>(null);
@@ -267,16 +269,20 @@ function KnowledgeBaseContent({
     handleOpenItem(itemId, shareId, null);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Keep a ref to the latest handleOpenItem so the SW listener never has a stale closure
+  const handleOpenItemRef = useRef(handleOpenItem);
+  useEffect(() => { handleOpenItemRef.current = handleOpenItem; });
+
   // Listen for postMessage from SW when app tab is already open
   useEffect(() => {
     function onSwMessage(event: MessageEvent) {
       if (event.data?.type === "OPEN_ITEM") {
-        handleOpenItem(event.data.itemId ?? null, event.data.shareId ?? null, null);
+        handleOpenItemRef.current(event.data.itemId ?? null, event.data.shareId ?? null, null);
       }
     }
     navigator.serviceWorker?.addEventListener("message", onSwMessage);
     return () => navigator.serviceWorker?.removeEventListener("message", onSwMessage);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load my shares + prefetch membership items/contributors for all owned shares in parallel
   useEffect(() => {
@@ -669,6 +675,9 @@ function KnowledgeBaseContent({
     !selectedSubcategory &&
     !selectedTag;
 
+  // Can drag to move to another category (simpler condition — no filter requirement)
+  const canDrag = selectedCategory !== null && selectedShare === null && !showAllShared && categories.length > 1;
+
   const displayedItems = useMemo(() => {
     if (!canReorder || !selectedCategory) return filteredItems;
     const order = customOrder[selectedCategory];
@@ -683,9 +692,72 @@ function KnowledgeBaseContent({
     return result;
   }, [filteredItems, canReorder, customOrder, selectedCategory]);
 
-  function handleDragStart(id: string) { setDragSrcId(id); }
+  function handleDragStart(id: string) {
+    setDragSrcId(id);
+    setDragSourceCategory(selectedCategory);
+  }
   function handleDragOverItem(id: string) { setDragOverId(id); }
-  function handleDragEnd() { setDragSrcId(null); setDragOverId(null); }
+  function handleDragEnd() {
+    setDragSrcId(null);
+    setDragOverId(null);
+    setDragSourceCategory(null);
+    setDragOverCategory(null);
+  }
+
+  async function handleMoveItemToCategory(targetCategory: string) {
+    if (!dragSrcId || !dragSourceCategory || dragSourceCategory === targetCategory) {
+      setDragOverCategory(null);
+      return;
+    }
+    const itemId = dragSrcId;
+    const srcCat = dragSourceCategory;
+    setDragSrcId(null);
+    setDragSourceCategory(null);
+    setDragOverCategory(null);
+
+    const srcCatData = categories.find((c) => c.name === srcCat);
+    const item = srcCatData?.items.find((i) => i.id === itemId);
+    if (!item) return;
+
+    // Optimistic update
+    setCategories((prev) =>
+      prev.map((cat) => {
+        if (cat.name === srcCat) return { ...cat, items: cat.items.filter((i) => i.id !== itemId) };
+        if (cat.name === targetCategory) return { ...cat, items: [{ ...item, category: targetCategory }, ...cat.items] };
+        return cat;
+      })
+    );
+
+    const res = await fetch(`/api/items/${itemId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: item.title,
+        url: item.url,
+        summary: item.summary,
+        category: targetCategory,
+        subcategory: item.subcategory,
+        tags: item.tags,
+        source: item.source,
+        content: item.content ?? null,
+        color: item.color ?? null,
+      }),
+    });
+
+    if (!res.ok) {
+      // Revert
+      setCategories((prev) =>
+        prev.map((cat) => {
+          if (cat.name === targetCategory) return { ...cat, items: cat.items.filter((i) => i.id !== itemId) };
+          if (cat.name === srcCat) return { ...cat, items: [item, ...cat.items] };
+          return cat;
+        })
+      );
+      showToast("Failed to move item");
+    } else {
+      showToast(`Moved to ${titleCase(targetCategory)}`);
+    }
+  }
   function handleDropOnItem(targetId: string) {
     if (!dragSrcId || dragSrcId === targetId || !selectedCategory) return;
     const ids = displayedItems.map((i) => i.id);
@@ -889,6 +961,11 @@ function KnowledgeBaseContent({
           selectedCollectionId={selectedCollection?.id ?? null}
           onSelectCollection={handleSelectCollection}
           onCollectionsChange={setCollections}
+          dragSourceCategory={dragSourceCategory}
+          dragOverCategory={dragOverCategory}
+          onDragOverCategory={setDragOverCategory}
+          onDragLeaveCategory={() => setDragOverCategory(null)}
+          onDropOnCategory={handleMoveItemToCategory}
         />
       </nav>
 
@@ -1325,6 +1402,7 @@ function KnowledgeBaseContent({
                       onEdit={setEditingItem}
                       onTagClick={setSelectedTag}
                       canReorder={canReorder}
+                      canDrag={canDrag}
                       isDragging={dragSrcId === item.id}
                       isDragOver={dragOverId === item.id}
                       onDragStart={() => handleDragStart(item.id)}
@@ -1355,6 +1433,7 @@ function KnowledgeBaseContent({
                       onEdit={setEditingItem}
                       onTagClick={setSelectedTag}
                       canReorder={canReorder}
+                      canDrag={canDrag}
                       isDragging={dragSrcId === item.id}
                       isDragOver={dragOverId === item.id}
                       onDragStart={() => handleDragStart(item.id)}
