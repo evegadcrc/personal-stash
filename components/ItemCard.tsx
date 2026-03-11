@@ -41,6 +41,8 @@ interface ItemCardProps {
   onRemoveFromShare?: (membershipId: string) => void;
   onAddToShare?: (item: Item) => void;
   hasAvailableShares?: boolean;
+  // Related items (sibling items in same view for similarity scoring)
+  siblingItems?: Item[];
 }
 
 function formatDate(iso: string) {
@@ -109,11 +111,28 @@ function GripIcon() {
   );
 }
 
+function computeRelated(item: Item, siblings: Item[]): Item[] {
+  return siblings
+    .filter((s) => s.id !== item.id)
+    .map((s) => {
+      let score = 0;
+      if (s.category === item.category) score += 3;
+      if (s.subcategory && s.subcategory === item.subcategory) score += 2;
+      for (const tag of item.tags) if (s.tags.includes(tag)) score += 2;
+      if (s.source === item.source && item.source !== "manual") score += 1;
+      return { item: s, score };
+    })
+    .filter((x) => x.score >= 3)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((x) => x.item);
+}
+
 export default function ItemCard({
   item, view, onDelete, onToggleRead, onEdit, onTagClick,
   canReorder, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
   currentUserEmail, isSharedView, shareOwnerEmail, onRemoveFromShare, onAddToShare,
-  hasAvailableShares,
+  hasAvailableShares, siblingItems,
 }: ItemCardProps) {
   const isItemOwner = item.ownerEmail === currentUserEmail;
   const isShareOwner = shareOwnerEmail === currentUserEmail;
@@ -124,6 +143,7 @@ export default function ItemCard({
   const [confirming, setConfirming] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [interactions, setInteractions] = useState<Interactions | null>(null);
+  const [related, setRelated] = useState<Item[] | null>(null);
   const articleRef = useRef<HTMLElement>(null);
 
   function handleCardClick() {
@@ -132,12 +152,15 @@ export default function ItemCard({
       setExpanded(opening);
       // Auto-mark as read when opening the card (like email)
       if (opening && !item.read) onToggleRead(item.id, true);
-      // Lazy-load interactions on first expand
+      // Lazy-load interactions + related items on first expand
       if (opening && !interactions) {
         fetch(`/api/items/${item.id}/interactions`)
           .then((r) => r.ok ? r.json() : null)
           .then((data) => { if (data) setInteractions(data); })
           .catch(() => {});
+      }
+      if (opening && !related && siblingItems) {
+        setRelated(computeRelated(item, siblingItems));
       }
     }
   }
@@ -395,6 +418,23 @@ export default function ItemCard({
           </div>
         )}
 
+        {/* Related items */}
+        {expanded && related && related.length > 0 && (
+          <div className="border-t border-zinc-700 pt-2 flex flex-col gap-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">Related</p>
+            {related.map((r) => (
+              <button
+                key={r.id}
+                onClick={(e) => { e.stopPropagation(); onTagClick?.(r.tags[0] ?? ""); }}
+                className="flex items-start gap-1.5 rounded-lg p-1.5 text-left hover:bg-zinc-700/50 transition-colors"
+              >
+                <span className="text-zinc-600 text-[10px] mt-0.5 shrink-0">↗</span>
+                <span className="text-xs text-zinc-400 leading-snug line-clamp-2">{r.title}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Footer */}
         {confirming ? confirmFooter : (
           <div className="flex flex-wrap items-center gap-2 mt-auto">
@@ -551,6 +591,17 @@ export default function ItemCard({
               </span>
             )}
           </div>
+          {related && related.length > 0 && (
+            <div className="flex flex-col gap-0.5 pt-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600 mb-0.5">Related</p>
+              {related.map((r) => (
+                <div key={r.id} className="flex items-start gap-1.5 text-xs text-zinc-500">
+                  <span className="shrink-0 text-zinc-700">↗</span>
+                  <span className="line-clamp-1">{r.title}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </article>

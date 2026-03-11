@@ -21,6 +21,19 @@ model User {
   itemReads        UserItemRead[]
   ratings          ItemRating[]
   comments         ItemComment[]
+  categoryNotes    CategoryNote[]
+}
+
+// Scratch-pad notes per category (personal only)
+model CategoryNote {
+  ownerEmail   String
+  categoryName String
+  content      String   @default("")
+  updatedAt    DateTime @updatedAt
+
+  owner User @relation(fields: [ownerEmail], references: [email], onDelete: Cascade)
+
+  @@id([ownerEmail, categoryName])
 }
 
 // Per-user read tracking for shared library viewers (owner uses Item.read)

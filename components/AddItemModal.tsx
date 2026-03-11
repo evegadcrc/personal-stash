@@ -85,6 +85,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [duplicate, setDuplicate] = useState<{ title: string; category: string } | null>(null);
 
   // Derived values
   const existingCategoryNames = categories.map((c) => c.name);
@@ -329,15 +330,32 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
             </div>
 
             {inputTab === "url" && (
-              <input
-                type="url"
-                placeholder="https://…"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && canAnalyze && handleAnalyze()}
-                className={inputCls}
-                autoFocus
-              />
+              <>
+                <input
+                  type="url"
+                  placeholder="https://…"
+                  value={urlInput}
+                  onChange={(e) => { setUrlInput(e.target.value); setDuplicate(null); }}
+                  onBlur={async (e) => {
+                    const url = e.target.value.trim();
+                    if (!url) return;
+                    const res = await fetch(`/api/items/check-duplicate?url=${encodeURIComponent(url)}`);
+                    if (res.ok) {
+                      const data = await res.json();
+                      setDuplicate(data.exists ? data.item : null);
+                    }
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && canAnalyze && handleAnalyze()}
+                  className={inputCls}
+                  autoFocus
+                />
+                {duplicate && (
+                  <div className="flex items-start gap-2 rounded-lg border border-amber-700/60 bg-amber-900/20 px-3 py-2 text-xs text-amber-300">
+                    <span className="shrink-0">⚠️</span>
+                    <span>Already saved as <strong>{duplicate.title}</strong> in <em>{duplicate.category}</em>. You can still save a new copy.</span>
+                  </div>
+                )}
+              </>
             )}
 
             {inputTab === "text" && (

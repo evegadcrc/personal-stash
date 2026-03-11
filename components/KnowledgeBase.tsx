@@ -16,6 +16,7 @@ import ShareSettingsModal from "./ShareSettingsModal";
 import FriendsModal from "./FriendsModal";
 import NotificationsPanel from "./NotificationsPanel";
 import AddToShareModal from "./AddToShareModal";
+import CategoryNotes from "./CategoryNotes";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 
 type ViewMode = "grid" | "list";
@@ -126,6 +127,7 @@ function KnowledgeBaseContent({
   const [dragSrcId, setDragSrcId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [showStaleOnly, setShowStaleOnly] = useState(false);
   const [showAllShared, setShowAllShared] = useState(false);
   const [allSharedItems, setAllSharedItems] = useState<Item[]>([]);
   const [loadingAllShared, setLoadingAllShared] = useState(false);
@@ -182,13 +184,18 @@ function KnowledgeBaseContent({
     localStorage.setItem("stash-view-mode", mode);
   }
 
-  // "/" shortcut — focus search on desktop
+  // Keyboard shortcuts: "/" → search, "n" → add item
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName;
-      if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA" && tag !== "SELECT") {
+      const inInput = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+      if (e.key === "/" && !inInput) {
         e.preventDefault();
         searchRef.current?.focus();
+      }
+      if (e.key === "n" && !inInput && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setShowAddModal(true);
       }
       if (e.key === "Escape") {
         setSidebarOpen(false);
@@ -211,6 +218,7 @@ function KnowledgeBaseContent({
     setSelectedTag(null);
     setSearchQuery("");
     setShowUnreadOnly(false);
+    setShowStaleOnly(false);
     setSidebarOpen(false);
     if (!share) { setSharedItems([]); setSharedContributors([]); return; }
 
@@ -364,6 +372,7 @@ function KnowledgeBaseContent({
     setSelectedTag(null);
     setSearchQuery("");
     setShowUnreadOnly(false);
+    setShowStaleOnly(false);
     setSidebarOpen(false);
   }
 
@@ -376,6 +385,7 @@ function KnowledgeBaseContent({
     setSelectedTag(null);
     setSearchQuery("");
     setShowUnreadOnly(false);
+    setShowStaleOnly(false);
     setSidebarOpen(false);
 
     setLoadingAllShared(true);
@@ -420,6 +430,12 @@ function KnowledgeBaseContent({
     return counts;
   }, [categories, categoryMembershipItemsMap]);
 
+  // Update browser tab title with total unread count
+  useEffect(() => {
+    const total = Object.values(unreadCounts).reduce((s, n) => s + n, 0);
+    document.title = total > 0 ? `(${total}) Personal Stash` : "Personal Stash";
+  }, [unreadCounts]);
+
   // Derived from map — always in memory, no per-click fetch delay
   const categoryMembershipItems = selectedCategory ? (categoryMembershipItemsMap[selectedCategory] ?? []) : [];
   const categoryContributors = selectedCategory ? (categoryContributorsMap[selectedCategory] ?? []) : [];
@@ -446,6 +462,10 @@ function KnowledgeBaseContent({
 
     if (showUnreadOnly) {
       items = items.filter((i) => !i.read);
+    }
+    if (showStaleOnly) {
+      const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      items = items.filter((i) => !i.read && new Date(i.dateAdded).getTime() < cutoff);
     }
     if (selectedSubcategory) {
       items = items.filter((i) => i.subcategory === selectedSubcategory);
@@ -474,7 +494,7 @@ function KnowledgeBaseContent({
       }
       return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
     });
-  }, [activeItems, showUnreadOnly, selectedSubcategory, selectedTag, searchQuery, sortMode]);
+  }, [activeItems, showUnreadOnly, showStaleOnly, selectedSubcategory, selectedTag, searchQuery, sortMode]);
 
   const canReorder =
     selectedCategory !== null &&
@@ -531,6 +551,14 @@ function KnowledgeBaseContent({
     : "All";
 
   const hasActiveFilters = subcategories.length > 0 || selectedTag !== null;
+
+  // Stale unread: personal items unread for 30+ days
+  const staleUnreadCount = useMemo(() => {
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return categories.flatMap((c) => c.items).filter(
+      (i) => !i.read && new Date(i.dateAdded).getTime() < cutoff
+    ).length;
+  }, [categories]);
 
   const mySharedCategoryNames = useMemo(
     () => new Set(myShares.map((s) => s.categoryName)),
@@ -967,7 +995,28 @@ function KnowledgeBaseContent({
         </header>
 
         {/* Item list */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6">
+        <div className="flex-1 overflow-y-auto">
+          {/* Stale unread nudge — shown in "All" personal view */}
+          {!selectedShare && !selectedCategory && !showAllShared && staleUnreadCount > 0 && !showStaleOnly && !showUnreadOnly && (
+            <div className="mx-4 md:mx-6 mt-4 flex items-center gap-3 rounded-lg border border-amber-700/40 bg-amber-900/15 px-3 py-2 text-xs text-amber-300">
+              <span>📌</span>
+              <span className="flex-1"><strong>{staleUnreadCount}</strong> item{staleUnreadCount > 1 ? "s" : ""} sitting unread for 30+ days</span>
+              <button
+                onClick={() => setShowStaleOnly(true)}
+                className="shrink-0 rounded-md border border-amber-700/60 px-2 py-0.5 hover:bg-amber-800/30 transition-colors"
+              >
+                Show
+              </button>
+            </div>
+          )}
+          {showStaleOnly && (
+            <div className="mx-4 md:mx-6 mt-4 flex items-center gap-2 rounded-lg border border-amber-700/40 bg-amber-900/15 px-3 py-2 text-xs text-amber-300">
+              <span>📌</span>
+              <span className="flex-1">Showing stale unread items (30+ days)</span>
+              <button onClick={() => setShowStaleOnly(false)} className="shrink-0 text-amber-500 hover:text-amber-300">✕ Clear</button>
+            </div>
+          )}
+          <div className="px-4 md:px-6 py-4 md:py-6">
           {loadingSharedItems || loadingAllShared ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-zinc-500 text-sm">{t.loading}</p>
@@ -1024,6 +1073,7 @@ function KnowledgeBaseContent({
                       onRemoveFromShare={handleRemoveFromShare}
                       onAddToShare={setAddToShareItem}
                       hasAvailableShares={sharedCategories.length > 0}
+                      siblingItems={activeItems}
                     />
                   ))}
                 </div>
@@ -1051,11 +1101,18 @@ function KnowledgeBaseContent({
                       onRemoveFromShare={handleRemoveFromShare}
                       onAddToShare={setAddToShareItem}
                       hasAvailableShares={sharedCategories.length > 0}
+                      siblingItems={activeItems}
                     />
                   ))}
                 </div>
               )}
             </>
+          )}
+          </div>
+
+          {/* Category scratch-pad notes — personal categories only */}
+          {selectedCategory && !selectedShare && !showAllShared && (
+            <CategoryNotes category={selectedCategory} />
           )}
         </div>
       </main>
