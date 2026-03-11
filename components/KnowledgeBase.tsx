@@ -430,11 +430,13 @@ function KnowledgeBaseContent({
     return counts;
   }, [categories, categoryMembershipItemsMap]);
 
-  // Update browser tab title with total unread count
+  // Update browser tab title with total unread count (personal + shared)
   useEffect(() => {
-    const total = Object.values(unreadCounts).reduce((s, n) => s + n, 0);
+    const personal = Object.values(unreadCounts).reduce((s, n) => s + n, 0);
+    const shared = Object.values(sharedUnreadCounts).reduce((s, n) => s + n, 0);
+    const total = personal + shared;
     document.title = total > 0 ? `(${total}) Personal Stash` : "Personal Stash";
-  }, [unreadCounts]);
+  }, [unreadCounts, sharedUnreadCounts]);
 
   // Derived from map — always in memory, no per-click fetch delay
   const categoryMembershipItems = selectedCategory ? (categoryMembershipItemsMap[selectedCategory] ?? []) : [];
@@ -1110,11 +1112,12 @@ function KnowledgeBaseContent({
           )}
           </div>
 
-          {/* Category scratch-pad notes — personal categories only */}
+        </div>
+
+          {/* Category scratch-pad notes — always visible at bottom, outside scroll area */}
           {selectedCategory && !selectedShare && !showAllShared && (
             <CategoryNotes category={selectedCategory} />
           )}
-        </div>
       </main>
 
       {showAddModal && (
