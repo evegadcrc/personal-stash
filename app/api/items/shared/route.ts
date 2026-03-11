@@ -57,18 +57,22 @@ export async function POST(request: Request) {
     data: { itemId: item.id, shareId: body.shareId, addedBy: email },
   });
 
-  // Notify other share members
-  const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
-  await notifyShareMembers({
-    shareId: share.id,
-    ownerEmail: share.ownerEmail,
-    allowedEmails: share.allowedEmails,
-    categoryName: share.categoryName,
-    actorEmail: email,
-    actorName: actor?.name ?? null,
-    itemId: item.id,
-    itemTitle: item.title,
-  });
+  // Notify other share members (non-blocking)
+  try {
+    const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
+    await notifyShareMembers({
+      shareId: share.id,
+      ownerEmail: share.ownerEmail,
+      allowedEmails: share.allowedEmails,
+      categoryName: share.categoryName,
+      actorEmail: email,
+      actorName: actor?.name ?? null,
+      itemId: item.id,
+      itemTitle: item.title,
+    });
+  } catch (err) {
+    console.error("[notifications] failed to notify share members:", err);
+  }
 
   return NextResponse.json({
     success: true,

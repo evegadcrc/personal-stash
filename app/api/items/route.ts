@@ -30,13 +30,15 @@ export async function POST(request: Request) {
     create: { email },
   });
 
+  const normalizedCategory = normalizeCategory(body.category);
+
   const item = await prisma.item.create({
     data: {
       ownerEmail: email,
       title: body.title,
       url: body.url ?? null,
       summary: body.summary,
-      category: normalizeCategory(body.category),
+      category: normalizedCategory,
       subcategory: body.subcategory,
       tags: body.tags ?? [],
       source: body.source ?? "manual",
@@ -46,22 +48,31 @@ export async function POST(request: Request) {
     },
   });
 
-  // If this category is shared, notify members
-  const share = await prisma.share.findUnique({
-    where: { ownerEmail_categoryName: { ownerEmail: email, categoryName: item.category } },
-  });
-  if (share && (share.allowedEmails.length > 0 || share.mode === "public")) {
-    const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
-    await notifyShareMembers({
-      shareId: share.id,
-      ownerEmail: share.ownerEmail,
-      allowedEmails: share.allowedEmails,
-      categoryName: share.categoryName,
-      actorEmail: email,
-      actorName: actor?.name ?? null,
-      itemId: item.id,
-      itemTitle: item.title,
+  // Notify share members — search by both the raw and normalized category name
+  // because share records may still use the original (pre-normalization) name
+  try {
+    const share = await prisma.share.findFirst({
+      where: {
+        ownerEmail: email,
+        categoryName: { in: [...new Set([body.category.trim().toLowerCase(), normalizedCategory])] },
+      },
     });
+    if (share && (share.allowedEmails.length > 0 || share.mode === "public")) {
+      const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
+      await notifyShareMembers({
+        shareId: share.id,
+        ownerEmail: share.ownerEmail,
+        allowedEmails: share.allowedEmails,
+        categoryName: share.categoryName,
+        actorEmail: email,
+        actorName: actor?.name ?? null,
+        itemId: item.id,
+        itemTitle: item.title,
+      });
+    }
+  } catch (err) {
+    console.error("[notifications] failed to notify share members:", err);
+    // Non-blocking — item creation already succeeded
   }
 
   return NextResponse.json({ success: true, item: prismaToItem(item) });

@@ -166,13 +166,18 @@ function KnowledgeBaseContent({
       .catch(() => {});
   }, [currentUserEmail]);
 
-  // Fetch notification count on mount
+  // Fetch notification count on mount + poll every 60s
   useEffect(() => {
     if (!currentUserEmail) return;
-    fetch("/api/notifications?count=true")
-      .then((r) => r.json())
-      .then((data) => setNotifCount(data.count ?? 0))
-      .catch(() => {});
+    function fetchCount() {
+      fetch("/api/notifications?count=true")
+        .then((r) => r.json())
+        .then((data) => setNotifCount(data.count ?? 0))
+        .catch(() => {});
+    }
+    fetchCount();
+    const interval = setInterval(fetchCount, 60_000);
+    return () => clearInterval(interval);
   }, [currentUserEmail]);
 
   // Load my shares + prefetch membership items/contributors for all owned shares in parallel
