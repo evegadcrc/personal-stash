@@ -148,6 +148,8 @@ function KnowledgeBaseContent({
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [dragSourceCategory, setDragSourceCategory] = useState<string | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
+  // When dragging from a shared-with-me view we need the shareId + membershipId
+  const [dragFromShare, setDragFromShare] = useState<{ shareId: string; membershipId: string | undefined } | null>(null);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [collections, setCollections] = useState<CollectionMeta[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<CollectionMeta | null>(null);
@@ -264,9 +266,10 @@ function KnowledgeBaseContent({
     const params = new URLSearchParams(window.location.search);
     const itemId = params.get("itemId");
     const shareId = params.get("shareId");
+    const categoryName = params.get("categoryName");
     if (!itemId) return;
     window.history.replaceState({}, "", "/");
-    handleOpenItem(itemId, shareId, null);
+    handleOpenItem(itemId, shareId, categoryName);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep a ref to the latest handleOpenItem so the SW listener never has a stale closure
@@ -277,7 +280,11 @@ function KnowledgeBaseContent({
   useEffect(() => {
     function onSwMessage(event: MessageEvent) {
       if (event.data?.type === "OPEN_ITEM") {
-        handleOpenItemRef.current(event.data.itemId ?? null, event.data.shareId ?? null, null);
+        handleOpenItemRef.current(
+          event.data.itemId ?? null,
+          event.data.shareId ?? null,
+          event.data.categoryName ?? null,
+        );
       }
     }
     navigator.serviceWorker?.addEventListener("message", onSwMessage);
@@ -675,8 +682,9 @@ function KnowledgeBaseContent({
     !selectedSubcategory &&
     !selectedTag;
 
-  // Can drag to move to another category (simpler condition — no filter requirement)
-  const canDrag = selectedCategory !== null && selectedShare === null && !showAllShared && categories.length > 1;
+  // Can drag to move to another category — true for any non-collection personal or shared view
+  // Per-item: only items owned by currentUserEmail are actually draggable
+  const canDragBase = !showAllShared && !selectedCollection && categories.length > 1;
 
   const displayedItems = useMemo(() => {
     if (!canReorder || !selectedCategory) return filteredItems;
@@ -692,9 +700,10 @@ function KnowledgeBaseContent({
     return result;
   }, [filteredItems, canReorder, customOrder, selectedCategory]);
 
-  function handleDragStart(id: string) {
+  function handleDragStart(id: string, fromShare?: { shareId: string; membershipId: string | undefined }) {
     setDragSrcId(id);
     setDragSourceCategory(selectedCategory);
+    setDragFromShare(fromShare ?? null);
   }
   function handleDragOverItem(id: string) { setDragOverId(id); }
   function handleDragEnd() {
@@ -702,32 +711,52 @@ function KnowledgeBaseContent({
     setDragOverId(null);
     setDragSourceCategory(null);
     setDragOverCategory(null);
+    setDragFromShare(null);
   }
 
   async function handleMoveItemToCategory(targetCategory: string) {
-    if (!dragSrcId || !dragSourceCategory || dragSourceCategory === targetCategory) {
+    const itemId = dragSrcId;
+    const srcCat = dragSourceCategory;
+    const fromShare = dragFromShare;
+
+    // Must have src (either a personal category or a shared view)
+    if (!itemId || (srcCat === null && fromShare === null) || srcCat === targetCategory) {
       setDragOverCategory(null);
       return;
     }
-    const itemId = dragSrcId;
-    const srcCat = dragSourceCategory;
+
     setDragSrcId(null);
     setDragSourceCategory(null);
     setDragOverCategory(null);
+    setDragFromShare(null);
 
-    const srcCatData = categories.find((c) => c.name === srcCat);
-    const item = srcCatData?.items.find((i) => i.id === itemId);
+    // Locate the item in current view
+    const item = srcCat
+      ? categories.find((c) => c.name === srcCat)?.items.find((i) => i.id === itemId)
+      : sharedItems.find((i) => i.id === itemId);
     if (!item) return;
 
     // Optimistic update
-    setCategories((prev) =>
-      prev.map((cat) => {
-        if (cat.name === srcCat) return { ...cat, items: cat.items.filter((i) => i.id !== itemId) };
-        if (cat.name === targetCategory) return { ...cat, items: [{ ...item, category: targetCategory }, ...cat.items] };
-        return cat;
-      })
-    );
+    if (srcCat) {
+      setCategories((prev) =>
+        prev.map((cat) => {
+          if (cat.name === srcCat) return { ...cat, items: cat.items.filter((i) => i.id !== itemId) };
+          if (cat.name === targetCategory) return { ...cat, items: [{ ...item, category: targetCategory }, ...cat.items] };
+          return cat;
+        })
+      );
+    } else {
+      // Remove from shared view
+      setSharedItems((prev) => prev.filter((i) => i.id !== itemId));
+      // Add to personal target category
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.name === targetCategory ? { ...cat, items: [{ ...item, category: targetCategory, membershipId: undefined, sharedOnly: false }, ...cat.items] } : cat
+        )
+      );
+    }
 
+    // API: update category
     const res = await fetch(`/api/items/${itemId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -745,18 +774,31 @@ function KnowledgeBaseContent({
     });
 
     if (!res.ok) {
-      // Revert
-      setCategories((prev) =>
-        prev.map((cat) => {
-          if (cat.name === targetCategory) return { ...cat, items: cat.items.filter((i) => i.id !== itemId) };
-          if (cat.name === srcCat) return { ...cat, items: [item, ...cat.items] };
-          return cat;
-        })
-      );
       showToast("Failed to move item");
-    } else {
-      showToast(`Moved to ${titleCase(targetCategory)}`);
+      // Revert
+      if (srcCat) {
+        setCategories((prev) =>
+          prev.map((cat) => {
+            if (cat.name === targetCategory) return { ...cat, items: cat.items.filter((i) => i.id !== itemId) };
+            if (cat.name === srcCat) return { ...cat, items: [item, ...cat.items] };
+            return cat;
+          })
+        );
+      } else {
+        setSharedItems((prev) => [item, ...prev]);
+        setCategories((prev) =>
+          prev.map((cat) => cat.name === targetCategory ? { ...cat, items: cat.items.filter((i) => i.id !== itemId) } : cat)
+        );
+      }
+      return;
     }
+
+    // If dragged from shared-with-me, also remove the SharedMembership
+    if (fromShare?.shareId && fromShare.membershipId) {
+      await fetch(`/api/sharing/${fromShare.shareId}/members/${fromShare.membershipId}`, { method: "DELETE" });
+    }
+
+    showToast(`Moved to ${titleCase(targetCategory)}`);
   }
   function handleDropOnItem(targetId: string) {
     if (!dragSrcId || dragSrcId === targetId || !selectedCategory) return;
@@ -961,7 +1003,7 @@ function KnowledgeBaseContent({
           selectedCollectionId={selectedCollection?.id ?? null}
           onSelectCollection={handleSelectCollection}
           onCollectionsChange={setCollections}
-          dragSourceCategory={dragSourceCategory}
+          dragSourceCategory={dragSourceCategory ?? (dragSrcId ? "__shared__" : null)}
           dragOverCategory={dragOverCategory}
           onDragOverCategory={setDragOverCategory}
           onDragLeaveCategory={() => setDragOverCategory(null)}
@@ -1402,10 +1444,13 @@ function KnowledgeBaseContent({
                       onEdit={setEditingItem}
                       onTagClick={setSelectedTag}
                       canReorder={canReorder}
-                      canDrag={canDrag}
+                      canDrag={canDragBase && item.ownerEmail === currentUserEmail}
                       isDragging={dragSrcId === item.id}
                       isDragOver={dragOverId === item.id}
-                      onDragStart={() => handleDragStart(item.id)}
+                      onDragStart={() => handleDragStart(
+                        item.id,
+                        selectedShare ? { shareId: selectedShare.id, membershipId: item.membershipId } : undefined
+                      )}
                       onDragOver={() => handleDragOverItem(item.id)}
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}
@@ -1433,10 +1478,13 @@ function KnowledgeBaseContent({
                       onEdit={setEditingItem}
                       onTagClick={setSelectedTag}
                       canReorder={canReorder}
-                      canDrag={canDrag}
+                      canDrag={canDragBase && item.ownerEmail === currentUserEmail}
                       isDragging={dragSrcId === item.id}
                       isDragOver={dragOverId === item.id}
-                      onDragStart={() => handleDragStart(item.id)}
+                      onDragStart={() => handleDragStart(
+                        item.id,
+                        selectedShare ? { shareId: selectedShare.id, membershipId: item.membershipId } : undefined
+                      )}
                       onDragOver={() => handleDragOverItem(item.id)}
                       onDrop={() => handleDropOnItem(item.id)}
                       onDragEnd={handleDragEnd}

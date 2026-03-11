@@ -18,15 +18,19 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const { shareId, itemId } = event.notification.data ?? {};
-  const query = [itemId && `itemId=${itemId}`, shareId && `shareId=${shareId}`].filter(Boolean).join('&');
+  const { shareId, itemId, categoryName } = event.notification.data ?? {};
+  const query = [
+    itemId && `itemId=${encodeURIComponent(itemId)}`,
+    shareId && `shareId=${encodeURIComponent(shareId)}`,
+    categoryName && `categoryName=${encodeURIComponent(categoryName)}`,
+  ].filter(Boolean).join('&');
   const url = query ? `/?${query}` : '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
       const existing = wins.find((w) => w.url.startsWith(self.location.origin));
       if (existing) {
         // App already open — send a message so it doesn't need to reload
-        existing.postMessage({ type: 'OPEN_ITEM', itemId, shareId });
+        existing.postMessage({ type: 'OPEN_ITEM', itemId, shareId, categoryName });
         return existing.focus();
       }
       // App closed — open it with URL params so the mount effect can read them
@@ -37,8 +41,8 @@ self.addEventListener('notificationclick', (event) => {
 
 // ── Caching ──────────────────────────────────────────────────────────────────
 
-const SHELL_CACHE = 'stash-shell-v3';
-const STATIC_CACHE = 'stash-static-v3';
+const SHELL_CACHE = 'stash-shell-v4';
+const STATIC_CACHE = 'stash-static-v4';
 
 const SHELL_URLS = ['/', '/login'];
 
