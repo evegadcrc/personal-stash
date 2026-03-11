@@ -112,6 +112,7 @@ function KnowledgeBaseContent({
   const [sharedUnreadCounts, setSharedUnreadCounts] = useState<Record<string, number>>({});
   const [sharedCategories, setSharedCategories] = useState<ShareWithOwner[]>(initialSharedCategories);
   const [pendingCount, setPendingCount] = useState(initialPendingCount);
+  const [notifCount, setNotifCount] = useState(0);
   const [myShares, setMyShares] = useState<MyShare[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
@@ -162,6 +163,15 @@ function KnowledgeBaseContent({
     fetch("/api/collections")
       .then((r) => r.json())
       .then((data) => setCollections(data.collections ?? []))
+      .catch(() => {});
+  }, [currentUserEmail]);
+
+  // Fetch notification count on mount
+  useEffect(() => {
+    if (!currentUserEmail) return;
+    fetch("/api/notifications?count=true")
+      .then((r) => r.json())
+      .then((data) => setNotifCount(data.count ?? 0))
       .catch(() => {});
   }, [currentUserEmail]);
 
@@ -849,9 +859,9 @@ function KnowledgeBaseContent({
                         </span>
                       )}
                     </button>
-                    {pendingCount > 0 && (
+                    {(pendingCount + notifCount) > 0 && (
                       <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none pointer-events-none">
-                        {pendingCount > 9 ? "9+" : pendingCount}
+                        {(pendingCount + notifCount) > 9 ? "9+" : (pendingCount + notifCount)}
                       </span>
                     )}
                   </div>
@@ -864,6 +874,11 @@ function KnowledgeBaseContent({
                       onOpenFriends={() => {
                         setNotifPanelOpen(false);
                         setShowFriendsModal(true);
+                      }}
+                      onNotifCountChange={setNotifCount}
+                      onSelectShare={(shareId) => {
+                        const share = sharedCategories.find((s) => s.id === shareId);
+                        if (share) handleSelectShare(share);
                       }}
                     />
                   )}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hasShareAccess } from "@/lib/sharing";
 import { auth } from "@/auth";
+import { notifyShareMembers } from "@/lib/notifications";
 
 // POST — link an existing item to a shared category
 export async function POST(
@@ -30,6 +31,19 @@ export async function POST(
     where: { itemId_shareId: { itemId, shareId } },
     update: {},
     create: { itemId, shareId, addedBy: email },
+  });
+
+  // Notify other share members
+  const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
+  await notifyShareMembers({
+    shareId: share.id,
+    ownerEmail: share.ownerEmail,
+    allowedEmails: share.allowedEmails,
+    categoryName: share.categoryName,
+    actorEmail: email,
+    actorName: actor?.name ?? null,
+    itemId: item.id,
+    itemTitle: item.title,
   });
 
   return NextResponse.json({ success: true, membership });

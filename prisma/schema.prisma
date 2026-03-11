@@ -138,6 +138,23 @@ model CollectionItem {
   @@index([collectionId])
 }
 
+model Notification {
+  id           String   @id @default(uuid())
+  toEmail      String
+  fromEmail    String
+  fromName     String?
+  type         String   // "item_shared"
+  itemId       String?
+  itemTitle    String?
+  shareId      String?
+  categoryName String?
+  read         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([toEmail, read])
+  @@index([toEmail, createdAt])
+}
+
 model SharedMembership {
   id      String   @id @default(uuid())
   itemId  String

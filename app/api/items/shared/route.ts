@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { prismaToItem } from "@/lib/data";
 import { hasShareAccess } from "@/lib/sharing";
 import { auth } from "@/auth";
+import { notifyShareMembers } from "@/lib/notifications";
 
 // POST — create a brand-new item and add it to a shared category
 export async function POST(request: Request) {
@@ -54,6 +55,19 @@ export async function POST(request: Request) {
   // Create membership linking item to the shared category
   const membership = await prisma.sharedMembership.create({
     data: { itemId: item.id, shareId: body.shareId, addedBy: email },
+  });
+
+  // Notify other share members
+  const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
+  await notifyShareMembers({
+    shareId: share.id,
+    ownerEmail: share.ownerEmail,
+    allowedEmails: share.allowedEmails,
+    categoryName: share.categoryName,
+    actorEmail: email,
+    actorName: actor?.name ?? null,
+    itemId: item.id,
+    itemTitle: item.title,
   });
 
   return NextResponse.json({
