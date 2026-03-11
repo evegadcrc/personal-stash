@@ -683,6 +683,35 @@ function KnowledgeBaseContent({
     return true;
   }
 
+  function handleExport() {
+    const label = categoryLabel.toLowerCase().replace(/\s+/g, "-");
+    const data = activeItems.map(({ id, title, url, summary, category, subcategory, tags, dateAdded, source, read, color, content }) => ({
+      id, title, url, summary, category, subcategory, tags,
+      dateAdded, source, read, color: color ?? undefined, content: content ?? undefined,
+    }));
+    const md = data.map((i) => [
+      `## ${i.title}`,
+      i.url ? `**URL:** ${i.url}` : null,
+      `**Category:** ${i.category}${i.subcategory ? ` / ${i.subcategory}` : ""}`,
+      i.tags.length ? `**Tags:** ${i.tags.map((tg) => `\`${tg}\``).join(", ")}` : null,
+      `**Added:** ${new Date(i.dateAdded).toLocaleDateString()}`,
+      "",
+      i.summary,
+      i.content ? `\n${i.content}` : null,
+    ].filter(Boolean).join("\n")).join("\n\n---\n\n");
+    const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const mdBlob = new Blob([`# ${categoryLabel}\n\n${md}`], { type: "text/markdown" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(jsonBlob);
+    a.download = `stash-${label}.json`;
+    a.click();
+    setTimeout(() => {
+      a.href = URL.createObjectURL(mdBlob);
+      a.download = `stash-${label}.md`;
+      a.click();
+    }, 300);
+  }
+
   function handleShareSaved() {
     // Refresh my shares
     fetch("/api/sharing")
@@ -937,48 +966,18 @@ function KnowledgeBaseContent({
               >
                 {sortMode === "date" ? t.sortDate : sortMode === "name" ? t.sortName : t.sortColor}
               </button>
-              {/* Export dropdown */}
+              {/* Export — desktop */}
               {activeItems.length > 0 && (
-                <div className="relative hidden sm:block">
-                  <button
-                    onClick={() => {
-                      const label = categoryLabel.toLowerCase().replace(/\s+/g, "-");
-                      const data = activeItems.map(({ id, title, url, summary, category, subcategory, tags, dateAdded, source, read, color, content }) => ({
-                        id, title, url, summary, category, subcategory, tags,
-                        dateAdded, source, read, color: color ?? undefined, content: content ?? undefined,
-                      }));
-                      const md = data.map((i) => [
-                        `## ${i.title}`,
-                        i.url ? `**URL:** ${i.url}` : null,
-                        `**Category:** ${i.category}${i.subcategory ? ` / ${i.subcategory}` : ""}`,
-                        i.tags.length ? `**Tags:** ${i.tags.map((t) => `\`${t}\``).join(", ")}` : null,
-                        `**Added:** ${new Date(i.dateAdded).toLocaleDateString()}`,
-                        "",
-                        i.summary,
-                        i.content ? `\n${i.content}` : null,
-                      ].filter(Boolean).join("\n")).join("\n\n---\n\n");
-                      const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-                      const mdBlob = new Blob([`# ${categoryLabel}\n\n${md}`], { type: "text/markdown" });
-                      // Download both
-                      const a = document.createElement("a");
-                      a.href = URL.createObjectURL(jsonBlob);
-                      a.download = `stash-${label}.json`;
-                      a.click();
-                      setTimeout(() => {
-                        a.href = URL.createObjectURL(mdBlob);
-                        a.download = `stash-${label}.md`;
-                        a.click();
-                      }, 300);
-                    }}
-                    className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
-                    title="Export current view (JSON + Markdown)"
-                  >
-                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M6 1v7M3 5l3 3 3-3M1 10h10" />
-                    </svg>
-                    Export
-                  </button>
-                </div>
+                <button
+                  onClick={handleExport}
+                  className="hidden sm:flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                  title="Export current view (JSON + Markdown)"
+                >
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 1v7M3 5l3 3 3-3M1 10h10" />
+                  </svg>
+                  Export
+                </button>
               )}
               <button
                 onClick={() => setShowAddModal(true)}
@@ -1012,6 +1011,54 @@ function KnowledgeBaseContent({
           {/* Search bar — mobile full-width row */}
           <div className="mt-3 md:hidden">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          </div>
+
+          {/* Toolbar — mobile only */}
+          <div className="mt-2 flex items-center gap-1.5 md:hidden overflow-x-auto pb-0.5">
+            <button
+              onClick={() => setShowUnreadOnly((v) => !v)}
+              className={`flex h-7 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-xs transition-colors ${
+                showUnreadOnly
+                  ? "border-emerald-600 bg-emerald-900/40 text-emerald-400"
+                  : "border-zinc-700 text-zinc-400"
+              }`}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+              Unread
+            </button>
+            <button
+              onClick={() => setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date")}
+              className="flex h-7 shrink-0 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 transition-colors"
+            >
+              {sortMode === "date" ? t.sortDate : sortMode === "name" ? t.sortName : t.sortColor}
+            </button>
+            {activeItems.length > 0 && (
+              <button
+                onClick={handleExport}
+                className="flex h-7 shrink-0 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 transition-colors"
+              >
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 1v7M3 5l3 3 3-3M1 10h10" />
+                </svg>
+                Export
+              </button>
+            )}
+            <div className="ml-auto flex shrink-0 items-center rounded-lg border border-zinc-700 p-0.5">
+              <button
+                onClick={() => handleSetViewMode("grid")}
+                className={`rounded-md p-1.5 transition-colors ${viewMode === "grid" ? "bg-zinc-700" : ""}`}
+                aria-label={t.gridView}
+              >
+                <GridIcon active={viewMode === "grid"} />
+              </button>
+              <button
+                onClick={() => handleSetViewMode("list")}
+                className={`rounded-md p-1.5 transition-colors ${viewMode === "list" ? "bg-zinc-700" : ""}`}
+                aria-label={t.listView}
+              >
+                <ListIcon active={viewMode === "list"} />
+              </button>
+            </div>
           </div>
 
           {/* Contributor avatars — shown in shared view OR when owner views their own shared category */}

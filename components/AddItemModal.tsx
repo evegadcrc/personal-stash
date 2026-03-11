@@ -66,7 +66,8 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const [mode, setMode] = useState<Mode | null>(preFill ? "auto" : null);
+  const goDirectToManual = !!(preFill && !aiAvailable);
+  const [mode, setMode] = useState<Mode | null>(preFill ? (aiAvailable ? "auto" : "manual") : null);
   const [inputTab, setInputTab] = useState<InputTab>(preFill?.url ? "url" : preFill?.text ? "text" : "url");
 
   // Auto step inputs
@@ -77,11 +78,16 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   const [imageName, setImageName] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState("");
+  const [preferredCategory, setPreferredCategory] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Form state
-  const [showForm, setShowForm] = useState(false);
-  const [fields, setFields] = useState<FormFields>(BLANK_FIELDS);
+  const [showForm, setShowForm] = useState(goDirectToManual);
+  const [fields, setFields] = useState<FormFields>(
+    goDirectToManual
+      ? { ...BLANK_FIELDS, url: preFill?.url ?? "", source: "web" }
+      : BLANK_FIELDS
+  );
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -150,12 +156,16 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
       const aiCat = data.category ?? "bookmarks";
       const catExists = existingCategoryNames.includes(aiCat);
 
+      // Use user's preferred category if they picked one, otherwise use AI suggestion
+      const finalCat = preferredCategory || (catExists ? aiCat : "__new__");
+      const finalNewCat = preferredCategory ? "" : (catExists ? "" : aiCat);
+
       setFields({
         title: data.title ?? "",
         url: data.url ?? (inputTab === "url" ? urlInput.trim() : ""),
         summary: data.summary ?? "",
-        category: catExists ? aiCat : "__new__",
-        newCategory: catExists ? "" : aiCat,
+        category: finalCat,
+        newCategory: finalNewCat,
         subcategory: data.subcategory ?? "",
         tagsInput: (data.tags ?? []).join(", "),
         source: data.source ?? "web",
@@ -402,6 +412,21 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
             )}
 
             {analyzeError && <p className="text-xs text-red-400">{analyzeError}</p>}
+
+            {/* Optional category hint */}
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500">Category <span className="text-zinc-600">(optional — leave blank to let AI decide)</span></label>
+              <select
+                className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-300 outline-none focus:border-zinc-500 transition-colors w-full"
+                value={preferredCategory}
+                onChange={(e) => setPreferredCategory(e.target.value)}
+              >
+                <option value="">Let AI decide…</option>
+                {existingCategoryNames.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
 
             <button
               onClick={handleAnalyze}
