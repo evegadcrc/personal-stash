@@ -64,6 +64,7 @@ export async function notifyShareMembers({
       body: `${actor} added "${itemTitle}"`,
       shareId,
       categoryName,
+      itemId,
     });
 
     await Promise.allSettled(

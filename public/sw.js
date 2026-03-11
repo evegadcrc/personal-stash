@@ -17,11 +17,13 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const { shareId } = event.notification.data ?? {};
-  const url = shareId ? `/?shareId=${shareId}` : '/';
+  const { shareId, itemId } = event.notification.data ?? {};
+  const params = new URLSearchParams();
+  if (itemId) params.set('itemId', itemId);
+  if (shareId) params.set('shareId', shareId);
+  const url = params.size ? `/?${params.toString()}` : '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
-      // Focus existing tab if open
       const existing = wins.find((w) => w.url.startsWith(self.location.origin));
       if (existing) return existing.focus().then((w) => w.navigate(url));
       return clients.openWindow(url);

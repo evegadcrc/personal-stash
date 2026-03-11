@@ -123,6 +123,7 @@ function KnowledgeBaseContent({
   const [sharedCategories, setSharedCategories] = useState<ShareWithOwner[]>(initialSharedCategories);
   const [pendingCount, setPendingCount] = useState(initialPendingCount);
   const [notifCount, setNotifCount] = useState(0);
+  const [focusItemId, setFocusItemId] = useState<string | null>(null);
   const [myShares, setMyShares] = useState<MyShare[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
@@ -223,6 +224,39 @@ function KnowledgeBaseContent({
 
     subscribePush();
   }, [currentUserEmail]);
+
+  // Handle push notification deep-link: /?itemId=xxx&shareId=xxx
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const itemId = params.get("itemId");
+    const shareId = params.get("shareId");
+    if (!itemId) return;
+
+    // Clean URL immediately
+    window.history.replaceState({}, "", "/");
+
+    // Navigate to the right view
+    if (shareId) {
+      const share = initialSharedCategories.find((s) => s.id === shareId);
+      if (share) handleSelectShare(share);
+    } else {
+      // Find which personal category contains this item
+      for (const cat of initialCategories) {
+        if (cat.items.some((i) => i.id === itemId)) {
+          handleCategoryChange(cat.name);
+          break;
+        }
+      }
+    }
+
+    setFocusItemId(itemId);
+
+    // Dismiss the matching in-app notification
+    fetch(`/api/notifications?itemId=${itemId}`, { method: "DELETE" })
+      .then(() => setNotifCount((c) => Math.max(0, c - 1)))
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load my shares + prefetch membership items/contributors for all owned shares in parallel
   useEffect(() => {
@@ -1293,6 +1327,7 @@ function KnowledgeBaseContent({
                       hasAvailableShares={sharedCategories.length > 0}
                       siblingItems={activeItems}
                       onAddToCollection={setCollectionPickerItem}
+                      autoFocus={item.id === focusItemId}
                     />
                   ))}
                 </div>
@@ -1322,6 +1357,7 @@ function KnowledgeBaseContent({
                       hasAvailableShares={sharedCategories.length > 0}
                       siblingItems={activeItems}
                       onAddToCollection={setCollectionPickerItem}
+                      autoFocus={item.id === focusItemId}
                     />
                   ))}
                 </div>

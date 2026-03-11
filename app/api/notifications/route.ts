@@ -24,14 +24,17 @@ export async function GET(request: Request) {
   return NextResponse.json({ notifications });
 }
 
-// DELETE all — mark all as read (dismiss all)
+// DELETE — mark as read: all (no params) or by itemId (?itemId=xxx)
 export async function DELETE(request: Request) {
   const session = await auth();
   const email = session?.user?.email;
   if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { searchParams } = new URL(request.url);
+  const itemId = searchParams.get("itemId");
+
   await prisma.notification.updateMany({
-    where: { toEmail: email, read: false },
+    where: { toEmail: email, read: false, ...(itemId ? { itemId } : {}) },
     data: { read: true },
   });
 
