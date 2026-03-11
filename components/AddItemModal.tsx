@@ -23,6 +23,7 @@ interface AddItemModalProps {
   availableShares?: AvailableShare[];
   aiAvailable?: boolean;
   preFill?: { url?: string; text?: string };
+  defaultCategory?: string;
 }
 
 type Mode = "auto" | "manual";
@@ -56,7 +57,7 @@ const BLANK_FIELDS: FormFields = {
   color: undefined,
 };
 
-export default function AddItemModal({ categories, onClose, onSave, shareId, shareCategory, availableShares, aiAvailable = true, preFill }: AddItemModalProps) {
+export default function AddItemModal({ categories, onClose, onSave, shareId, shareCategory, availableShares, aiAvailable = true, preFill, defaultCategory }: AddItemModalProps) {
   const { t } = useLanguage();
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -81,12 +82,18 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   const [preferredCategory, setPreferredCategory] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Derived values (needed before useState)
+  const existingCategoryNamesEarly = categories.map((c) => c.name);
+  const initialCategory = defaultCategory && existingCategoryNamesEarly.includes(defaultCategory)
+    ? defaultCategory
+    : existingCategoryNamesEarly[0] ?? "bookmarks";
+
   // Form state
   const [showForm, setShowForm] = useState(goDirectToManual);
   const [fields, setFields] = useState<FormFields>(
     goDirectToManual
-      ? { ...BLANK_FIELDS, url: preFill?.url ?? "", source: "web" }
-      : BLANK_FIELDS
+      ? { ...BLANK_FIELDS, category: initialCategory, url: preFill?.url ?? "", source: "web" }
+      : { ...BLANK_FIELDS, category: initialCategory }
   );
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -182,8 +189,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   }
 
   function handleChooseManual() {
-    const defaultCat = existingCategoryNames[0] ?? "bookmarks";
-    setFields({ ...BLANK_FIELDS, category: defaultCat, source: "manual" });
+    setFields({ ...BLANK_FIELDS, category: initialCategory, source: "manual" });
     setMode("manual");
     setShowForm(true);
   }
@@ -415,13 +421,13 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
             {/* Optional category hint */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Category <span className="text-zinc-600">(optional — leave blank to let AI decide)</span></label>
+              <label className="text-xs text-zinc-500">{t.categoryLabel} <span className="text-zinc-600">{t.aiCategoryHint}</span></label>
               <select
                 className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-300 outline-none focus:border-zinc-500 transition-colors w-full"
                 value={preferredCategory}
                 onChange={(e) => setPreferredCategory(e.target.value)}
               >
-                <option value="">Let AI decide…</option>
+                <option value="">{t.letAIDecide}</option>
                 {existingCategoryNames.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -482,7 +488,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                 {shareCategory ? (
                   <div className={`${inputCls} text-zinc-500 cursor-not-allowed`}>
                     {shareCategory}
-                    <span className="ml-2 text-xs text-zinc-600">(shared category)</span>
+                    <span className="ml-2 text-xs text-zinc-600">({t.sharedCategoryBadge})</span>
                   </div>
                 ) : (
                   <select
@@ -496,7 +502,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                       {existingCategoryNames.map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
-                      <option value="__new__">+ New category…</option>
+                      <option value="__new__">{t.newCategoryOption}</option>
                     </optgroup>
                     {availableShares && availableShares.length > 0 && (
                       <optgroup label={t.sharedCategoriesGroup}>
@@ -520,7 +526,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                 {!shareCategory && fields.category === "__new__" && (
                   <input
                     className={`${inputCls} mt-1`}
-                    placeholder="new-category-name (lowercase)"
+                    placeholder={t.newCategoryPlaceholder}
                     value={fields.newCategory}
                     autoFocus
                     onChange={(e) =>
@@ -550,7 +556,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                 <input
                   list="subcategory-list"
                   className={inputCls}
-                  placeholder="e.g. article, tool, to-watch…"
+                  placeholder={t.subcategoryPlaceholder}
                   value={fields.subcategory}
                   onChange={(e) => setFields((f) => ({ ...f, subcategory: e.target.value }))}
                 />
@@ -568,7 +574,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                 <label className="text-xs text-zinc-400">{t.tagsLabel}</label>
                 <input
                   className={inputCls}
-                  placeholder="react, typescript, open-source"
+                  placeholder={t.tagsPlaceholder}
                   value={fields.tagsInput}
                   onChange={(e) => setFields((f) => ({ ...f, tagsInput: e.target.value }))}
                 />
@@ -605,7 +611,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                 <label className="text-xs text-zinc-400">{t.sourceLabel}</label>
                 <input
                   className={inputCls}
-                  placeholder="manual, web, youtube, book…"
+                  placeholder={t.sourcePlaceholder}
                   value={fields.source}
                   onChange={(e) => setFields((f) => ({ ...f, source: e.target.value }))}
                 />
@@ -642,7 +648,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                 <textarea
                   className={`${inputCls} resize-none`}
                   rows={2}
-                  placeholder="Extended notes, quotes, or extra context…"
+                  placeholder={t.notesPlaceholder}
                   value={fields.content}
                   onChange={(e) => setFields((f) => ({ ...f, content: e.target.value }))}
                 />

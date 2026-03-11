@@ -1295,6 +1295,7 @@ function KnowledgeBaseContent({
           availableShares={selectedShare ? undefined : allAvailableShares}
           aiAvailable={aiAvailable}
           preFill={sharePreFill}
+          defaultCategory={selectedShare ? undefined : (selectedCategory ?? undefined)}
         />
       )}
 
