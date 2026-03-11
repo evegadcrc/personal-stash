@@ -1,3 +1,36 @@
+// ── Push notifications ───────────────────────────────────────────────────────
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  const data = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? 'Stash', {
+      body: data.body ?? '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      data: { shareId: data.shareId, categoryName: data.categoryName },
+      tag: data.shareId ?? 'stash-notif', // group by share
+      renotify: true,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const { shareId } = event.notification.data ?? {};
+  const url = shareId ? `/?shareId=${shareId}` : '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+      // Focus existing tab if open
+      const existing = wins.find((w) => w.url.startsWith(self.location.origin));
+      if (existing) return existing.focus().then((w) => w.navigate(url));
+      return clients.openWindow(url);
+    })
+  );
+});
+
+// ── Caching ──────────────────────────────────────────────────────────────────
+
 const SHELL_CACHE = 'stash-shell-v2';
 const STATIC_CACHE = 'stash-static-v2';
 

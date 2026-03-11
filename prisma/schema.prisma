@@ -19,11 +19,12 @@ model User {
   receivedRequests Friendship[]       @relation("receiver")
   shares           Share[]
   memberships      SharedMembership[] @relation("adder")
-  itemReads        UserItemRead[]
-  ratings          ItemRating[]
-  comments         ItemComment[]
-  categoryNotes    CategoryNote[]
-  collections      Collection[]
+  itemReads         UserItemRead[]
+  ratings           ItemRating[]
+  comments          ItemComment[]
+  categoryNotes     CategoryNote[]
+  collections       Collection[]
+  pushSubscriptions PushSubscription[]
 }
 
 // Scratch-pad notes per category (personal only)
@@ -136,6 +137,19 @@ model CollectionItem {
 
   @@unique([collectionId, itemId])
   @@index([collectionId])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userEmail String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+
+  @@index([userEmail])
 }
 
 model Notification {
