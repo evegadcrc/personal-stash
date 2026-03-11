@@ -8,10 +8,11 @@ datasource db {
 }
 
 model User {
-  email        String   @id
-  name         String?
-  avatar       String?
-  createdAt    DateTime @default(now())
+  email         String   @id
+  name          String?
+  avatar        String?
+  createdAt     DateTime @default(now())
+  weeklyDigest  Boolean  @default(true)
 
   items            Item[]             @relation("owner")
   sentRequests     Friendship[]       @relation("sender")
@@ -22,6 +23,7 @@ model User {
   ratings          ItemRating[]
   comments         ItemComment[]
   categoryNotes    CategoryNote[]
+  collections      Collection[]
 }
 
 // Scratch-pad notes per category (personal only)
@@ -101,8 +103,39 @@ model Item {
   userReads   UserItemRead[]
   ratings     ItemRating[]
   comments    ItemComment[]
+  collections CollectionItem[]
 
   @@index([ownerEmail, category])
+}
+
+// Cross-category curated collections
+model Collection {
+  id          String   @id @default(uuid())
+  ownerEmail  String
+  name        String
+  description String?
+  color       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner User            @relation(fields: [ownerEmail], references: [email], onDelete: Cascade)
+  items CollectionItem[]
+
+  @@unique([ownerEmail, name])
+  @@index([ownerEmail])
+}
+
+model CollectionItem {
+  id           String   @id @default(uuid())
+  collectionId String
+  itemId       String
+  addedAt      DateTime @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  item       Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, itemId])
+  @@index([collectionId])
 }
 
 model SharedMembership {

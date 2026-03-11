@@ -17,7 +17,15 @@ import FriendsModal from "./FriendsModal";
 import NotificationsPanel from "./NotificationsPanel";
 import AddToShareModal from "./AddToShareModal";
 import CategoryNotes from "./CategoryNotes";
+import CollectionPickerModal from "./CollectionPickerModal";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+
+interface CollectionMeta {
+  id: string;
+  name: string;
+  color: string | null;
+  _count: { items: number };
+}
 
 type ViewMode = "grid" | "list";
 type SortMode = "date" | "name" | "color";
@@ -127,6 +135,11 @@ function KnowledgeBaseContent({
   const [dragSrcId, setDragSrcId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [collections, setCollections] = useState<CollectionMeta[]>([]);
+  const [selectedCollection, setSelectedCollection] = useState<CollectionMeta | null>(null);
+  const [collectionItems, setCollectionItems] = useState<Item[]>([]);
+  const [loadingCollection, setLoadingCollection] = useState(false);
+  const [collectionPickerItem, setCollectionPickerItem] = useState<Item | null>(null);
   const [showStaleOnly, setShowStaleOnly] = useState(false);
   const [showAllShared, setShowAllShared] = useState(false);
   const [allSharedItems, setAllSharedItems] = useState<Item[]>([]);
@@ -142,6 +155,15 @@ function KnowledgeBaseContent({
       try { setCustomOrder(JSON.parse(savedOrder)); } catch { /* ignore */ }
     }
   }, []);
+
+  // Load collections on mount
+  useEffect(() => {
+    if (!currentUserEmail) return;
+    fetch("/api/collections")
+      .then((r) => r.json())
+      .then((data) => setCollections(data.collections ?? []))
+      .catch(() => {});
+  }, [currentUserEmail]);
 
   // Load my shares + prefetch membership items/contributors for all owned shares in parallel
   useEffect(() => {
@@ -213,6 +235,8 @@ function KnowledgeBaseContent({
     setSelectedShare(share);
     setShowAllShared(false);
     setAllSharedItems([]);
+    setSelectedCollection(null);
+    setCollectionItems([]);
     if (share) setSelectedCategory(null);
     setSelectedSubcategory(null);
     setSelectedTag(null);
@@ -362,12 +386,39 @@ function KnowledgeBaseContent({
     showToast(t.changesSaved);
   }
 
+  async function handleSelectCollection(col: CollectionMeta) {
+    setSelectedCollection(col);
+    setSelectedCategory(null);
+    setSelectedShare(null);
+    setSharedItems([]);
+    setShowAllShared(false);
+    setAllSharedItems([]);
+    setSelectedSubcategory(null);
+    setSelectedTag(null);
+    setSearchQuery("");
+    setShowUnreadOnly(false);
+    setShowStaleOnly(false);
+    setSidebarOpen(false);
+    setLoadingCollection(true);
+    try {
+      const res = await fetch(`/api/collections/${col.id}`);
+      const data = await res.json();
+      setCollectionItems(data.items ?? []);
+    } catch {
+      setCollectionItems([]);
+    } finally {
+      setLoadingCollection(false);
+    }
+  }
+
   function handleCategoryChange(cat: string | null) {
     setSelectedCategory(cat);
     setSelectedShare(null);
     setSharedItems([]);
     setShowAllShared(false);
     setAllSharedItems([]);
+    setSelectedCollection(null);
+    setCollectionItems([]);
     setSelectedSubcategory(null);
     setSelectedTag(null);
     setSearchQuery("");
@@ -442,7 +493,7 @@ function KnowledgeBaseContent({
   const categoryMembershipItems = selectedCategory ? (categoryMembershipItemsMap[selectedCategory] ?? []) : [];
   const categoryContributors = selectedCategory ? (categoryContributorsMap[selectedCategory] ?? []) : [];
 
-  const activeItems = showAllShared ? allSharedItems : selectedShare ? sharedItems : (
+  const activeItems = selectedCollection ? collectionItems : showAllShared ? allSharedItems : selectedShare ? sharedItems : (
     selectedCategory
       ? [
           ...(categories.find((c) => c.name === selectedCategory)?.items ?? []),
@@ -544,7 +595,9 @@ function KnowledgeBaseContent({
     return s.split(/[-\s]+/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   }
 
-  const categoryLabel = showAllShared
+  const categoryLabel = selectedCollection
+    ? selectedCollection.name
+    : showAllShared
     ? "All Shared"
     : selectedShare
     ? titleCase(selectedShare.categoryName)
@@ -690,6 +743,10 @@ function KnowledgeBaseContent({
           onRenameCategory={handleRenameCategory}
           showAllShared={showAllShared}
           onSelectAllShared={handleSelectAllShared}
+          collections={collections}
+          selectedCollectionId={selectedCollection?.id ?? null}
+          onSelectCollection={handleSelectCollection}
+          onCollectionsChange={setCollections}
         />
       </nav>
 
@@ -880,6 +937,49 @@ function KnowledgeBaseContent({
               >
                 {sortMode === "date" ? t.sortDate : sortMode === "name" ? t.sortName : t.sortColor}
               </button>
+              {/* Export dropdown */}
+              {activeItems.length > 0 && (
+                <div className="relative hidden sm:block">
+                  <button
+                    onClick={() => {
+                      const label = categoryLabel.toLowerCase().replace(/\s+/g, "-");
+                      const data = activeItems.map(({ id, title, url, summary, category, subcategory, tags, dateAdded, source, read, color, content }) => ({
+                        id, title, url, summary, category, subcategory, tags,
+                        dateAdded, source, read, color: color ?? undefined, content: content ?? undefined,
+                      }));
+                      const md = data.map((i) => [
+                        `## ${i.title}`,
+                        i.url ? `**URL:** ${i.url}` : null,
+                        `**Category:** ${i.category}${i.subcategory ? ` / ${i.subcategory}` : ""}`,
+                        i.tags.length ? `**Tags:** ${i.tags.map((t) => `\`${t}\``).join(", ")}` : null,
+                        `**Added:** ${new Date(i.dateAdded).toLocaleDateString()}`,
+                        "",
+                        i.summary,
+                        i.content ? `\n${i.content}` : null,
+                      ].filter(Boolean).join("\n")).join("\n\n---\n\n");
+                      const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                      const mdBlob = new Blob([`# ${categoryLabel}\n\n${md}`], { type: "text/markdown" });
+                      // Download both
+                      const a = document.createElement("a");
+                      a.href = URL.createObjectURL(jsonBlob);
+                      a.download = `stash-${label}.json`;
+                      a.click();
+                      setTimeout(() => {
+                        a.href = URL.createObjectURL(mdBlob);
+                        a.download = `stash-${label}.md`;
+                        a.click();
+                      }, 300);
+                    }}
+                    className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                    title="Export current view (JSON + Markdown)"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 1v7M3 5l3 3 3-3M1 10h10" />
+                    </svg>
+                    Export
+                  </button>
+                </div>
+              )}
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors text-lg leading-none"
@@ -1019,7 +1119,7 @@ function KnowledgeBaseContent({
             </div>
           )}
           <div className="px-4 md:px-6 py-4 md:py-6">
-          {loadingSharedItems || loadingAllShared ? (
+          {loadingSharedItems || loadingAllShared || loadingCollection ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-zinc-500 text-sm">{t.loading}</p>
             </div>
@@ -1076,6 +1176,7 @@ function KnowledgeBaseContent({
                       onAddToShare={setAddToShareItem}
                       hasAvailableShares={sharedCategories.length > 0}
                       siblingItems={activeItems}
+                      onAddToCollection={setCollectionPickerItem}
                     />
                   ))}
                 </div>
@@ -1104,6 +1205,7 @@ function KnowledgeBaseContent({
                       onAddToShare={setAddToShareItem}
                       hasAvailableShares={sharedCategories.length > 0}
                       siblingItems={activeItems}
+                      onAddToCollection={setCollectionPickerItem}
                     />
                   ))}
                 </div>
@@ -1179,6 +1281,14 @@ function KnowledgeBaseContent({
           availableShares={sharedCategories}
           onClose={() => setAddToShareItem(null)}
           onAdded={() => showToast(t.addedToShared)}
+        />
+      )}
+
+      {collectionPickerItem && (
+        <CollectionPickerModal
+          item={collectionPickerItem}
+          onClose={() => setCollectionPickerItem(null)}
+          onCollectionsChange={setCollections}
         />
       )}
 

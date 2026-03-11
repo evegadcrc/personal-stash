@@ -6,6 +6,13 @@ import { ShareWithOwner } from "@/lib/sharing";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCategoryIcon } from "@/lib/categories";
 
+interface CollectionMeta {
+  id: string;
+  name: string;
+  color: string | null;
+  _count: { items: number };
+}
+
 interface SidebarProps {
   categories: CategoryData[];
   selected: string | null;
@@ -21,6 +28,10 @@ interface SidebarProps {
   onRenameCategory: (oldName: string, newName: string) => Promise<boolean>;
   showAllShared: boolean;
   onSelectAllShared: () => void;
+  collections: CollectionMeta[];
+  selectedCollectionId: string | null;
+  onSelectCollection: (col: CollectionMeta) => void;
+  onCollectionsChange: (cols: CollectionMeta[]) => void;
 }
 
 function titleCase(s: string) {
@@ -50,6 +61,11 @@ function ShareIcon() {
   );
 }
 
+const COLOR_DOT: Record<string, string> = {
+  indigo: "bg-indigo-500", rose: "bg-rose-500", amber: "bg-amber-500",
+  emerald: "bg-emerald-500", sky: "bg-sky-500",
+};
+
 export default function Sidebar({
   categories,
   selected,
@@ -65,6 +81,10 @@ export default function Sidebar({
   onRenameCategory,
   showAllShared,
   onSelectAllShared,
+  collections,
+  selectedCollectionId,
+  onSelectCollection,
+  onCollectionsChange,
 }: SidebarProps) {
   const { t } = useLanguage();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -195,40 +215,47 @@ export default function Sidebar({
               )}
             </div>
 
-            {/* Right side: count/badge + action icons */}
+            {/* Right side: action icons + count/badge */}
             {!isEditing && (
-              <div className="flex items-center gap-1 shrink-0">
-                {unread > 0 ? (
-                  <>
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                    <span className="text-xs font-semibold text-emerald-400">{unread}</span>
-                  </>
-                ) : (
-                  <span className="text-xs text-zinc-600">{cat.items.length}</span>
-                )}
-                {/* Pencil — rename */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); setEditingCategory(cat.name); }}
-                  title="Rename"
-                  className="opacity-0 group-hover:opacity-100 ml-1 flex h-4 w-4 items-center justify-center rounded text-[10px] text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all cursor-pointer"
-                  aria-label="Rename category"
-                >
-                  ✎
-                </button>
-                {/* X — delete */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); if (canDelete) onDeleteCategory(cat.name); }}
-                  disabled={!canDelete}
-                  title={deleteHint}
-                  className={`opacity-0 group-hover:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] transition-all ${
-                    canDelete
-                      ? "text-zinc-500 hover:text-white hover:bg-zinc-700 cursor-pointer"
-                      : "text-zinc-700 cursor-not-allowed"
-                  }`}
-                  aria-label={deleteHint}
-                >
-                  ✕
-                </button>
+              <div className="flex items-center shrink-0">
+                {/* Action buttons in fixed-width box so count stays flush right */}
+                <div className="flex items-center gap-0.5 w-9">
+                  {/* Pencil — rename */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingCategory(cat.name); }}
+                    title="Rename"
+                    className="opacity-0 group-hover:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all cursor-pointer"
+                    aria-label="Rename category"
+                  >
+                    ✎
+                  </button>
+                  {/* X — delete */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); if (canDelete) onDeleteCategory(cat.name); }}
+                    disabled={!canDelete}
+                    title={deleteHint}
+                    className={`opacity-0 group-hover:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] transition-all ${
+                      canDelete
+                        ? "text-zinc-500 hover:text-white hover:bg-zinc-700 cursor-pointer"
+                        : "text-zinc-700 cursor-not-allowed"
+                    }`}
+                    aria-label={deleteHint}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Count / unread badge */}
+                <span className="flex items-center gap-1.5 ml-1">
+                  {unread > 0 ? (
+                    <>
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="text-xs font-semibold text-emerald-400">{unread}</span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-zinc-600">{cat.items.length}</span>
+                  )}
+                </span>
               </div>
             )}
           </div>
@@ -302,6 +329,37 @@ export default function Sidebar({
             </button>
           )}
           {publicShares.map(shareButton)}
+        </>
+      )}
+
+      {/* Collections */}
+      {collections.length > 0 && (
+        <>
+          <div className="mt-3 mb-1 border-t border-zinc-800 pt-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 px-3">
+              Collections
+            </p>
+          </div>
+          {collections.map((col) => {
+            const dot = COLOR_DOT[col.color ?? "indigo"] ?? "bg-indigo-500";
+            return (
+              <button
+                key={col.id}
+                onClick={() => onSelectCollection(col)}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                  selectedCollectionId === col.id
+                    ? "bg-zinc-800 text-white"
+                    : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+                }`}
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className={`h-2 w-2 rounded-full shrink-0 ${dot}`} />
+                  <span className="truncate">{col.name}</span>
+                </span>
+                <span className="text-xs text-zinc-600 shrink-0">{col._count.items}</span>
+              </button>
+            );
+          })}
         </>
       )}
     </aside>

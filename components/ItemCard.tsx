@@ -43,6 +43,8 @@ interface ItemCardProps {
   hasAvailableShares?: boolean;
   // Related items (sibling items in same view for similarity scoring)
   siblingItems?: Item[];
+  // Collections
+  onAddToCollection?: (item: Item) => void;
 }
 
 function formatDate(iso: string) {
@@ -132,7 +134,7 @@ export default function ItemCard({
   item, view, onDelete, onToggleRead, onEdit, onTagClick,
   canReorder, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
   currentUserEmail, isSharedView, shareOwnerEmail, onRemoveFromShare, onAddToShare,
-  hasAvailableShares, siblingItems,
+  hasAvailableShares, siblingItems, onAddToCollection,
 }: ItemCardProps) {
   const isItemOwner = item.ownerEmail === currentUserEmail;
   const isShareOwner = shareOwnerEmail === currentUserEmail;
@@ -289,6 +291,19 @@ export default function ItemCard({
     </button>
   ) : null;
 
+  const collectionButton = !confirming && onAddToCollection ? (
+    <button
+      onClick={(e) => { e.stopPropagation(); onAddToCollection(item); }}
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      aria-label="Add to collection"
+      title="Add to collection"
+    >
+      <svg width="11" height="11" viewBox="0 0 12 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 1h8a1 1 0 0 1 1 1v10l-4.5-2.5L2 12V2a1 1 0 0 1 1-1z" />
+      </svg>
+    </button>
+  ) : null;
+
   const confirmFooter = (
     <div
       onClick={(e) => e.stopPropagation()}
@@ -369,6 +384,7 @@ export default function ItemCard({
           <div className="flex shrink-0 items-center gap-1">
             {readButton}
             {editButton}
+            {collectionButton}
             {addToShareButton}
             {deleteButton}
             {removeFromShareButton}
@@ -529,6 +545,7 @@ export default function ItemCard({
           <div className="flex shrink-0 items-center gap-1">
             {readButton}
             {editButton}
+            {collectionButton}
             {addToShareButton}
             {deleteButton}
             {removeFromShareButton}
