@@ -729,7 +729,7 @@ function KnowledgeBaseContent({
   }, [categories]);
 
   const mySharedCategoryNames = useMemo(
-    () => new Set(myShares.map((s) => s.categoryName)),
+    () => new Set(myShares.map((s) => normalizeCategory(s.categoryName))),
     [myShares]
   );
 
@@ -1454,34 +1454,44 @@ function KnowledgeBaseContent({
       )}
 
       {/* Category delete confirmation */}
-      {confirmDeleteCategory && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-zinc-900 border border-zinc-700 p-6 shadow-2xl">
-            <h2 className="text-base font-semibold text-zinc-100">{t.deleteCategoryTitle}</h2>
-            <p className="text-sm text-zinc-400">{t.deleteCategoryNote}</p>
-            <p className="text-xs font-medium text-zinc-300">&quot;{titleCase(confirmDeleteCategory)}&quot;</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmDeleteCategory(null)}
-                className="flex-1 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 transition-colors"
-              >
-                {t.cancel}
-              </button>
-              <button
-                onClick={() => {
-                  if (selectedCategory === confirmDeleteCategory) handleCategoryChange(null);
-                  setCategories((prev) => prev.filter((c) => c.name !== confirmDeleteCategory));
-                  setConfirmDeleteCategory(null);
-                  showToast(t.categoryRemoved);
-                }}
-                className="flex-1 rounded-lg bg-red-900 px-4 py-2 text-sm font-semibold text-red-100 hover:bg-red-800 transition-colors"
-              >
-                {t.delete}
-              </button>
+      {confirmDeleteCategory && (() => {
+        const catToDelete = categories.find((c) => c.name === confirmDeleteCategory);
+        const itemCount = catToDelete?.items.length ?? 0;
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-zinc-900 border border-zinc-700 p-6 shadow-2xl">
+              <h2 className="text-base font-semibold text-zinc-100">{t.deleteCategoryTitle}</h2>
+              <p className="text-sm text-zinc-400">{t.deleteCategoryNote}</p>
+              <p className="text-xs font-medium text-zinc-300">
+                &quot;{titleCase(confirmDeleteCategory)}&quot;
+                {itemCount > 0 && (
+                  <span className="ml-1 text-red-400">({itemCount} {itemCount === 1 ? "item" : "items"})</span>
+                )}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmDeleteCategory(null)}
+                  className="flex-1 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 transition-colors"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  onClick={async () => {
+                    if (selectedCategory === confirmDeleteCategory) handleCategoryChange(null);
+                    setConfirmDeleteCategory(null);
+                    await fetch(`/api/categories/${encodeURIComponent(confirmDeleteCategory)}`, { method: "DELETE" });
+                    setCategories((prev) => prev.filter((c) => c.name !== confirmDeleteCategory));
+                    showToast(t.categoryRemoved);
+                  }}
+                  className="flex-1 rounded-lg bg-red-900 px-4 py-2 text-sm font-semibold text-red-100 hover:bg-red-800 transition-colors"
+                >
+                  {t.delete}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {toast && <Toast key={toast.id} message={toast.msg} onDone={() => setToast(null)} />}
     </div>

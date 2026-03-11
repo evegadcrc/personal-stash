@@ -36,3 +36,26 @@ export async function PATCH(
 
   return NextResponse.json({ success: true, newName: cleaned });
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ name: string }> }
+) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { name } = await params;
+
+  // Delete all items in this category owned by the user
+  await prisma.item.deleteMany({
+    where: { ownerEmail: email, category: name },
+  });
+
+  // Remove any share record for this category
+  await prisma.share.deleteMany({
+    where: { ownerEmail: email, categoryName: name },
+  });
+
+  return NextResponse.json({ success: true });
+}

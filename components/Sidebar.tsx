@@ -163,11 +163,9 @@ export default function Sidebar({
         const unread = unreadCounts[cat.name] ?? 0;
         const isShared = mySharedCategoryNames.has(cat.name);
         const isEmpty = emptyCategoryNames.has(cat.name);
-        const canDelete = isEmpty && !isShared;
+        const canDelete = !isShared;
         const isEditing = editingCategory === cat.name;
-        const deleteHint = !isEmpty
-          ? t.categoryHasItemsHint
-          : isShared
+        const deleteHint = isShared
           ? t.categoryIsSharedHint
           : t.deleteCategoryTitle;
 

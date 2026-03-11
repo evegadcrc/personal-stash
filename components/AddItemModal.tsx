@@ -664,7 +664,11 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
             <button
               onClick={handleSave}
               disabled={saving || !canSave}
-              className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+                canSave
+                  ? "bg-zinc-100 text-zinc-900 hover:bg-white"
+                  : "bg-zinc-100 text-zinc-900 opacity-40 cursor-not-allowed"
+              }`}
             >
               {saving ? t.saving : t.save}
             </button>

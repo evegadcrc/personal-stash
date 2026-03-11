@@ -113,8 +113,13 @@ export default function NotificationsPanel({
   }
 
   function handleNotifClick(n: ItemNotification) {
-    handleDismiss(n.id);
-    onOpenItem?.(n.itemId, n.shareId, n.categoryName);
+    if (n.itemId) {
+      // Remove from panel state; handleOpenItem handles badge + DB dismissal by itemId
+      setNotifications((prev) => prev.filter((x) => x.id !== n.id));
+      onOpenItem?.(n.itemId, n.shareId, n.categoryName);
+    } else {
+      handleDismiss(n.id);
+    }
     onClose();
   }
 

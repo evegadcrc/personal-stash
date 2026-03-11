@@ -53,7 +53,7 @@ const en = {
   categoryRemoved: "Category removed",
   // Category delete
   deleteCategoryTitle: "Remove category",
-  deleteCategoryNote: "This empty category will be removed from your library.",
+  deleteCategoryNote: "All items in this category will be permanently deleted. This cannot be undone.",
   categoryHasItemsHint: "Remove all items first",
   categoryIsSharedHint: "Stop sharing before removing",
   // Notifications
@@ -159,7 +159,7 @@ const es: typeof en = {
   addedToShared: "Agregado a categor\u00EDa compartida \u2713",
   categoryRemoved: "Categor\u00EDa eliminada",
   deleteCategoryTitle: "Eliminar categor\u00EDa",
-  deleteCategoryNote: "Esta categor\u00EDa vac\u00EDa se eliminar\u00E1 de tu biblioteca.",
+  deleteCategoryNote: "Todos los elementos de esta categor\u00EDa se eliminar\u00E1n permanentemente. Esto no se puede deshacer.",
   categoryHasItemsHint: "Elimina todos los elementos primero",
   categoryIsSharedHint: "Deja de compartir antes de eliminar",
   notifications: "Notificaciones",
