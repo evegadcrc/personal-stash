@@ -48,15 +48,12 @@ export async function POST(request: Request) {
     },
   });
 
-  // Notify share members — search by both the raw and normalized category name
-  // because share records may still use the original (pre-normalization) name
+  // Notify share members — shares may be stored with Spanish display names (e.g. "lugares")
+  // while items are stored with normalized English names (e.g. "places").
+  // Normalize both sides when comparing so we always find the right share.
   try {
-    const share = await prisma.share.findFirst({
-      where: {
-        ownerEmail: email,
-        categoryName: { in: [...new Set([body.category.trim().toLowerCase(), normalizedCategory])] },
-      },
-    });
+    const ownerShares = await prisma.share.findMany({ where: { ownerEmail: email } });
+    const share = ownerShares.find((s) => normalizeCategory(s.categoryName) === normalizedCategory) ?? null;
     if (share && (share.allowedEmails.length > 0 || share.mode === "public")) {
       const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
       await notifyShareMembers({
