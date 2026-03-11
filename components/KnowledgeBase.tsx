@@ -225,24 +225,23 @@ function KnowledgeBaseContent({
     subscribePush();
   }, [currentUserEmail]);
 
-  // Handle push notification deep-link: /?itemId=xxx&shareId=xxx
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const itemId = params.get("itemId");
-    const shareId = params.get("shareId");
+  // Central handler: navigate to item + expand its card + dismiss in-app notif
+  function handleOpenItem(itemId: string | null, shareId: string | null, categoryName: string | null) {
     if (!itemId) return;
-
-    // Clean URL immediately
-    window.history.replaceState({}, "", "/");
 
     // Navigate to the right view
     if (shareId) {
-      const share = initialSharedCategories.find((s) => s.id === shareId);
-      if (share) handleSelectShare(share);
+      const share = sharedCategories.find((s) => s.id === shareId);
+      if (share) {
+        handleSelectShare(share);
+      } else if (categoryName) {
+        handleCategoryChange(normalizeCategory(categoryName));
+      }
+    } else if (categoryName) {
+      handleCategoryChange(normalizeCategory(categoryName));
     } else {
-      // Find which personal category contains this item
-      for (const cat of initialCategories) {
+      // Search personal categories
+      for (const cat of categories) {
         if (cat.items.some((i) => i.id === itemId)) {
           handleCategoryChange(cat.name);
           break;
@@ -252,10 +251,31 @@ function KnowledgeBaseContent({
 
     setFocusItemId(itemId);
 
-    // Dismiss the matching in-app notification
-    fetch(`/api/notifications?itemId=${itemId}`, { method: "DELETE" })
+    fetch(`/api/notifications?itemId=${encodeURIComponent(itemId)}`, { method: "DELETE" })
       .then(() => setNotifCount((c) => Math.max(0, c - 1)))
       .catch(() => {});
+  }
+
+  // On mount: handle /?itemId=xxx from push notification when app was closed
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const itemId = params.get("itemId");
+    const shareId = params.get("shareId");
+    if (!itemId) return;
+    window.history.replaceState({}, "", "/");
+    handleOpenItem(itemId, shareId, null);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Listen for postMessage from SW when app tab is already open
+  useEffect(() => {
+    function onSwMessage(event: MessageEvent) {
+      if (event.data?.type === "OPEN_ITEM") {
+        handleOpenItem(event.data.itemId ?? null, event.data.shareId ?? null, null);
+      }
+    }
+    navigator.serviceWorker?.addEventListener("message", onSwMessage);
+    return () => navigator.serviceWorker?.removeEventListener("message", onSwMessage);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load my shares + prefetch membership items/contributors for all owned shares in parallel
@@ -959,15 +979,7 @@ function KnowledgeBaseContent({
                         setShowFriendsModal(true);
                       }}
                       onNotifCountChange={setNotifCount}
-                      onSelectShare={(shareId, categoryName) => {
-                        const sharedCat = sharedCategories.find((s) => s.id === shareId);
-                        if (sharedCat) {
-                          handleSelectShare(sharedCat);
-                        } else if (categoryName) {
-                          // Owner case — contributor added to the owner's personal category
-                          handleCategoryChange(normalizeCategory(categoryName));
-                        }
-                      }}
+                      onOpenItem={handleOpenItem}
                     />
                   )}
 

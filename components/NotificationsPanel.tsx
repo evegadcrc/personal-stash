@@ -27,7 +27,7 @@ interface NotificationsPanelProps {
   onPendingChange: (count: number) => void;
   onOpenFriends: () => void;
   onNotifCountChange?: (count: number) => void;
-  onSelectShare?: (shareId: string, categoryName: string | null) => void;
+  onOpenItem?: (itemId: string | null, shareId: string | null, categoryName: string | null) => void;
 }
 
 function formatRelative(iso: string) {
@@ -46,7 +46,7 @@ export default function NotificationsPanel({
   onPendingChange,
   onOpenFriends,
   onNotifCountChange,
-  onSelectShare,
+  onOpenItem,
 }: NotificationsPanelProps) {
   const { t } = useLanguage();
   const [requests, setRequests] = useState<FriendData[]>([]);
@@ -114,9 +114,7 @@ export default function NotificationsPanel({
 
   function handleNotifClick(n: ItemNotification) {
     handleDismiss(n.id);
-    if (n.shareId && onSelectShare) {
-      onSelectShare(n.shareId, n.categoryName);
-    }
+    onOpenItem?.(n.itemId, n.shareId, n.categoryName);
     onClose();
   }
 

@@ -145,24 +145,24 @@ export default function ItemCard({
   // Can remove from share: item owner OR share owner, only when there's a membership
   const canRemoveFromShare = isSharedView && !!item.membershipId && (isItemOwner || isShareOwner);
   const [confirming, setConfirming] = useState(false);
-  const [expanded, setExpanded] = useState(autoFocus ?? false);
+  const [expanded, setExpanded] = useState(false);
   const [interactions, setInteractions] = useState<Interactions | null>(null);
   const [related, setRelated] = useState<Item[] | null>(null);
   const articleRef = useRef<HTMLElement>(null);
 
-  // When opened via push notification: load interactions + scroll into view
+  // When autoFocus becomes true (push/in-app notification click): expand, load, scroll
   useEffect(() => {
     if (!autoFocus) return;
+    setExpanded(true);
     if (!item.read) onToggleRead(item.id, true);
     fetch(`/api/items/${item.id}/interactions`)
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (data) setInteractions(data); })
       .catch(() => {});
-    // Small delay so the card has rendered before scrolling
     setTimeout(() => {
       articleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 150);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, 200);
+  }, [autoFocus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCardClick() {
     if (!confirming) {

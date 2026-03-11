@@ -3,13 +3,14 @@
 self.addEventListener('push', (event) => {
   if (!event.data) return;
   const data = event.data.json();
+  const origin = self.location.origin;
   event.waitUntil(
     self.registration.showNotification(data.title ?? 'Stash', {
       body: data.body ?? '',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
-      data: { shareId: data.shareId, categoryName: data.categoryName },
-      tag: data.shareId ?? 'stash-notif', // group by share
+      icon: `${origin}/icon-192.png`,
+      badge: `${origin}/icon-192.png`,
+      data: { shareId: data.shareId, categoryName: data.categoryName, itemId: data.itemId },
+      tag: data.shareId ?? 'stash-notif',
       renotify: true,
     })
   );
@@ -18,14 +19,17 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const { shareId, itemId } = event.notification.data ?? {};
-  const params = new URLSearchParams();
-  if (itemId) params.set('itemId', itemId);
-  if (shareId) params.set('shareId', shareId);
-  const url = params.size ? `/?${params.toString()}` : '/';
+  const query = [itemId && `itemId=${itemId}`, shareId && `shareId=${shareId}`].filter(Boolean).join('&');
+  const url = query ? `/?${query}` : '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
       const existing = wins.find((w) => w.url.startsWith(self.location.origin));
-      if (existing) return existing.focus().then((w) => w.navigate(url));
+      if (existing) {
+        // App already open — send a message so it doesn't need to reload
+        existing.postMessage({ type: 'OPEN_ITEM', itemId, shareId });
+        return existing.focus();
+      }
+      // App closed — open it with URL params so the mount effect can read them
       return clients.openWindow(url);
     })
   );
@@ -33,8 +37,8 @@ self.addEventListener('notificationclick', (event) => {
 
 // ── Caching ──────────────────────────────────────────────────────────────────
 
-const SHELL_CACHE = 'stash-shell-v2';
-const STATIC_CACHE = 'stash-static-v2';
+const SHELL_CACHE = 'stash-shell-v3';
+const STATIC_CACHE = 'stash-static-v3';
 
 const SHELL_URLS = ['/', '/login'];
 
