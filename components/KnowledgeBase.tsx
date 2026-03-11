@@ -1216,10 +1216,6 @@ function KnowledgeBaseContent({
 
         </div>
 
-          {/* Category scratch-pad notes — always visible at bottom, outside scroll area */}
-          {selectedCategory && !selectedShare && !showAllShared && (
-            <CategoryNotes category={selectedCategory} />
-          )}
       </main>
 
       {showAddModal && (

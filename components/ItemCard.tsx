@@ -228,7 +228,7 @@ export default function ItemCard({
   const deleteButton = !confirming && canModify && (!isSharedView || isShareOwner) ? (
     <button
       onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
-      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
       aria-label="Delete item"
     >
       ✕
@@ -238,7 +238,7 @@ export default function ItemCard({
   const removeFromShareButton = !confirming && canRemoveFromShare ? (
     <button
       onClick={(e) => { e.stopPropagation(); onRemoveFromShare!(item.membershipId!); }}
-      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
       aria-label="Remove from shared category"
       title="Remove from shared category"
     >
@@ -249,7 +249,7 @@ export default function ItemCard({
   const addToShareButton = !confirming && !isSharedView && hasAvailableShares && isItemOwner ? (
     <button
       onClick={(e) => { e.stopPropagation(); onAddToShare?.(item); }}
-      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
       aria-label="Add to shared category"
       title="Add to shared category"
     >
@@ -269,7 +269,7 @@ export default function ItemCard({
       className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
         item.read
           ? "text-emerald-500 opacity-70 hover:opacity-100"
-          : "text-zinc-600 opacity-20 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300"
+          : "text-zinc-600 opacity-20 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300"
       }`}
       aria-label={item.read ? "Mark as unread" : "Mark as read"}
       title={item.read ? "Mark as unread" : "Mark as read"}
@@ -281,7 +281,7 @@ export default function ItemCard({
   const editButton = !confirming && canModify ? (
     <button
       onClick={(e) => { e.stopPropagation(); if (!item.read) onToggleRead(item.id, true); onEdit(item); }}
-      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
       aria-label="Edit item"
       title="Edit item"
     >
@@ -294,7 +294,7 @@ export default function ItemCard({
   const collectionButton = !confirming && onAddToCollection ? (
     <button
       onClick={(e) => { e.stopPropagation(); onAddToCollection(item); }}
-      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
       aria-label="Add to collection"
       title="Add to collection"
     >

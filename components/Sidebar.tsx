@@ -224,7 +224,7 @@ export default function Sidebar({
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingCategory(cat.name); }}
                     title="Rename"
-                    className="opacity-0 group-hover:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all cursor-pointer"
+                    className="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all cursor-pointer"
                     aria-label="Rename category"
                   >
                     ✎
@@ -234,7 +234,7 @@ export default function Sidebar({
                     onClick={(e) => { e.stopPropagation(); if (canDelete) onDeleteCategory(cat.name); }}
                     disabled={!canDelete}
                     title={deleteHint}
-                    className={`opacity-0 group-hover:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] transition-all ${
+                    className={`opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] transition-all ${
                       canDelete
                         ? "text-zinc-500 hover:text-white hover:bg-zinc-700 cursor-pointer"
                         : "text-zinc-700 cursor-not-allowed"
