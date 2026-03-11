@@ -15,7 +15,8 @@ export default function SubcategoryFilter({
   selected,
   onSelect,
 }: SubcategoryFilterProps) {
-  if (subcategories.length === 0) return null;
+  const validSubs = subcategories.filter((s) => s.trim() !== "");
+  if (validSubs.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -29,7 +30,7 @@ export default function SubcategoryFilter({
       >
         All
       </button>
-      {subcategories.map((sub) => (
+      {validSubs.map((sub) => (
         <button
           key={sub}
           onClick={() => onSelect(sub)}
