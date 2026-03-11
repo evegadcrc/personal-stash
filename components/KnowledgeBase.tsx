@@ -19,6 +19,7 @@ import AddToShareModal from "./AddToShareModal";
 import CategoryNotes from "./CategoryNotes";
 import CollectionPickerModal from "./CollectionPickerModal";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { normalizeCategory } from "@/lib/categories";
 
 interface CollectionMeta {
   id: string;
@@ -881,9 +882,14 @@ function KnowledgeBaseContent({
                         setShowFriendsModal(true);
                       }}
                       onNotifCountChange={setNotifCount}
-                      onSelectShare={(shareId) => {
-                        const share = sharedCategories.find((s) => s.id === shareId);
-                        if (share) handleSelectShare(share);
+                      onSelectShare={(shareId, categoryName) => {
+                        const sharedCat = sharedCategories.find((s) => s.id === shareId);
+                        if (sharedCat) {
+                          handleSelectShare(sharedCat);
+                        } else if (categoryName) {
+                          // Owner case — contributor added to the owner's personal category
+                          handleCategoryChange(normalizeCategory(categoryName));
+                        }
                       }}
                     />
                   )}

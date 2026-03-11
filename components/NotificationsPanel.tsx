@@ -27,7 +27,7 @@ interface NotificationsPanelProps {
   onPendingChange: (count: number) => void;
   onOpenFriends: () => void;
   onNotifCountChange?: (count: number) => void;
-  onSelectShare?: (shareId: string) => void;
+  onSelectShare?: (shareId: string, categoryName: string | null) => void;
 }
 
 function formatRelative(iso: string) {
@@ -115,7 +115,7 @@ export default function NotificationsPanel({
   function handleNotifClick(n: ItemNotification) {
     handleDismiss(n.id);
     if (n.shareId && onSelectShare) {
-      onSelectShare(n.shareId);
+      onSelectShare(n.shareId, n.categoryName);
     }
     onClose();
   }
