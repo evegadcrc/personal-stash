@@ -11,32 +11,25 @@ export async function POST(
   if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const { rating } = await request.json() as { rating: number | null };
+  const { vote } = await request.json() as { vote: 1 | -1 | null };
 
-  if (rating === null) {
-    await prisma.itemRating.deleteMany({
-      where: { userEmail: email, itemId: id },
-    });
+  if (vote === null) {
+    await prisma.itemRating.deleteMany({ where: { userEmail: email, itemId: id } });
   } else {
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: "Rating must be 1–5" }, { status: 400 });
+    if (vote !== 1 && vote !== -1) {
+      return NextResponse.json({ error: "Vote must be 1 or -1" }, { status: 400 });
     }
     await prisma.itemRating.upsert({
       where: { userEmail_itemId: { userEmail: email, itemId: id } },
-      update: { rating },
-      create: { userEmail: email, itemId: id, rating },
+      update: { rating: vote },
+      create: { userEmail: email, itemId: id, rating: vote },
     });
   }
 
-  const agg = await prisma.itemRating.aggregate({
-    where: { itemId: id },
-    _avg: { rating: true },
-    _count: { rating: true },
-  });
+  const [upCount, downCount] = await Promise.all([
+    prisma.itemRating.count({ where: { itemId: id, rating: 1 } }),
+    prisma.itemRating.count({ where: { itemId: id, rating: -1 } }),
+  ]);
 
-  return NextResponse.json({
-    myRating: rating,
-    avgRating: agg._avg.rating ?? null,
-    ratingCount: agg._count.rating,
-  });
+  return NextResponse.json({ myVote: vote, upCount, downCount });
 }

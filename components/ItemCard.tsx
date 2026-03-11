@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Item, Attachment } from "@/lib/data";
-import StarRating from "./StarRating";
+import ThumbsVoting from "./ThumbsVoting";
 import CommentsSection from "./CommentsSection";
 
 interface Comment {
@@ -14,9 +14,9 @@ interface Comment {
 }
 
 interface Interactions {
-  myRating: number | null;
-  avgRating: number | null;
-  ratingCount: number;
+  myVote: 1 | -1 | null;
+  upCount: number;
+  downCount: number;
   comments: Comment[];
 }
 
@@ -414,13 +414,13 @@ export default function ItemCard({
         {/* Ratings & Comments */}
         {expanded && interactions && currentUserEmail && (
           <div className="border-t border-zinc-700 pt-2 flex flex-col gap-2">
-            <StarRating
+            <ThumbsVoting
               itemId={item.id}
-              myRating={interactions.myRating}
-              avgRating={interactions.avgRating}
-              ratingCount={interactions.ratingCount}
-              onRatingChange={(myRating, avgRating, ratingCount) =>
-                setInteractions((prev) => prev ? { ...prev, myRating, avgRating, ratingCount } : prev)
+              myVote={interactions.myVote}
+              upCount={interactions.upCount}
+              downCount={interactions.downCount}
+              onVoteChange={(myVote, upCount, downCount) =>
+                setInteractions((prev) => prev ? { ...prev, myVote, upCount, downCount } : prev)
               }
             />
             <CommentsSection
@@ -568,13 +568,13 @@ export default function ItemCard({
           )}
           {interactions && currentUserEmail && (
             <div className="flex flex-col gap-2 pt-1 border-t border-zinc-700/60">
-              <StarRating
+              <ThumbsVoting
                 itemId={item.id}
-                myRating={interactions.myRating}
-                avgRating={interactions.avgRating}
-                ratingCount={interactions.ratingCount}
-                onRatingChange={(myRating, avgRating, ratingCount) =>
-                  setInteractions((prev) => prev ? { ...prev, myRating, avgRating, ratingCount } : prev)
+                myVote={interactions.myVote}
+                upCount={interactions.upCount}
+                downCount={interactions.downCount}
+                onVoteChange={(myVote, upCount, downCount) =>
+                  setInteractions((prev) => prev ? { ...prev, myVote, upCount, downCount } : prev)
                 }
               />
               <CommentsSection

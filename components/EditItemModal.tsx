@@ -4,6 +4,17 @@ import { useState, useEffect } from "react";
 import { CategoryData, Item, Attachment } from "@/lib/data";
 import AttachmentsField from "./AttachmentsField";
 
+interface CollectionMeta {
+  id: string;
+  name: string;
+  color: string | null;
+}
+
+const COLOR_DOT: Record<string, string> = {
+  indigo: "bg-indigo-500", rose: "bg-rose-500", amber: "bg-amber-500",
+  emerald: "bg-emerald-500", sky: "bg-sky-500",
+};
+
 interface EditItemModalProps {
   item: Item;
   categories: CategoryData[];
@@ -45,6 +56,39 @@ export default function EditItemModal({ item, categories, onClose, onSave }: Edi
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>(item.attachments ?? []);
+  const [allCollections, setAllCollections] = useState<CollectionMeta[]>([]);
+  const [memberOf, setMemberOf] = useState<Set<string>>(new Set());
+  const [togglingCol, setTogglingCol] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/collections").then((r) => r.json()),
+      fetch(`/api/items/${item.id}/collections`).then((r) => r.json()),
+    ]).then(([colData, memData]) => {
+      setAllCollections(colData.collections ?? []);
+      setMemberOf(new Set(memData.collectionIds ?? []));
+    }).catch(() => {});
+  }, [item.id]);
+
+  async function handleToggleCollection(colId: string) {
+    const isIn = memberOf.has(colId);
+    setTogglingCol(colId);
+    try {
+      if (isIn) {
+        await fetch(`/api/collections/${colId}/items?itemId=${item.id}`, { method: "DELETE" });
+        setMemberOf((prev) => { const s = new Set(prev); s.delete(colId); return s; });
+      } else {
+        await fetch(`/api/collections/${colId}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itemId: item.id }),
+        });
+        setMemberOf((prev) => new Set([...prev, colId]));
+      }
+    } finally {
+      setTogglingCol(null);
+    }
+  }
 
   // ESC to close
   useEffect(() => {
@@ -306,6 +350,36 @@ export default function EditItemModal({ item, categories, onClose, onSave }: Edi
               onChange={(e) => setFields((f) => ({ ...f, content: e.target.value }))}
             />
           </div>
+
+          {/* Collections */}
+          {allCollections.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-zinc-400">Collections</label>
+              <div className="flex flex-wrap gap-1.5">
+                {allCollections.map((col) => {
+                  const isIn = memberOf.has(col.id);
+                  const dot = COLOR_DOT[col.color ?? "indigo"] ?? "bg-indigo-500";
+                  return (
+                    <button
+                      key={col.id}
+                      type="button"
+                      onClick={() => handleToggleCollection(col.id)}
+                      disabled={togglingCol === col.id}
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition-all border ${
+                        isIn
+                          ? "bg-zinc-700 border-zinc-500 text-zinc-200"
+                          : "border-zinc-700 text-zinc-500 hover:border-zinc-500 hover:text-zinc-300"
+                      } ${togglingCol === col.id ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${dot}`} />
+                      {col.name}
+                      {isIn && <span className="text-zinc-400 leading-none">✕</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Attachments */}
           <AttachmentsField attachments={attachments} onChange={setAttachments} />

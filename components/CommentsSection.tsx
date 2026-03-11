@@ -37,6 +37,9 @@ export default function CommentsSection({
 }: CommentsSectionProps) {
   const [inputValue, setInputValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [saving, setSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -68,6 +71,37 @@ export default function CommentsSection({
     }
   }
 
+  function startEdit(c: Comment) {
+    setEditingId(c.id);
+    setEditContent(c.content);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditContent("");
+  }
+
+  async function handleSaveEdit(commentId: string) {
+    const content = editContent.trim();
+    if (!content || saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/items/${itemId}/comments/${commentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onCommentsChange(comments.map((c) => c.id === commentId ? data.comment : c));
+        setEditingId(null);
+        setEditContent("");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
       {comments.length > 0 && (
@@ -75,6 +109,8 @@ export default function CommentsSection({
           {comments.map((c) => {
             const isOwn = c.userEmail === currentUserEmail;
             const displayName = c.userName ?? c.userEmail.split("@")[0];
+            const isEditing = editingId === c.id;
+
             return (
               <div key={c.id} className="group flex gap-2 items-start">
                 <div className="flex-1 min-w-0 rounded-lg bg-zinc-900 px-2.5 py-1.5">
@@ -82,17 +118,61 @@ export default function CommentsSection({
                     <span className="text-xs font-semibold text-zinc-300">{displayName}</span>
                     <span className="text-[10px] text-zinc-600">{formatRelative(c.createdAt)}</span>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed break-words">{c.content}</p>
+                  {isEditing ? (
+                    <div className="mt-1 flex flex-col gap-1.5">
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSaveEdit(c.id); }
+                          if (e.key === "Escape") cancelEdit();
+                          e.stopPropagation();
+                        }}
+                        rows={2}
+                        autoFocus
+                        className="w-full resize-none rounded-lg bg-zinc-800 border border-zinc-600 px-2 py-1 text-xs text-zinc-300 focus:outline-none focus:border-zinc-400 transition-colors"
+                      />
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => handleSaveEdit(c.id)}
+                          disabled={!editContent.trim() || saving}
+                          className="rounded-md bg-zinc-700 px-2 py-0.5 text-xs text-zinc-200 hover:bg-zinc-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {saving ? "Saving…" : "Save"}
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="rounded-md px-2 py-0.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed break-words">{c.content}</p>
+                  )}
                 </div>
-                {isOwn && (
-                  <button
-                    onClick={() => handleDelete(c.id)}
-                    className="opacity-0 group-hover:opacity-100 mt-1 flex h-5 w-5 items-center justify-center rounded text-[10px] text-zinc-600 hover:text-red-400 hover:bg-zinc-800 transition-all shrink-0"
-                    aria-label="Delete comment"
-                    title="Delete comment"
-                  >
-                    ✕
-                  </button>
+
+                {/* Own comment actions */}
+                {isOwn && !isEditing && (
+                  <div className="flex flex-col gap-0.5 mt-1 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-all shrink-0">
+                    <button
+                      onClick={() => startEdit(c)}
+                      className="flex h-5 w-5 items-center justify-center rounded text-[10px] text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+                      aria-label="Edit comment"
+                      title="Edit comment"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      onClick={() => handleDelete(c.id)}
+                      className="flex h-5 w-5 items-center justify-center rounded text-[10px] text-zinc-600 hover:text-red-400 hover:bg-zinc-800 transition-colors"
+                      aria-label="Delete comment"
+                      title="Delete comment"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 )}
               </div>
             );

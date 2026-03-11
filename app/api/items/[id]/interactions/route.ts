@@ -12,27 +12,24 @@ export async function GET(
 
   const { id } = await params;
 
-  const [ratings, comments, myRating] = await Promise.all([
-    prisma.itemRating.aggregate({
-      where: { itemId: id },
-      _avg: { rating: true },
-      _count: { rating: true },
+  const [upCount, downCount, myVoteRecord, comments] = await Promise.all([
+    prisma.itemRating.count({ where: { itemId: id, rating: 1 } }),
+    prisma.itemRating.count({ where: { itemId: id, rating: -1 } }),
+    prisma.itemRating.findUnique({
+      where: { userEmail_itemId: { userEmail: email, itemId: id } },
+      select: { rating: true },
     }),
     prisma.itemComment.findMany({
       where: { itemId: id },
       orderBy: { createdAt: "asc" },
       select: { id: true, userEmail: true, userName: true, content: true, createdAt: true },
     }),
-    prisma.itemRating.findUnique({
-      where: { userEmail_itemId: { userEmail: email, itemId: id } },
-      select: { rating: true },
-    }),
   ]);
 
   return NextResponse.json({
-    avgRating: ratings._avg.rating ?? null,
-    ratingCount: ratings._count.rating,
-    myRating: myRating?.rating ?? null,
+    upCount,
+    downCount,
+    myVote: (myVoteRecord?.rating ?? null) as 1 | -1 | null,
     comments,
   });
 }
