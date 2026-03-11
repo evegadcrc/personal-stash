@@ -103,6 +103,15 @@ const en = {
   sharedCategoriesGroup: "Shared categories (hidden from my library)",
   sharedCategory: "shared category",
   existingSubcategories: "existing:",
+  newCategoryOption: "+ New category…",
+  newCategoryPlaceholder: "new-category-name (lowercase)",
+  letAIDecide: "Let AI decide…",
+  aiCategoryHint: "(optional — leave blank to let AI decide)",
+  sharedCategoryBadge: "shared category",
+  subcategoryPlaceholder: "e.g. article, tool, to-watch…",
+  tagsPlaceholder: "react, typescript, open-source",
+  sourcePlaceholder: "manual, web, youtube, book…",
+  notesPlaceholder: "Extended notes, quotes, or extra context…",
 };
 
 const es: typeof en = {
@@ -196,6 +205,15 @@ const es: typeof en = {
   sharedCategoriesGroup: "Categor\u00EDas compartidas (ocultas de mi biblioteca)",
   sharedCategory: "categor\u00EDa compartida",
   existingSubcategories: "existentes:",
+  newCategoryOption: "+ Nueva categoría…",
+  newCategoryPlaceholder: "nombre-categoria (minúsculas)",
+  letAIDecide: "Que la IA decida…",
+  aiCategoryHint: "(opcional — dejar en blanco para que la IA decida)",
+  sharedCategoryBadge: "categoría compartida",
+  subcategoryPlaceholder: "ej. artículo, herramienta, por-ver…",
+  tagsPlaceholder: "react, typescript, código-abierto",
+  sourcePlaceholder: "manual, web, youtube, libro…",
+  notesPlaceholder: "Notas adicionales, citas o contexto extra…",
 };
 
 export const translations = { en, es };
