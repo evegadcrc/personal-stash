@@ -24,8 +24,15 @@ export default function AttachmentsField({ attachments, onChange }: Props) {
         form.append("file", file);
         const res = await fetch("/api/upload", { method: "POST", body: form });
         if (!res.ok) {
-          const err = (await res.json()) as { error?: string };
-          throw new Error(err.error ?? "Upload failed");
+          let msg = "Upload failed";
+          try {
+            const err = (await res.json()) as { error?: string };
+            msg = err.error ?? msg;
+          } catch {
+            // Non-JSON response (e.g. "Request Entity Too Large" from Vercel)
+            if (res.status === 413) msg = "File too large (max ~4 MB per file)";
+          }
+          throw new Error(msg);
         }
         const att = (await res.json()) as Attachment;
         uploaded.push(att);
@@ -53,7 +60,7 @@ export default function AttachmentsField({ attachments, onChange }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-xs text-zinc-400">
-        Attachments <span className="text-zinc-600">(images, PDF, Word, Excel, PPT, CSV, TXT)</span>
+        Attachments <span className="text-zinc-600">(images, PDF, Word, Excel, PPT, CSV, TXT, HTML)</span>
       </label>
 
       {/* Existing attachments */}
@@ -117,7 +124,7 @@ export default function AttachmentsField({ attachments, onChange }: Props) {
       <input
         ref={fileRef}
         type="file"
-        accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/csv,text/markdown,.md"
+        accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/csv,text/markdown,text/html,.md,.html,.htm"
         multiple
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}

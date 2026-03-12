@@ -547,6 +547,28 @@ function KnowledgeBaseContent({
     showToast(t.changesSaved);
   }
 
+  async function handleRenameCollection(id: string, newName: string): Promise<boolean> {
+    const res = await fetch(`/api/collections/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    });
+    if (!res.ok) return false;
+    const { collection } = await res.json() as { collection: CollectionMeta };
+    setCollections((prev) => prev.map((c) => c.id === id ? { ...c, name: collection.name } : c));
+    if (selectedCollection?.id === id) setSelectedCollection((prev) => prev ? { ...prev, name: collection.name } : prev);
+    return true;
+  }
+
+  async function handleDeleteCollection(id: string) {
+    await fetch(`/api/collections/${id}`, { method: "DELETE" });
+    setCollections((prev) => prev.filter((c) => c.id !== id));
+    if (selectedCollection?.id === id) {
+      setSelectedCollection(null);
+      setCollectionItems([]);
+    }
+  }
+
   async function handleSelectCollection(col: CollectionMeta) {
     setSelectedCollection(col);
     setSelectedCategory(null);
@@ -1038,6 +1060,8 @@ function KnowledgeBaseContent({
           selectedCollectionId={selectedCollection?.id ?? null}
           onSelectCollection={handleSelectCollection}
           onCollectionsChange={setCollections}
+          onRenameCollection={handleRenameCollection}
+          onDeleteCollection={handleDeleteCollection}
           dragSourceCategory={dragSourceCategory ?? (dragSrcId ? "__shared__" : null)}
           dragOverCategory={dragOverCategory}
           onDragOverCategory={setDragOverCategory}

@@ -29,8 +29,8 @@ export async function POST(request: Request) {
     // PowerPoint
     "application/vnd.ms-powerpoint",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    // Text / CSV / Markdown
-    "text/plain", "text/csv", "text/markdown", "text/x-markdown",
+    // Text / CSV / Markdown / HTML
+    "text/plain", "text/csv", "text/markdown", "text/x-markdown", "text/html",
   ];
   if (!allowedTypes.includes(file.type)) {
     return NextResponse.json({ error: "File type not supported" }, { status: 400 });

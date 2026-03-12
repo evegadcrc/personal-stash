@@ -32,6 +32,8 @@ interface SidebarProps {
   selectedCollectionId: string | null;
   onSelectCollection: (col: CollectionMeta) => void;
   onCollectionsChange: (cols: CollectionMeta[]) => void;
+  onRenameCollection: (id: string, newName: string) => Promise<boolean>;
+  onDeleteCollection: (id: string) => void;
   // Cross-category drag & drop
   dragSourceCategory?: string | null;
   dragOverCategory?: string | null;
@@ -91,6 +93,8 @@ export default function Sidebar({
   selectedCollectionId,
   onSelectCollection,
   onCollectionsChange,
+  onRenameCollection,
+  onDeleteCollection,
   dragSourceCategory,
   dragOverCategory,
   onDragOverCategory,
@@ -99,7 +103,9 @@ export default function Sidebar({
 }: SidebarProps) {
   const { t } = useLanguage();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editingCollection, setEditingCollection] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const collInputRef = useRef<HTMLInputElement>(null);
 
   const totalCount = categories.reduce((sum, c) => sum + c.items.length, 0);
   const totalUnread = Object.values(unreadCounts).reduce((sum, n) => sum + n, 0);
@@ -363,22 +369,73 @@ export default function Sidebar({
           </div>
           {collections.map((col) => {
             const dot = COLOR_DOT[col.color ?? "indigo"] ?? "bg-indigo-500";
+            const isEditing = editingCollection === col.id;
             return (
-              <button
+              <div
                 key={col.id}
-                onClick={() => onSelectCollection(col)}
-                className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+                className={`group flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
                   selectedCollectionId === col.id
                     ? "bg-zinc-800 text-white"
                     : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
                 }`}
               >
-                <span className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
                   <span className={`h-2 w-2 rounded-full shrink-0 ${dot}`} />
-                  <span className="truncate">{col.name}</span>
-                </span>
-                <span className="text-xs text-zinc-600 shrink-0">{col._count.items}</span>
-              </button>
+                  {isEditing ? (
+                    <input
+                      ref={collInputRef}
+                      autoFocus
+                      defaultValue={col.name}
+                      onClick={(e) => e.stopPropagation()}
+                      onBlur={(e) => {
+                        const val = e.target.value.trim();
+                        if (val && val !== col.name) {
+                          onRenameCollection(col.id, val).then(() => setEditingCollection(null));
+                        } else {
+                          setEditingCollection(null);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                        if (e.key === "Escape") setEditingCollection(null);
+                        e.stopPropagation();
+                      }}
+                      className="flex-1 min-w-0 bg-zinc-700 text-zinc-100 text-sm px-1.5 py-0.5 rounded outline-none border border-zinc-500 focus:border-zinc-300"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => onSelectCollection(col)}
+                      className="truncate text-left flex-1 min-w-0"
+                    >
+                      {col.name}
+                    </button>
+                  )}
+                </div>
+
+                {!isEditing && (
+                  <div className="flex items-center shrink-0">
+                    <div className="flex items-center gap-0.5 w-9">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingCollection(col.id); }}
+                        title="Rename"
+                        className="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all cursor-pointer"
+                        aria-label="Rename collection"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onDeleteCollection(col.id); }}
+                        title="Delete collection"
+                        className="opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 flex h-4 w-4 items-center justify-center rounded text-[10px] text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all cursor-pointer"
+                        aria-label="Delete collection"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <span className="text-xs text-zinc-600 shrink-0 ml-1">{col._count.items}</span>
+                  </div>
+                )}
+              </div>
             );
           })}
         </>
