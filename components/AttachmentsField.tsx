@@ -53,7 +53,7 @@ export default function AttachmentsField({ attachments, onChange }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-xs text-zinc-400">
-        Attachments <span className="text-zinc-600">(images, PDFs)</span>
+        Attachments <span className="text-zinc-600">(images, PDF, Word, Excel, PPT, CSV, TXT)</span>
       </label>
 
       {/* Existing attachments */}
@@ -73,7 +73,7 @@ export default function AttachmentsField({ attachments, onChange }: Props) {
                 />
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded bg-zinc-700">
-                  <PdfIcon />
+                  <DocIcon name={att.name} type={att.type} />
                 </div>
               )}
               <div className="flex flex-col">
@@ -111,13 +111,13 @@ export default function AttachmentsField({ attachments, onChange }: Props) {
         className="flex items-center gap-2 rounded-lg border border-dashed border-zinc-700 px-3 py-2 text-xs text-zinc-500 hover:border-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <UploadIcon />
-        {uploading ? "Uploading…" : "Upload image or PDF"}
+        {uploading ? "Uploading…" : "Upload file"}
       </button>
 
       <input
         ref={fileRef}
         type="file"
-        accept="image/*,application/pdf"
+        accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/csv,text/markdown,.md"
         multiple
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
@@ -138,9 +138,16 @@ function UploadIcon() {
   );
 }
 
-function PdfIcon() {
+function DocIcon({ name, type }: { name: string; type: string }) {
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  const color =
+    type === "pdf" ? "text-red-400"
+    : ext === "doc" || ext === "docx" ? "text-blue-400"
+    : ext === "xls" || ext === "xlsx" || ext === "csv" ? "text-emerald-400"
+    : ext === "ppt" || ext === "pptx" ? "text-orange-400"
+    : "text-zinc-400";
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-400">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={color}>
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <polyline points="14 2 14 8 20 8" />
       <line x1="9" y1="13" x2="15" y2="13" />

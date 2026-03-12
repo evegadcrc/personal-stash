@@ -2,7 +2,7 @@ import { prisma } from "./db";
 
 export interface Attachment {
   url: string;
-  type: "image" | "pdf";
+  type: "image" | "pdf" | "document";
   name: string;
   size: number;
 }

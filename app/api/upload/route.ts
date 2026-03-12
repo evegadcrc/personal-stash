@@ -15,9 +15,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/avif", "application/pdf"];
+  const allowedTypes = [
+    // Images
+    "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif",
+    // PDF
+    "application/pdf",
+    // Word
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    // Excel
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    // PowerPoint
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    // Text / CSV / Markdown
+    "text/plain", "text/csv", "text/markdown", "text/x-markdown",
+  ];
   if (!allowedTypes.includes(file.type)) {
-    return NextResponse.json({ error: "Only images and PDFs are allowed" }, { status: 400 });
+    return NextResponse.json({ error: "File type not supported" }, { status: 400 });
   }
 
   const maxSize = 20 * 1024 * 1024; // 20 MB
@@ -33,7 +49,9 @@ export async function POST(request: Request) {
     contentType: file.type,
   });
 
-  const type = file.type === "application/pdf" ? "pdf" : "image";
+  const type = file.type.startsWith("image/") ? "image"
+    : file.type === "application/pdf" ? "pdf"
+    : "document";
 
   return NextResponse.json({
     url: blob.url,
