@@ -1525,6 +1525,7 @@ function KnowledgeBaseContent({
                       hasAvailableShares={sharedCategories.length > 0}
                       siblingItems={activeItems}
                       onAddToCollection={setCollectionPickerItem}
+                      shareId={selectedShare?.id ?? currentCategoryShare?.id}
                       autoFocus={item.id === focusItemId}
                     />
                   ))}
@@ -1559,6 +1560,7 @@ function KnowledgeBaseContent({
                       hasAvailableShares={sharedCategories.length > 0}
                       siblingItems={activeItems}
                       onAddToCollection={setCollectionPickerItem}
+                      shareId={selectedShare?.id ?? currentCategoryShare?.id}
                       autoFocus={item.id === focusItemId}
                     />
                   ))}

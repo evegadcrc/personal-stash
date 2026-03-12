@@ -46,6 +46,8 @@ interface ItemCardProps {
   siblingItems?: Item[];
   // Collections
   onAddToCollection?: (item: Item) => void;
+  // Share context — included in copy-link URL so shared users land in the right view
+  shareId?: string;
   // Auto-expand and scroll (used when navigating from a push notification)
   autoFocus?: boolean;
 }
@@ -146,7 +148,7 @@ export default function ItemCard({
   item, view, onDelete, onToggleRead, onEdit, onTagClick,
   canReorder, canDrag, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
   currentUserEmail, isSharedView, shareOwnerEmail, onRemoveFromShare, onAddToShare,
-  hasAvailableShares, siblingItems, onAddToCollection, autoFocus,
+  hasAvailableShares, siblingItems, onAddToCollection, shareId, autoFocus,
 }: ItemCardProps) {
   const isItemOwner = item.ownerEmail === currentUserEmail;
   const isShareOwner = shareOwnerEmail === currentUserEmail;
@@ -322,7 +324,12 @@ export default function ItemCard({
     <button
       onClick={(e) => {
         e.stopPropagation();
-        const url = `${window.location.origin}/?itemId=${item.id}&categoryName=${item.category}`;
+        const parts = [
+          `itemId=${item.id}`,
+          shareId && `shareId=${shareId}`,
+          `categoryName=${item.category}`,
+        ].filter(Boolean).join("&");
+        const url = `${window.location.origin}/?${parts}`;
         navigator.clipboard.writeText(url).then(() => {
           setLinkCopied(true);
           setTimeout(() => setLinkCopied(false), 1500);
