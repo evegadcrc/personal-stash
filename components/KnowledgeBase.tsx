@@ -268,13 +268,22 @@ function KnowledgeBaseContent({
         if (res.ok) {
           const { item } = await res.json() as { item: Item };
           const targetCat = categoryName ? normalizeCategory(categoryName) : item.category;
-          setCategories((prev) =>
-            prev.map((c) =>
-              c.name === targetCat
-                ? { ...c, items: [item, ...c.items.filter((i) => i.id !== itemId)] }
-                : c
-            )
-          );
+          if (item.ownerEmail !== currentUserEmail) {
+            // Contributor item — inject into categoryMembershipItemsMap to avoid
+            // duplicate keys when the membership map later loads from the server.
+            setCategoryMembershipItemsMap((prev) => ({
+              ...prev,
+              [targetCat]: [item, ...(prev[targetCat] ?? []).filter((i) => i.id !== itemId)],
+            }));
+          } else {
+            setCategories((prev) =>
+              prev.map((c) =>
+                c.name === targetCat
+                  ? { ...c, items: [item, ...c.items.filter((i) => i.id !== itemId)] }
+                  : c
+              )
+            );
+          }
         }
       } catch {
         // best-effort — ignore
