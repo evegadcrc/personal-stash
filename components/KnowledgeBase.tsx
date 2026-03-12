@@ -239,10 +239,10 @@ function KnowledgeBaseContent({
       if (share) {
         handleSelectShare(share);
       } else if (categoryName) {
-        handleCategoryChange(normalizeCategory(categoryName));
+        handleCategoryChange(categoryName);
       }
     } else if (categoryName) {
-      handleCategoryChange(normalizeCategory(categoryName));
+      handleCategoryChange(categoryName);
     } else {
       // Search personal categories
       for (const cat of categories) {
