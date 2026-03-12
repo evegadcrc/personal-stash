@@ -245,8 +245,10 @@ function KnowledgeBaseContent({
       const share = sharedCategories.find((s) => s.id === shareId);
       if (share) {
         handleSelectShare(share);
-      } else if (categoryName) {
-        handleCategoryChange(categoryName);
+      } else {
+        // shareId provided but not in our accessible shares — no access
+        setToast({ msg: "This item is private or no longer available.", id: Date.now() });
+        return;
       }
     } else if (categoryName) {
       handleCategoryChange(categoryName);
@@ -291,6 +293,9 @@ function KnowledgeBaseContent({
               )
             );
           }
+        } else if (res.status === 403 || res.status === 404) {
+          setFocusItemId(null);
+          setToast({ msg: "This item is private or no longer available.", id: Date.now() });
         }
       } catch {
         // best-effort — ignore
