@@ -4,7 +4,13 @@ import KnowledgeBase from "@/components/KnowledgeBase";
 import { auth } from "@/auth";
 
 interface HomeProps {
-  searchParams: Promise<{ shareUrl?: string; shareText?: string }>;
+  searchParams: Promise<{
+    shareUrl?: string;
+    shareText?: string;
+    itemId?: string;
+    shareId?: string;
+    categoryName?: string;
+  }>;
 }
 
 export default async function Home({ searchParams }: HomeProps) {
@@ -28,6 +34,9 @@ export default async function Home({ searchParams }: HomeProps) {
       aiAvailable={!!process.env.ANTHROPIC_API_KEY}
       shareUrl={params.shareUrl}
       shareText={params.shareText}
+      initialItemId={params.itemId}
+      initialShareId={params.shareId}
+      initialCategoryName={params.categoryName}
     />
   );
 }

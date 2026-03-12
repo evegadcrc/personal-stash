@@ -47,6 +47,10 @@ interface KnowledgeBaseProps {
   aiAvailable: boolean;
   shareUrl?: string;
   shareText?: string;
+  // Deep-link params — passed from server component so they survive soft navigations
+  initialItemId?: string;
+  initialShareId?: string;
+  initialCategoryName?: string;
 }
 
 function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
@@ -108,6 +112,9 @@ function KnowledgeBaseContent({
   aiAvailable,
   shareUrl,
   shareText,
+  initialItemId,
+  initialShareId,
+  initialCategoryName,
 }: KnowledgeBaseProps) {
   const { lang, setLang, t } = useLanguage();
   const [categories, setCategories] = useState<CategoryData[]>(initialCategories);
@@ -295,21 +302,18 @@ function KnowledgeBaseContent({
       .catch(() => {});
   }
 
-  // On mount: handle /?itemId=xxx from push notification when app was closed
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const itemId = params.get("itemId");
-    const shareId = params.get("shareId");
-    const categoryName = params.get("categoryName");
-    if (!itemId) return;
-    window.history.replaceState({}, "", "/");
-    handleOpenItem(itemId, shareId, categoryName);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Keep a ref to the latest handleOpenItem so the SW listener never has a stale closure
+  // Keep a ref to the latest handleOpenItem so SW listeners and effects never have a stale closure
   const handleOpenItemRef = useRef(handleOpenItem);
   useEffect(() => { handleOpenItemRef.current = handleOpenItem; });
+
+  // Handle deep-link props (passed from server component via searchParams).
+  // Re-runs whenever the props change so soft navigations (App Router) work too.
+  useEffect(() => {
+    if (!initialItemId) return;
+    // Clear the URL params without triggering a navigation
+    window.history.replaceState({}, "", "/");
+    handleOpenItemRef.current(initialItemId, initialShareId ?? null, initialCategoryName ?? null);
+  }, [initialItemId, initialShareId, initialCategoryName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for postMessage from SW when app tab is already open
   useEffect(() => {
