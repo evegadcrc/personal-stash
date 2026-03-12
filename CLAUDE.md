@@ -55,7 +55,7 @@ All data files live under `data/users/edwin.vega@gmail.com/`:
 |-------------|-----------------------|-------------------------------------------------------|
 | ai          | ai.json               | tool, model, prompt, tutorial, course, research, news |
 | movies      | movies.json           | to-watch, watched, series, recommendation             |
-| places      | places.json           | restaurant, travel, experience, coffee                |
+| lugares     | lugares.json          | restaurant, travel, experience, coffee                |
 | ideas       | ideas.json            | project, business, creative, note                     |
 | bookmarks   | bookmarks.json        | reference, article, video, stream, site, jobs, books  |
 | restaurants | restaurants.json      | restaurant, bar, event                                |

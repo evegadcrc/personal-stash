@@ -58,15 +58,28 @@ export const CATEGORY_ICONS: Record<string, string> = {
   science: "🔬",
 };
 
-/** Normalize a category name: strip accents, lowercase, spaces→hyphens, map Spanish→English */
-export function normalizeCategory(name: string): string {
-  const slug = name
+/**
+ * Clean a raw input into a URL-safe slug, WITHOUT applying the Spanish→English
+ * synonym map.  Use this when STORING category names so that "lugares" stays
+ * "lugares" and doesn't silently become "places".
+ */
+export function cleanCategorySlug(name: string): string {
+  return name
     .trim()
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // strip diacritics (é→e, ü→u, etc.)
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "");
+}
+
+/**
+ * Normalize a category name for DISPLAY / ICON lookup purposes only.
+ * Applies the Spanish→English synonym map so "lugares" resolves to the
+ * same icon/display as "places".  Do NOT use this when writing to the DB.
+ */
+export function normalizeCategory(name: string): string {
+  const slug = cleanCategorySlug(name);
   return SPANISH_TO_ENGLISH[slug] ?? slug;
 }
 

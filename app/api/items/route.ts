@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { prismaToItem } from "@/lib/data";
-import { normalizeCategory } from "@/lib/categories";
+import { cleanCategorySlug } from "@/lib/categories";
 import { auth } from "@/auth";
 import { notifyShareMembers } from "@/lib/notifications";
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     create: { email },
   });
 
-  const normalizedCategory = normalizeCategory(body.category);
+  const normalizedCategory = cleanCategorySlug(body.category);
 
   const item = await prisma.item.create({
     data: {
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   // Normalize both sides when comparing so we always find the right share.
   try {
     const ownerShares = await prisma.share.findMany({ where: { ownerEmail: email } });
-    const share = ownerShares.find((s) => normalizeCategory(s.categoryName) === normalizedCategory) ?? null;
+    const share = ownerShares.find((s) => s.categoryName === normalizedCategory) ?? null;
     if (share && (share.allowedEmails.length > 0 || share.mode === "public")) {
       const actor = await prisma.user.findUnique({ where: { email }, select: { name: true } });
       await notifyShareMembers({

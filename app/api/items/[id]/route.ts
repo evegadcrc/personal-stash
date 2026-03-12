@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { prismaToItem } from "@/lib/data";
-import { normalizeCategory } from "@/lib/categories";
+import { cleanCategorySlug } from "@/lib/categories";
 import { auth } from "@/auth";
 
 export async function GET(
@@ -54,7 +54,7 @@ export async function PUT(
       title: body.title ?? existing.title,
       url: "url" in body ? (body.url ?? null) : existing.url,
       summary: body.summary ?? existing.summary,
-      category: body.category ? normalizeCategory(body.category) : existing.category,
+      category: body.category ? cleanCategorySlug(body.category) : existing.category,
       subcategory: body.subcategory ?? existing.subcategory,
       tags: body.tags ?? existing.tags,
       source: body.source ?? existing.source,

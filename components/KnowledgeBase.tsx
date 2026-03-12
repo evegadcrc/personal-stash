@@ -878,7 +878,7 @@ function KnowledgeBaseContent({
   }, [categories]);
 
   const mySharedCategoryNames = useMemo(
-    () => new Set(myShares.map((s) => normalizeCategory(s.categoryName))),
+    () => new Set(myShares.map((s) => s.categoryName)),
     [myShares]
   );
 
