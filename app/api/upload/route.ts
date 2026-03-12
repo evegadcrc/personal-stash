@@ -20,21 +20,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "File too large (max 4 MB)" }, { status: 413 });
   }
 
-  // Preserve original extension; fall back to 'bin'
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
   const safeName = `${session.user.email}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const blob = await put(safeName, file, {
-    access: "public",
+    access: "private",
     contentType: file.type || "application/octet-stream",
   });
+
+  // Return a proxied URL so private blobs are served through our auth-gated route
+  const proxyUrl = `/api/blob?url=${encodeURIComponent(blob.url)}`;
 
   const type = file.type.startsWith("image/") ? "image"
     : file.type === "application/pdf" ? "pdf"
     : "document";
 
   return NextResponse.json({
-    url: blob.url,
+    url: proxyUrl,
     type,
     name: file.name,
     size: file.size,
