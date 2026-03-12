@@ -161,6 +161,7 @@ export default function ItemCard({
   const [interactions, setInteractions] = useState<Interactions | null>(null);
   const [related, setRelated] = useState<Item[] | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [textCopied, setTextCopied] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
 
   // When autoFocus becomes true (push/in-app notification click): expand, load, scroll
@@ -179,6 +180,8 @@ export default function ItemCard({
 
   function handleCardClick() {
     if (!confirming) {
+      // Don't collapse while the user has text selected (they're trying to copy)
+      if (expanded && window.getSelection()?.toString()) return;
       const opening = !expanded;
       setExpanded(opening);
       // Auto-mark as read when opening the card (like email)
@@ -352,6 +355,33 @@ export default function ItemCard({
     </button>
   ) : null;
 
+  const copyTextButton = !confirming ? (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        const parts = [item.title, item.summary, item.content].filter(Boolean).join("\n\n");
+        navigator.clipboard.writeText(parts).then(() => {
+          setTextCopied(true);
+          setTimeout(() => setTextCopied(false), 1500);
+        });
+      }}
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      aria-label="Copy text"
+      title={textCopied ? "Copied!" : "Copy text"}
+    >
+      {textCopied ? (
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor">
+          <path d="M1 6l3.5 3.5L11 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        </svg>
+      ) : (
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg>
+      )}
+    </button>
+  ) : null;
+
   const collectionButton = !confirming && onAddToCollection ? (
     <button
       onClick={(e) => { e.stopPropagation(); onAddToCollection(item); }}
@@ -447,6 +477,7 @@ export default function ItemCard({
             {readButton}
             {editButton}
             {collectionButton}
+            {copyTextButton}
             {copyLinkButton}
             {addToShareButton}
             {deleteButton}
@@ -609,6 +640,7 @@ export default function ItemCard({
             {readButton}
             {editButton}
             {collectionButton}
+            {copyTextButton}
             {copyLinkButton}
             {addToShareButton}
             {deleteButton}
