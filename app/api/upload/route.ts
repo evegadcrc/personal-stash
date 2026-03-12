@@ -15,38 +15,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  const allowedTypes = [
-    // Images
-    "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif",
-    // PDF
-    "application/pdf",
-    // Word
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    // Excel
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    // PowerPoint
-    "application/vnd.ms-powerpoint",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    // Text / CSV / Markdown / HTML
-    "text/plain", "text/csv", "text/markdown", "text/x-markdown", "text/html",
-  ];
-  if (!allowedTypes.includes(file.type)) {
-    return NextResponse.json({ error: "File type not supported" }, { status: 400 });
-  }
-
-  const maxSize = 20 * 1024 * 1024; // 20 MB
+  const maxSize = 4 * 1024 * 1024; // 4 MB — Vercel serverless body limit
   if (file.size > maxSize) {
-    return NextResponse.json({ error: "File too large (max 20 MB)" }, { status: 400 });
+    return NextResponse.json({ error: "File too large (max 4 MB)" }, { status: 413 });
   }
 
-  const ext = file.name.split(".").pop() ?? "bin";
+  // Preserve original extension; fall back to 'bin'
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
   const safeName = `${session.user.email}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const blob = await put(safeName, file, {
     access: "public",
-    contentType: file.type,
+    contentType: file.type || "application/octet-stream",
   });
 
   const type = file.type.startsWith("image/") ? "image"
