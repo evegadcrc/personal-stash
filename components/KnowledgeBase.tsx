@@ -230,7 +230,7 @@ function KnowledgeBaseContent({
   }, [currentUserEmail]);
 
   // Central handler: navigate to item + expand its card + dismiss in-app notif
-  function handleOpenItem(itemId: string | null, shareId: string | null, categoryName: string | null) {
+  async function handleOpenItem(itemId: string | null, shareId: string | null, categoryName: string | null) {
     if (!itemId) return;
 
     // Navigate to the right view
@@ -255,7 +255,33 @@ function KnowledgeBaseContent({
 
     setFocusItemId(itemId);
 
-    fetch(`/api/notifications?itemId=${encodeURIComponent(itemId)}`, { method: "DELETE" })
+    // If item not in local state yet (added while page was open, not yet refreshed),
+    // fetch it and inject into the right category so the card exists and can expand.
+    const allLoaded = [
+      ...categories.flatMap((c) => c.items),
+      ...sharedItems,
+      ...Object.values(categoryMembershipItemsMap).flat(),
+    ];
+    if (!allLoaded.some((i) => i.id === itemId)) {
+      try {
+        const res = await fetch(`/api/items/${itemId}`);
+        if (res.ok) {
+          const { item } = await res.json() as { item: Item };
+          const targetCat = categoryName ? normalizeCategory(categoryName) : item.category;
+          setCategories((prev) =>
+            prev.map((c) =>
+              c.name === targetCat
+                ? { ...c, items: [item, ...c.items.filter((i) => i.id !== itemId)] }
+                : c
+            )
+          );
+        }
+      } catch {
+        // best-effort — ignore
+      }
+    }
+
+    fetch(`/api/notifications?itemId=${encodeURIComponent(itemId)}`, { method: "PATCH" })
       .then(() => setNotifCount((c) => Math.max(0, c - 1)))
       .catch(() => {});
   }

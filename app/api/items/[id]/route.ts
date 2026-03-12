@@ -4,6 +4,21 @@ import { prismaToItem } from "@/lib/data";
 import { normalizeCategory } from "@/lib/categories";
 import { auth } from "@/auth";
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+  const item = await prisma.item.findUnique({ where: { id } });
+  if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  return NextResponse.json({ item: prismaToItem(item) });
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

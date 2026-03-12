@@ -19,6 +19,7 @@ interface ItemNotification {
   itemTitle: string | null;
   categoryName: string | null;
   shareId: string | null;
+  read: boolean;
   createdAt: string;
 }
 
@@ -38,7 +39,9 @@ function formatRelative(iso: string) {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
-  return days < 7 ? `${days}d ago` : new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return days < 7
+    ? `${days}d ago`
+    : new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function NotificationsPanel({
@@ -53,7 +56,7 @@ export default function NotificationsPanel({
   const [notifications, setNotifications] = useState<ItemNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState<string | null>(null);
-  const [dismissingAll, setDismissingAll] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
 
   async function load() {
     try {
@@ -70,7 +73,7 @@ export default function NotificationsPanel({
       onPendingChange(pending.length);
       const notifs = notifData.notifications ?? [];
       setNotifications(notifs);
-      onNotifCountChange?.(notifs.length);
+      onNotifCountChange?.(notifs.filter((n) => !n.read).length);
     } catch {
       // ignore
     } finally {
@@ -94,36 +97,45 @@ export default function NotificationsPanel({
     }
   }
 
-  async function handleDismiss(id: string) {
+  // X button — hard-delete the notification
+  async function handleDelete(id: string) {
     await fetch(`/api/notifications/${id}`, { method: "DELETE" });
     const updated = notifications.filter((n) => n.id !== id);
     setNotifications(updated);
-    onNotifCountChange?.(updated.length);
+    onNotifCountChange?.(updated.filter((n) => !n.read).length);
   }
 
-  async function handleDismissAll() {
-    setDismissingAll(true);
+  // Clear all — hard-delete everything
+  async function handleClearAll() {
+    setClearingAll(true);
     try {
       await fetch("/api/notifications", { method: "DELETE" });
       setNotifications([]);
       onNotifCountChange?.(0);
     } finally {
-      setDismissingAll(false);
+      setClearingAll(false);
     }
   }
 
+  // Clicking a notification row — mark as read (stays visible in gray) + open item
   function handleNotifClick(n: ItemNotification) {
-    if (n.itemId) {
-      // Remove from panel state; handleOpenItem handles badge + DB dismissal by itemId
-      setNotifications((prev) => prev.filter((x) => x.id !== n.id));
-      onOpenItem?.(n.itemId, n.shareId, n.categoryName);
-    } else {
-      handleDismiss(n.id);
+    if (!n.read) {
+      // Optimistically mark as read in local state
+      setNotifications((prev) =>
+        prev.map((x) => (x.id === n.id ? { ...x, read: true } : x))
+      );
+      onNotifCountChange?.(notifications.filter((x) => !x.read && x.id !== n.id).length);
+      // Mark as read in DB via PATCH
+      fetch(`/api/notifications/${n.id}`, { method: "PATCH" }).catch(() => {});
     }
-    onClose();
+    if (n.itemId) {
+      onOpenItem?.(n.itemId, n.shareId, n.categoryName);
+      onClose();
+    }
   }
 
-  const isEmpty = requests.length === 0 && notifications.length === 0;
+  const hasAny = requests.length > 0 || notifications.length > 0;
+  const hasNotifs = notifications.length > 0;
 
   return (
     <>
@@ -134,13 +146,13 @@ export default function NotificationsPanel({
         <div className="border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-zinc-200">{t.notifications}</p>
           <div className="flex items-center gap-3">
-            {notifications.length > 0 && (
+            {hasNotifs && (
               <button
-                onClick={handleDismissAll}
-                disabled={dismissingAll}
+                onClick={handleClearAll}
+                disabled={clearingAll}
                 className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50"
               >
-                {dismissingAll ? "…" : "Clear all"}
+                {clearingAll ? "…" : "Clear all"}
               </button>
             )}
             <button
@@ -155,7 +167,7 @@ export default function NotificationsPanel({
         <div className="max-h-96 overflow-y-auto">
           {loading ? (
             <p className="px-4 py-4 text-xs text-zinc-500">{t.loading}</p>
-          ) : isEmpty ? (
+          ) : !hasAny ? (
             <p className="px-4 py-4 text-xs text-zinc-600">{t.noPendingNotifications}</p>
           ) : (
             <>
@@ -196,24 +208,38 @@ export default function NotificationsPanel({
                 return (
                   <div
                     key={n.id}
-                    className="group flex items-start gap-3 px-4 py-3 hover:bg-zinc-800/40 transition-colors border-b border-zinc-800/60 last:border-0 cursor-pointer"
+                    className={`group flex items-start gap-3 px-4 py-3 transition-colors border-b border-zinc-800/60 last:border-0 ${
+                      n.itemId ? "cursor-pointer hover:bg-zinc-800/40" : ""
+                    }`}
                     onClick={() => handleNotifClick(n)}
                   >
+                    {/* Unread dot */}
+                    <div className="shrink-0 mt-1.5">
+                      {!n.read ? (
+                        <span className="block h-1.5 w-1.5 rounded-full bg-rose-500" />
+                      ) : (
+                        <span className="block h-1.5 w-1.5" />
+                      )}
+                    </div>
+
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-zinc-300 leading-relaxed">
-                        <span className="font-medium">{actor}</span>
+                      <p className={`text-xs leading-relaxed ${n.read ? "text-zinc-500" : "text-zinc-300"}`}>
+                        <span className={n.read ? "font-normal" : "font-medium"}>{actor}</span>
                         {" added "}
-                        <span className="text-zinc-100 font-medium line-clamp-1">{n.itemTitle ?? "an item"}</span>
+                        <span className={n.read ? "text-zinc-500" : "text-zinc-100 font-medium"}>
+                          {n.itemTitle ?? "an item"}
+                        </span>
                         {n.categoryName && (
                           <> to <span className="text-zinc-400">{n.categoryName}</span></>
                         )}
                       </p>
                       <p className="text-[10px] text-zinc-600 mt-0.5">{formatRelative(n.createdAt)}</p>
                     </div>
+
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDismiss(n.id); }}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(n.id); }}
                       className="shrink-0 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 mt-0.5 flex h-5 w-5 items-center justify-center rounded text-[10px] text-zinc-600 hover:text-zinc-300 transition-all"
-                      aria-label="Dismiss"
+                      aria-label="Remove"
                     >
                       ✕
                     </button>
