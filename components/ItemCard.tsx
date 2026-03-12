@@ -149,6 +149,7 @@ export default function ItemCard({
   const [expanded, setExpanded] = useState(false);
   const [interactions, setInteractions] = useState<Interactions | null>(null);
   const [related, setRelated] = useState<Item[] | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
 
   // When autoFocus becomes true (push/in-app notification click): expand, load, scroll
@@ -308,6 +309,33 @@ export default function ItemCard({
     </button>
   ) : null;
 
+  const copyLinkButton = !confirming ? (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}/?itemId=${item.id}&categoryName=${item.category}`;
+        navigator.clipboard.writeText(url).then(() => {
+          setLinkCopied(true);
+          setTimeout(() => setLinkCopied(false), 1500);
+        });
+      }}
+      className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-600 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 hover:bg-zinc-700 hover:text-zinc-300 transition-all"
+      aria-label="Copy link"
+      title={linkCopied ? "Copied!" : "Copy link"}
+    >
+      {linkCopied ? (
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor">
+          <path d="M1 6l3.5 3.5L11 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        </svg>
+      ) : (
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4.5 7.5a2.5 2.5 0 0 0 3.536 0l2-2a2.5 2.5 0 0 0-3.536-3.536L5.5 3" />
+          <path d="M7.5 4.5a2.5 2.5 0 0 0-3.536 0l-2 2A2.5 2.5 0 0 0 5.5 10l1-1" />
+        </svg>
+      )}
+    </button>
+  ) : null;
+
   const collectionButton = !confirming && onAddToCollection ? (
     <button
       onClick={(e) => { e.stopPropagation(); onAddToCollection(item); }}
@@ -403,6 +431,7 @@ export default function ItemCard({
             {readButton}
             {editButton}
             {collectionButton}
+            {copyLinkButton}
             {addToShareButton}
             {deleteButton}
             {removeFromShareButton}
@@ -564,6 +593,7 @@ export default function ItemCard({
             {readButton}
             {editButton}
             {collectionButton}
+            {copyLinkButton}
             {addToShareButton}
             {deleteButton}
             {removeFromShareButton}
