@@ -112,6 +112,23 @@ const en = {
   tagsPlaceholder: "react, typescript, open-source",
   sourcePlaceholder: "manual, web, youtube, book…",
   notesPlaceholder: "Extended notes, quotes, or extra context…",
+  // Tour
+  tourWelcomeTitle: "Welcome to Personal Stash",
+  tourWelcomeDesc: "Your personal knowledge base. Save links, notes, and ideas — organized and searchable. Let's take a quick tour.",
+  tourSidebarTitle: "Your Categories",
+  tourSidebarDesc: "Your content is organized into categories here. Click one to browse. Categories are created automatically as you add items.",
+  tourAddTitle: "Add Anything",
+  tourAddDesc: "Click + to save a link, paste text, or upload an image. AI fills in the title, summary, and tags automatically.",
+  tourItemTitle: "Your Items",
+  tourItemDesc: "Each card shows the title, summary, and tags. Click to expand, mark as read, rate, or add to a collection.",
+  tourShareTitle: "Share with Friends",
+  tourShareDesc: "Select a category, then click Share to invite friends. They can browse — or contribute to — your shared categories.",
+  tourSearchTitle: "Search Everything",
+  tourSearchDesc: "Search across all your items by title, summary, or tags — instantly.",
+  tourBack: "Back",
+  tourSkip: "Skip",
+  tourDone: "Done",
+  tourNext: "Next →",
 };
 
 const es: typeof en = {
@@ -214,6 +231,23 @@ const es: typeof en = {
   tagsPlaceholder: "react, typescript, código-abierto",
   sourcePlaceholder: "manual, web, youtube, libro…",
   notesPlaceholder: "Notas adicionales, citas o contexto extra…",
+  // Tour
+  tourWelcomeTitle: "Bienvenido a Personal Stash",
+  tourWelcomeDesc: "Tu base de conocimiento personal. Guarda enlaces, notas e ideas — organizados y buscables. Hagamos un recorrido rápido.",
+  tourSidebarTitle: "Tus Categorías",
+  tourSidebarDesc: "Tu contenido se organiza en categorías aquí. Haz clic para explorar. Las categorías se crean automáticamente al agregar elementos.",
+  tourAddTitle: "Agrega Cualquier Cosa",
+  tourAddDesc: "Toca + para guardar un enlace, pegar texto o subir una imagen. La IA completa el título, resumen y etiquetas automáticamente.",
+  tourItemTitle: "Tus Elementos",
+  tourItemDesc: "Cada tarjeta muestra el título, resumen y etiquetas. Toca para expandir, marcar como leído, calificar o agregar a una colección.",
+  tourShareTitle: "Comparte con Amigos",
+  tourShareDesc: "Selecciona una categoría y toca Compartir para invitar amigos. Pueden explorar y contribuir a tus categorías compartidas.",
+  tourSearchTitle: "Busca Todo",
+  tourSearchDesc: "Busca entre todos tus elementos por título, resumen o etiquetas — al instante.",
+  tourBack: "Atrás",
+  tourSkip: "Omitir",
+  tourDone: "Listo",
+  tourNext: "Siguiente →",
 };
 
 export const translations = { en, es };

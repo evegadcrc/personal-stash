@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Step {
   id: string;
@@ -8,45 +9,6 @@ interface Step {
   description: string;
   target: string | null;
 }
-
-const STEPS: Step[] = [
-  {
-    id: "welcome",
-    title: "Welcome to Personal Stash",
-    description: "Your personal knowledge base. Save links, notes, and ideas — organized and searchable. Let's take a quick tour.",
-    target: null,
-  },
-  {
-    id: "sidebar",
-    title: "Your Categories",
-    description: "Your content is organized into categories here. Click one to browse. Categories are created automatically as you add items.",
-    target: "sidebar",
-  },
-  {
-    id: "add-button",
-    title: "Add Anything",
-    description: "Click + to save a link, paste text, or upload an image. AI fills in the title, summary, and tags automatically.",
-    target: "add-button",
-  },
-  {
-    id: "item-card",
-    title: "Your Items",
-    description: "Each card shows the title, summary, and tags. Click to expand, mark as read, rate, or add to a collection.",
-    target: "item-card",
-  },
-  {
-    id: "share-button",
-    title: "Share with Friends",
-    description: "Select a category, then click Share to invite friends. They can browse — or contribute to — your shared categories.",
-    target: "share-button",
-  },
-  {
-    id: "search",
-    title: "Search Everything",
-    description: "Search across all your items by title, summary, or tags — instantly.",
-    target: "search-bar",
-  },
-];
 
 interface Rect {
   top: number;
@@ -64,8 +26,19 @@ const TOOLTIP_W = 300;
 const TOOLTIP_H = 210; // approximate height
 
 export default function TourOverlay({ onComplete, onStep }: TourOverlayProps) {
+  const { t } = useLanguage();
   const [stepIndex, setStepIndex] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
+
+  const STEPS: Step[] = [
+    { id: "welcome",      title: t.tourWelcomeTitle, description: t.tourWelcomeDesc, target: null },
+    { id: "sidebar",      title: t.tourSidebarTitle, description: t.tourSidebarDesc, target: "sidebar" },
+    { id: "add-button",   title: t.tourAddTitle,     description: t.tourAddDesc,     target: "add-button" },
+    { id: "item-card",    title: t.tourItemTitle,    description: t.tourItemDesc,    target: "item-card" },
+    { id: "share-button", title: t.tourShareTitle,   description: t.tourShareDesc,   target: "share-button" },
+    { id: "search",       title: t.tourSearchTitle,  description: t.tourSearchDesc,  target: "search-bar" },
+  ];
+
   const [activeSteps, setActiveSteps] = useState<Step[]>(STEPS);
 
   const rebuildActiveSteps = useCallback(() => {
@@ -73,7 +46,8 @@ export default function TourOverlay({ onComplete, onStep }: TourOverlayProps) {
       if (!s.target) return true;
       return !!document.querySelector(`[data-tour="${s.target}"]`);
     });
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t]);
 
   useEffect(() => {
     setActiveSteps(rebuildActiveSteps());
@@ -207,20 +181,20 @@ export default function TourOverlay({ onComplete, onStep }: TourOverlayProps) {
               onClick={handleBack}
               className="h-8 rounded-lg border border-zinc-700 px-3 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
             >
-              Back
+              {t.tourBack}
             </button>
           )}
           <button
             onClick={onComplete}
             className="h-8 rounded-lg px-3 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
           >
-            Skip
+            {t.tourSkip}
           </button>
           <button
             onClick={handleNext}
             className="ml-auto h-8 rounded-lg bg-zinc-100 px-4 text-xs font-medium text-zinc-900 hover:bg-white transition-colors"
           >
-            {isLast ? "Done" : "Next →"}
+            {isLast ? t.tourDone : t.tourNext}
           </button>
         </div>
         <div className="flex items-center justify-center gap-1.5 mt-3">
