@@ -1729,7 +1729,12 @@ function KnowledgeBaseContent({
       {toast && <Toast key={toast.id} message={toast.msg} onDone={() => setToast(null)} />}
 
       {showTour && currentUserEmail && (
-        <TourOverlay onComplete={handleTourComplete} />
+        <TourOverlay
+          onComplete={handleTourComplete}
+          onStep={(stepId) => {
+            if (stepId === "sidebar") setSidebarOpen(true);
+          }}
+        />
       )}
     </div>
   );

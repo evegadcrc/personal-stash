@@ -57,9 +57,13 @@ interface Rect {
 
 interface TourOverlayProps {
   onComplete: () => void;
+  onStep?: (stepId: string) => void;
 }
 
-export default function TourOverlay({ onComplete }: TourOverlayProps) {
+const TOOLTIP_W = 300;
+const TOOLTIP_H = 210; // approximate height
+
+export default function TourOverlay({ onComplete, onStep }: TourOverlayProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
   const [activeSteps, setActiveSteps] = useState<Step[]>(STEPS);
@@ -77,19 +81,31 @@ export default function TourOverlay({ onComplete }: TourOverlayProps) {
 
   const currentStep = activeSteps[stepIndex] ?? activeSteps[activeSteps.length - 1];
 
+  // Notify parent when step changes (e.g. to open sidebar)
+  useEffect(() => {
+    if (currentStep) onStep?.(currentStep.id);
+  }, [currentStep, onStep]);
+
+  // Measure rect after a settle delay (allows CSS transitions like sidebar slide-in to finish)
   useEffect(() => {
     if (!currentStep?.target) {
       setRect(null);
       return;
     }
-    const el = document.querySelector(`[data-tour="${currentStep.target}"]`);
-    if (!el) {
-      setRect(null);
-      return;
-    }
-    const r = el.getBoundingClientRect();
-    setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-    el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const measure = () => {
+      const el = document.querySelector(`[data-tour="${currentStep.target}"]`);
+      if (!el) { setRect(null); return; }
+      const r = el.getBoundingClientRect();
+      // If the element is off-screen (e.g. sidebar still animating), skip spotlight
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const visible = r.right > 0 && r.left < vw && r.bottom > 0 && r.top < vh;
+      if (!visible) { setRect(null); return; }
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    };
+    // 320ms — enough to clear the sidebar's 200ms transition + a little buffer
+    const timer = setTimeout(measure, 320);
+    return () => clearTimeout(timer);
   }, [currentStep, stepIndex]);
 
   function handleNext() {
@@ -129,27 +145,47 @@ export default function TourOverlay({ onComplete }: TourOverlayProps) {
         left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: 9999,
-        width: 360,
+        width: Math.min(TOOLTIP_W, (typeof window !== "undefined" ? window.innerWidth : 400) - 32),
       };
     }
-    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-    const vw = typeof window !== "undefined" ? window.innerWidth : 1200;
-    const tooltipW = 320;
-    const belowSpace = vh - (rect.top + rect.height + PAD);
-    const aboveSpace = rect.top - PAD;
-    const top =
-      belowSpace >= 180 || belowSpace > aboveSpace
-        ? rect.top + rect.height + PAD + 12
-        : rect.top - PAD - 200;
-    const left = Math.min(Math.max(rect.left - PAD, 16), vw - tooltipW - 16);
-    return { position: "fixed", top, left, zIndex: 9999, width: tooltipW };
+
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    const w = Math.min(TOOLTIP_W, vw - 32);
+
+    // Prefer below, fall back to above, fall back to centered
+    const belowTop = rect.top + rect.height + PAD + 12;
+    const aboveTop = rect.top - PAD - TOOLTIP_H - 12;
+
+    let top: number;
+    if (belowTop + TOOLTIP_H <= vh - 16) {
+      top = belowTop;
+    } else if (aboveTop >= 16) {
+      top = aboveTop;
+    } else {
+      // Element too tall (e.g. full-height sidebar) — float tooltip at safe center
+      top = Math.max(16, Math.min((vh - TOOLTIP_H) / 2, vh - TOOLTIP_H - 16));
+    }
+
+    // Horizontal: prefer aligning with element left, but stay within viewport
+    // If element is on the left side (sidebar), push tooltip to the right of it
+    const elementRight = rect.left + rect.width;
+    let left: number;
+    if (elementRight + 16 + w <= vw) {
+      // Enough room to the right of the element
+      left = elementRight + 16;
+    } else {
+      left = Math.min(Math.max(rect.left - PAD, 16), vw - w - 16);
+    }
+
+    return { position: "fixed", top, left, zIndex: 9999, width: w };
   })();
 
   const isLast = stepIndex === activeSteps.length - 1;
 
   return (
     <>
-      {!rect && <div className="fixed inset-0 bg-black/78 z-[9997]" />}
+      {!rect && <div className="fixed inset-0 bg-black/75 z-[9997]" />}
       {spotlightStyle && <div style={spotlightStyle} />}
 
       <div style={tooltipStyle} className="rounded-2xl border border-zinc-700 bg-zinc-900 p-5 shadow-2xl">
