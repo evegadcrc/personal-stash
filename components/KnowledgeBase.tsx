@@ -246,9 +246,16 @@ function KnowledgeBaseContent({
       if (share) {
         handleSelectShare(share);
       } else {
-        // shareId provided but not in our accessible shares — no access
-        setToast({ msg: "This item is private or no longer available.", id: Date.now() });
-        return;
+        // Check if it's one of the current user's own shared categories
+        // (share owner receives notifications about contributor items — shareId is theirs)
+        const ownShare = myShares.find((s) => s.id === shareId);
+        if (ownShare) {
+          handleCategoryChange(ownShare.categoryName);
+        } else {
+          // shareId not in personal shares or shared-with-me — no access
+          setToast({ msg: "This item is private or no longer available.", id: Date.now() });
+          return;
+        }
       }
     } else if (categoryName) {
       handleCategoryChange(categoryName);

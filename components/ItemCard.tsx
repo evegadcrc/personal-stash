@@ -469,7 +469,7 @@ export default function ItemCard({
             {dragHandleEl}
             {favicon}
             {attachmentBadge}
-            <h3 className={`text-sm leading-snug line-clamp-2 ${item.read ? "font-medium text-zinc-500" : "font-bold text-zinc-100"}`}>
+            <h3 className={`text-sm leading-snug line-clamp-2 break-words ${item.read ? "font-medium text-zinc-500" : "font-bold text-zinc-100"}`}>
               {item.title}
             </h3>
           </div>
