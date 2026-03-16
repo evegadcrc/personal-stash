@@ -1346,7 +1346,7 @@ function KnowledgeBaseContent({
           </div>
 
           {/* Search bar — mobile full-width row */}
-          <div className="mt-3 md:hidden">
+          <div data-tour="search-bar" className="mt-3 md:hidden">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
           </div>
 
@@ -1733,6 +1733,7 @@ function KnowledgeBaseContent({
           onComplete={handleTourComplete}
           onStep={(stepId) => {
             if (stepId === "sidebar") setSidebarOpen(true);
+            else setSidebarOpen(false);
           }}
         />
       )}

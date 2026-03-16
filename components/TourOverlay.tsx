@@ -93,10 +93,15 @@ export default function TourOverlay({ onComplete, onStep }: TourOverlayProps) {
       return;
     }
     const measure = () => {
-      const el = document.querySelector(`[data-tour="${currentStep.target}"]`);
+      // Pick the first element with this data-tour that is actually visible
+      const candidates = document.querySelectorAll(`[data-tour="${currentStep.target}"]`);
+      let el: Element | null = null;
+      for (const c of Array.from(candidates)) {
+        const r = c.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) { el = c; break; }
+      }
       if (!el) { setRect(null); return; }
       const r = el.getBoundingClientRect();
-      // If the element is off-screen (e.g. sidebar still animating), skip spotlight
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const visible = r.right > 0 && r.left < vw && r.bottom > 0 && r.top < vh;
