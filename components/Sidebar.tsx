@@ -217,7 +217,7 @@ export default function Sidebar({
                   defaultValue={cat.name}
                   onClick={(e) => e.stopPropagation()}
                   onBlur={(e) => {
-                    const val = e.target.value.trim().toLowerCase().replace(/\s+/g, "-");
+                    const val = e.target.value.trim().replace(/\s+/g, "-");
                     if (val && val !== cat.name) {
                       onRenameCategory(cat.name, val).then(() => setEditingCategory(null));
                     } else {

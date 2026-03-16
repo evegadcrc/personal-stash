@@ -105,7 +105,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   const isShareCategory = !shareId && fields.category.startsWith("share:");
   const effectiveCategoryName =
     fields.category === "__new__"
-      ? fields.newCategory.trim().toLowerCase().replace(/\s+/g, "-")
+      ? fields.newCategory.trim().replace(/\s+/g, "-")
       : isShareCategory
       ? fields.category.split(":")[2]
       : fields.category;
@@ -533,8 +533,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                       setFields((f) => ({
                         ...f,
                         newCategory: e.target.value
-                          .toLowerCase()
-                          .replace(/[^a-z0-9-]/g, "-")
+                          .replace(/[^a-zA-Z0-9-]/g, "-")
                           .replace(/-+/g, "-"),
                       }))
                     }

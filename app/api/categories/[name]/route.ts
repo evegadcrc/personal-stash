@@ -13,7 +13,7 @@ export async function PATCH(
   const { name } = await params;
   const { newName } = await request.json() as { newName: string };
 
-  const cleaned = newName.trim().toLowerCase().replace(/\s+/g, "-");
+  const cleaned = newName.trim().replace(/\s+/g, "-");
   if (!cleaned) return NextResponse.json({ error: "Name required" }, { status: 400 });
   if (cleaned === name) return NextResponse.json({ success: true, newName: name });
 
