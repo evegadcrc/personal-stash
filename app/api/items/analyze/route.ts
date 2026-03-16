@@ -1,9 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `Analyze this content for a personal knowledge base. Return JSON only (no markdown, no explanation):
 {
@@ -25,6 +22,21 @@ function stripHtml(html: string): string {
     .replace(/\s{2,}/g, " ")
     .trim()
     .slice(0, 8000);
+}
+
+function extractOgTags(html: string) {
+  const prop = (name: string) =>
+    html.match(new RegExp(`<meta[^>]*property=["']${name}["'][^>]*content=["']([^"'<>]+)["']`, "i"))?.[1] ||
+    html.match(new RegExp(`<meta[^>]*content=["']([^"'<>]+)["'][^>]*property=["']${name}["']`, "i"))?.[1];
+  const meta = (name: string) =>
+    html.match(new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"'<>]+)["']`, "i"))?.[1] ||
+    html.match(new RegExp(`<meta[^>]*content=["']([^"'<>]+)["'][^>]*name=["']${name}["']`, "i"))?.[1];
+  const title = html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim();
+  return {
+    title: prop("og:title") || meta("twitter:title") || title,
+    description: prop("og:description") || meta("twitter:description") || meta("description"),
+    type: prop("og:type"),
+  };
 }
 
 export async function POST(request: Request) {
@@ -61,18 +73,18 @@ export async function POST(request: Request) {
     }
   }
 
-  let content: Anthropic.MessageParam["content"];
+  type MessageContent =
+    | string
+    | Array<
+        | { type: "text"; text: string }
+        | { type: "image_url"; image_url: { url: string } }
+      >;
+
+  let content: MessageContent;
 
   if (imageBase64 && mediaType) {
     content = [
-      {
-        type: "image",
-        source: {
-          type: "base64",
-          media_type: mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
-          data: imageBase64,
-        },
-      },
+      { type: "image_url", image_url: { url: `data:${mediaType};base64,${imageBase64}` } },
       { type: "text", text: "Analyze this image for my knowledge base." },
     ];
   } else {
@@ -85,7 +97,16 @@ export async function POST(request: Request) {
           signal: AbortSignal.timeout(10000),
         });
         const html = await res.text();
-        rawText = `URL: ${url}\n\n${stripHtml(html)}`;
+        const og = extractOgTags(html);
+        const body = stripHtml(html);
+
+        const parts = [`URL: ${url}`];
+        if (og.title) parts.push(`Title: ${og.title}`);
+        if (og.description) parts.push(`Description: ${og.description}`);
+        if (og.type) parts.push(`Type: ${og.type}`);
+        if (body.length > 100) parts.push(`\nContent:\n${body}`);
+
+        rawText = parts.join("\n");
       } catch {
         rawText = `URL: ${url}`;
       }
@@ -94,20 +115,35 @@ export async function POST(request: Request) {
     content = rawText;
   }
 
-  let message: Anthropic.Message;
+  let data: { choices: Array<{ message: { content: string } }> };
   try {
-    message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 512,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content }],
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://stash.vercel.app",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-flash-1.5-8b",
+        max_tokens: 512,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content },
+        ],
+      }),
     });
+    if (!res.ok) {
+      const err = await res.text();
+      return NextResponse.json({ error: err }, { status: res.status });
+    }
+    data = await res.json();
   } catch (e) {
-    const err = e as { status?: number; message?: string };
-    return NextResponse.json({ error: err.message ?? "Anthropic API error" }, { status: err.status ?? 500 });
+    const err = e as { message?: string };
+    return NextResponse.json({ error: err.message ?? "OpenRouter API error" }, { status: 500 });
   }
 
-  const raw = (message.content[0] as { type: string; text: string }).text;
+  const raw = data.choices[0].message.content;
 
   // Strip possible markdown code fences
   const jsonStr = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();

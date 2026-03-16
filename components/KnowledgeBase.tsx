@@ -20,6 +20,7 @@ import CategoryNotes from "./CategoryNotes";
 import CollectionPickerModal from "./CollectionPickerModal";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { normalizeCategory } from "@/lib/categories";
+import TourOverlay from "./TourOverlay";
 
 interface CollectionMeta {
   id: string;
@@ -45,6 +46,7 @@ interface KnowledgeBaseProps {
   pendingCount: number;
   currentUserEmail: string;
   aiAvailable: boolean;
+  tourCompleted?: boolean;
   shareUrl?: string;
   shareText?: string;
   // Deep-link params — passed from server component so they survive soft navigations
@@ -110,6 +112,7 @@ function KnowledgeBaseContent({
   pendingCount: initialPendingCount,
   currentUserEmail,
   aiAvailable,
+  tourCompleted = false,
   shareUrl,
   shareText,
   initialItemId,
@@ -117,6 +120,7 @@ function KnowledgeBaseContent({
   initialCategoryName,
 }: KnowledgeBaseProps) {
   const { lang, setLang, t } = useLanguage();
+  const [showTour, setShowTour] = useState(!tourCompleted);
   const [categories, setCategories] = useState<CategoryData[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedShare, setSelectedShare] = useState<ShareWithOwner | null>(null);
@@ -1028,6 +1032,11 @@ function KnowledgeBaseContent({
     }, 300);
   }
 
+  async function handleTourComplete() {
+    setShowTour(false);
+    await fetch("/api/tour", { method: "POST" }).catch(() => {});
+  }
+
   function handleShareSaved() {
     // Refresh my shares
     fetch("/api/sharing")
@@ -1052,6 +1061,7 @@ function KnowledgeBaseContent({
 
       {/* Sidebar — fixed overlay on mobile, inline on desktop */}
       <nav
+        data-tour="sidebar"
         className={`
           fixed md:relative top-0 left-0 h-full md:h-auto z-40 md:z-auto
           flex w-64 md:w-56 shrink-0 flex-col gap-4 overflow-y-auto
@@ -1127,6 +1137,7 @@ function KnowledgeBaseContent({
             {/* Share button — visible when own category is selected */}
             {selectedCategory && (
               <button
+                data-tour="share-button"
                 onClick={() => setShareSettingsCategory(selectedCategory)}
                 className="flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
                 title={`${t.share} "${selectedCategory}"`}
@@ -1144,7 +1155,7 @@ function KnowledgeBaseContent({
             )}
 
             {/* Search bar — desktop inline */}
-            <div className="hidden md:block flex-1 max-w-xs">
+            <div data-tour="search-bar" className="hidden md:block flex-1 max-w-xs">
               <SearchBar value={searchQuery} onChange={setSearchQuery} inputRef={searchRef} />
             </div>
 
@@ -1305,6 +1316,7 @@ function KnowledgeBaseContent({
                 </button>
               )}
               <button
+                data-tour="add-button"
                 onClick={() => setShowAddModal(true)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors text-lg leading-none"
                 aria-label={t.addItem}
@@ -1525,9 +1537,9 @@ function KnowledgeBaseContent({
               </p>
               {viewMode === "grid" ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {displayedItems.map((item) => (
+                  {displayedItems.map((item, idx) => (
+                    <div key={item.id} {...(idx === 0 ? { "data-tour": "item-card" } : {})}>
                     <ItemCard
-                      key={item.id}
                       item={item}
                       view="grid"
                       onDelete={handleDelete}
@@ -1556,6 +1568,7 @@ function KnowledgeBaseContent({
                       shareId={selectedShare?.id ?? currentCategoryShare?.id}
                       autoFocus={item.id === focusItemId}
                     />
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -1714,6 +1727,10 @@ function KnowledgeBaseContent({
       })()}
 
       {toast && <Toast key={toast.id} message={toast.msg} onDone={() => setToast(null)} />}
+
+      {showTour && currentUserEmail && (
+        <TourOverlay onComplete={handleTourComplete} />
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ model User {
   avatar        String?
   createdAt     DateTime @default(now())
   weeklyDigest  Boolean  @default(true)
+  tourCompleted Boolean  @default(false)
 
   items            Item[]             @relation("owner")
   sentRequests     Friendship[]       @relation("sender")
