@@ -66,11 +66,10 @@ export const CATEGORY_ICONS: Record<string, string> = {
 export function cleanCategorySlug(name: string): string {
   return name
     .trim()
-    .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // strip diacritics (é→e, ü→u, etc.)
     .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+    .replace(/[^a-zA-Z0-9-]/g, "");
 }
 
 /**
@@ -79,7 +78,7 @@ export function cleanCategorySlug(name: string): string {
  * same icon/display as "places".  Do NOT use this when writing to the DB.
  */
 export function normalizeCategory(name: string): string {
-  const slug = cleanCategorySlug(name);
+  const slug = cleanCategorySlug(name).toLowerCase();
   return SPANISH_TO_ENGLISH[slug] ?? slug;
 }
 
