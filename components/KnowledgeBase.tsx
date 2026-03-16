@@ -242,17 +242,33 @@ function KnowledgeBaseContent({
 
     // Navigate to the right view
     if (shareId) {
-      const share = sharedCategories.find((s) => s.id === shareId);
+      let share = sharedCategories.find((s) => s.id === shareId);
+      let freshMyShares = myShares;
+
+      if (!share && !myShares.find((s) => s.id === shareId)) {
+        // Local state may be stale (app was backgrounded, notification arrived before
+        // the async /api/sharing fetch completed). Re-fetch to get current shares.
+        try {
+          const data = await fetch("/api/sharing").then((r) => r.json());
+          const freshShared: ShareWithOwner[] = data.sharedWithMe ?? [];
+          freshMyShares = data.myShares ?? [];
+          setSharedCategories(freshShared);
+          setMyShares(freshMyShares);
+          share = freshShared.find((s) => s.id === shareId);
+        } catch {
+          // best-effort
+        }
+      }
+
       if (share) {
         handleSelectShare(share);
       } else {
         // Check if it's one of the current user's own shared categories
         // (share owner receives notifications about contributor items — shareId is theirs)
-        const ownShare = myShares.find((s) => s.id === shareId);
+        const ownShare = freshMyShares.find((s) => s.id === shareId);
         if (ownShare) {
           handleCategoryChange(ownShare.categoryName);
         } else {
-          // shareId not in personal shares or shared-with-me — no access
           setToast({ msg: "This item is private or no longer available.", id: Date.now() });
           return;
         }
