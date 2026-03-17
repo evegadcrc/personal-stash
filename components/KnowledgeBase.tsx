@@ -924,7 +924,7 @@ function KnowledgeBaseContent({
     ? titleCase(selectedShare.categoryName)
     : selectedCategory
     ? titleCase(selectedCategory)
-    : "All";
+    : t.categories;
 
   const hasActiveFilters = subcategories.length > 0 || selectedTag !== null;
 
@@ -1511,7 +1511,10 @@ function KnowledgeBaseContent({
               unreadCounts={unreadCounts}
               membershipItemsMap={categoryMembershipItemsMap}
               mySharedCategoryNames={mySharedCategoryNames}
+              sharedCategories={sharedCategories}
+              sharedUnreadCounts={sharedUnreadCounts}
               onSelect={handleCategoryChange}
+              onSelectShare={handleSelectShare}
               onDeleteCategory={setConfirmDeleteCategory}
               onRenameCategory={handleRenameCategory}
             />

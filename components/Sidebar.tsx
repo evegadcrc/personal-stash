@@ -161,7 +161,7 @@ export default function Sidebar({
       >
         <span className="flex items-center gap-2">
           <span>📚</span>
-          <span>{t.all}</span>
+          <span>{t.categories}</span>
         </span>
         <span className="flex items-center gap-1.5">
           {totalUnread > 0 ? (

@@ -4,6 +4,7 @@ const en = {
   // Sidebar
   library: "Library",
   all: "All",
+  categories: "Categories",
   sharedWithMe: "Shared with me",
   publicSection: "Public",
   contributors: "Contributors",
@@ -134,6 +135,7 @@ const en = {
 const es: typeof en = {
   library: "Biblioteca",
   all: "Todo",
+  categories: "Categorías",
   sharedWithMe: "Compartido conmigo",
   publicSection: "P\u00FAblico",
   contributors: "Colaboradores",
