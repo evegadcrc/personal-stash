@@ -780,7 +780,7 @@ function KnowledgeBaseContent({
   const canDragBase = !showAllShared && !selectedCollection && categories.length > 1;
 
   const displayedItems = useMemo(() => {
-    if (!canReorder || !selectedCategory) return filteredItems;
+    if (!canReorder || !selectedCategory || sortMode !== "date") return filteredItems;
     const order = customOrder[selectedCategory];
     if (!order || order.length === 0) return filteredItems;
     const itemMap = new Map(filteredItems.map((i) => [i.id, i]));
@@ -791,7 +791,7 @@ function KnowledgeBaseContent({
     }
     for (const item of itemMap.values()) result.unshift(item);
     return result;
-  }, [filteredItems, canReorder, customOrder, selectedCategory]);
+  }, [filteredItems, canReorder, customOrder, selectedCategory, sortMode]);
 
   function handleDragStart(id: string, fromShare?: { shareId: string; membershipId: string | undefined }) {
     setDragSrcId(id);
