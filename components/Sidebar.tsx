@@ -40,6 +40,7 @@ interface SidebarProps {
   onDragOverCategory?: (cat: string) => void;
   onDragLeaveCategory?: () => void;
   onDropOnCategory?: (cat: string) => void;
+  categoryIcons?: Record<string, string>;
 }
 
 function titleCase(s: string) {
@@ -100,6 +101,7 @@ export default function Sidebar({
   onDragOverCategory,
   onDragLeaveCategory,
   onDropOnCategory,
+  categoryIcons = {},
 }: SidebarProps) {
   const { t } = useLanguage();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -209,7 +211,14 @@ export default function Sidebar({
           >
             {/* Main clickable area / inline edit */}
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <span>{getCategoryIcon(cat.name)}</span>
+                {(() => {
+                const icon = categoryIcons[cat.name] ?? getCategoryIcon(cat.name);
+                if (icon.startsWith("http") || icon.startsWith("/api/")) {
+                  // eslint-disable-next-line @next/next/no-img-element
+                  return <img src={icon} alt="" className="h-4 w-4 rounded object-cover shrink-0" />;
+                }
+                return <span>{icon}</span>;
+              })()}
               {isEditing ? (
                 <input
                   ref={inputRef}

@@ -24,6 +24,7 @@ model User {
   ratings           ItemRating[]
   comments          ItemComment[]
   categoryNotes     CategoryNote[]
+  categoryIcons     CategoryIcon[]
   collections       Collection[]
   pushSubscriptions PushSubscription[]
 }
@@ -198,6 +199,16 @@ model Friendship {
 
   @@unique([fromEmail, toEmail])
   @@index([toEmail, status])
+}
+
+model CategoryIcon {
+  ownerEmail   String
+  categoryName String
+  icon         String
+
+  owner User @relation(fields: [ownerEmail], references: [email], onDelete: Cascade)
+
+  @@id([ownerEmail, categoryName])
 }
 
 model Share {

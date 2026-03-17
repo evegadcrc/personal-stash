@@ -22,6 +22,7 @@ import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { normalizeCategory } from "@/lib/categories";
 import TourOverlay from "./TourOverlay";
 import CategoryGrid from "./CategoryGrid";
+import IconPickerModal from "./IconPickerModal";
 
 interface CollectionMeta {
   id: string;
@@ -173,6 +174,8 @@ function KnowledgeBaseContent({
   const [allSharedItems, setAllSharedItems] = useState<Item[]>([]);
   const [loadingAllShared, setLoadingAllShared] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const [categoryIcons, setCategoryIcons] = useState<Record<string, string>>({});
+  const [iconPickerCategory, setIconPickerCategory] = useState<string | null>(null);
 
   // Load persisted view mode, custom order, and my shares
   useEffect(() => {
@@ -190,6 +193,15 @@ function KnowledgeBaseContent({
     fetch("/api/collections")
       .then((r) => r.json())
       .then((data) => setCollections(data.collections ?? []))
+      .catch(() => {});
+  }, [currentUserEmail]);
+
+  // Load category icons on mount
+  useEffect(() => {
+    if (!currentUserEmail) return;
+    fetch("/api/category-icons")
+      .then((r) => r.json())
+      .then((data) => setCategoryIcons(data.icons ?? {}))
       .catch(() => {});
   }, [currentUserEmail]);
 
@@ -1033,6 +1045,20 @@ function KnowledgeBaseContent({
     }, 300);
   }
 
+  async function handleIconSave(categoryName: string, icon: string) {
+    if (!icon) {
+      await fetch(`/api/category-icons/${encodeURIComponent(categoryName)}`, { method: "DELETE" });
+      setCategoryIcons((prev) => { const next = { ...prev }; delete next[categoryName]; return next; });
+    } else {
+      await fetch(`/api/category-icons/${encodeURIComponent(categoryName)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ icon }),
+      });
+      setCategoryIcons((prev) => ({ ...prev, [categoryName]: icon }));
+    }
+  }
+
   async function handleTourComplete() {
     setShowTour(false);
     await fetch("/api/tour", { method: "POST" }).catch(() => {});
@@ -1087,6 +1113,7 @@ function KnowledgeBaseContent({
         <Sidebar
           categories={categories}
           selected={selectedCategory}
+          categoryIcons={categoryIcons}
           onSelect={handleCategoryChange}
           unreadCounts={unreadCounts}
           sharedCategories={sharedCategories}
@@ -1513,10 +1540,12 @@ function KnowledgeBaseContent({
               mySharedCategoryNames={mySharedCategoryNames}
               sharedCategories={sharedCategories}
               sharedUnreadCounts={sharedUnreadCounts}
+              categoryIcons={categoryIcons}
               onSelect={handleCategoryChange}
               onSelectShare={handleSelectShare}
               onDeleteCategory={setConfirmDeleteCategory}
               onRenameCategory={handleRenameCategory}
+              onIconPickerOpen={setIconPickerCategory}
             />
           ) : loadingSharedItems || loadingAllShared || loadingCollection ? (
             <div className="flex h-full items-center justify-center">
@@ -1742,6 +1771,15 @@ function KnowledgeBaseContent({
       })()}
 
       {toast && <Toast key={toast.id} message={toast.msg} onDone={() => setToast(null)} />}
+
+      {iconPickerCategory && (
+        <IconPickerModal
+          categoryName={iconPickerCategory}
+          currentIcon={categoryIcons[iconPickerCategory] ?? ""}
+          onSave={async (icon) => { await handleIconSave(iconPickerCategory, icon); }}
+          onClose={() => setIconPickerCategory(null)}
+        />
+      )}
 
       {showTour && currentUserEmail && (
         <TourOverlay

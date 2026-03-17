@@ -23,6 +23,14 @@ function ShareIcon() {
   );
 }
 
+function CatIcon({ icon, size = "text-3xl" }: { icon: string; size?: string }) {
+  if (icon.startsWith("http") || icon.startsWith("/api/")) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={icon} alt="" className="h-9 w-9 rounded-lg object-cover" />;
+  }
+  return <span className={`${size} leading-none`}>{icon}</span>;
+}
+
 interface CategoryGridProps {
   categories: CategoryData[];
   unreadCounts: Record<string, number>;
@@ -30,10 +38,12 @@ interface CategoryGridProps {
   mySharedCategoryNames: Set<string>;
   sharedCategories: ShareWithOwner[];
   sharedUnreadCounts: Record<string, number>;
+  categoryIcons: Record<string, string>;
   onSelect: (name: string) => void;
   onSelectShare: (share: ShareWithOwner) => void;
   onDeleteCategory: (name: string) => void;
   onRenameCategory: (oldName: string, newName: string) => Promise<boolean>;
+  onIconPickerOpen: (categoryName: string) => void;
 }
 
 export default function CategoryGrid({
@@ -43,10 +53,12 @@ export default function CategoryGrid({
   mySharedCategoryNames,
   sharedCategories,
   sharedUnreadCounts,
+  categoryIcons,
   onSelect,
   onSelectShare,
   onDeleteCategory,
   onRenameCategory,
+  onIconPickerOpen,
 }: CategoryGridProps) {
   const { t } = useLanguage();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -59,7 +71,7 @@ export default function CategoryGrid({
       {/* Personal categories */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {categories.map((cat) => {
-          const icon = getCategoryIcon(cat.name);
+          const icon = categoryIcons[cat.name] ?? getCategoryIcon(cat.name);
           const unread = unreadCounts[cat.name] ?? 0;
           const memberCount = (membershipItemsMap[cat.name] ?? []).length;
           const totalCount = cat.items.length + memberCount;
@@ -68,13 +80,22 @@ export default function CategoryGrid({
 
           return (
             <div key={cat.name} className={cardCls}>
+              {/* Tappable icon — opens icon picker */}
+              <button
+                onClick={(e) => { e.stopPropagation(); onIconPickerOpen(cat.name); }}
+                className="mb-2 self-start rounded-lg p-0.5 hover:bg-zinc-700 transition-colors"
+                title="Change icon"
+                tabIndex={isEditing ? -1 : 0}
+              >
+                <CatIcon icon={icon} />
+              </button>
+
+              {/* Card body — navigates into category */}
               <button
                 onClick={() => { if (!isEditing) onSelect(cat.name); }}
                 className="flex flex-col items-start gap-2 text-left w-full"
                 tabIndex={isEditing ? -1 : 0}
               >
-                <span className="text-3xl leading-none">{icon}</span>
-
                 {isEditing ? (
                   <input
                     ref={inputRef}
@@ -115,6 +136,7 @@ export default function CategoryGrid({
                 </div>
               </button>
 
+              {/* Action buttons — top-right corner */}
               {!isEditing && (
                 <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
                   <button
@@ -159,11 +181,11 @@ export default function CategoryGrid({
 
               return (
                 <div key={share.id} className={cardCls}>
+                  <span className="text-3xl leading-none mb-2">{icon}</span>
                   <button
                     onClick={() => onSelectShare(share)}
                     className="flex flex-col items-start gap-2 text-left w-full"
                   >
-                    <span className="text-3xl leading-none">{icon}</span>
                     <span className="font-semibold text-sm text-zinc-100 leading-snug line-clamp-2 break-words w-full">
                       {titleCase(share.categoryName)}
                     </span>
