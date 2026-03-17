@@ -140,7 +140,7 @@ export default function NotificationsPanel({
   return (
     <>
       <div className="fixed inset-0 z-10" onClick={onClose} />
-      <div className="absolute right-0 top-10 z-20 w-80 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden">
+      <div className="fixed right-3 top-14 z-20 w-80 max-w-[calc(100vw-1.5rem)] rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden">
 
         {/* Header */}
         <div className="border-b border-zinc-800 px-4 py-3 flex items-center justify-between">

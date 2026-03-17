@@ -470,7 +470,7 @@ export default function ItemCard({
             {favicon}
             {attachmentBadge}
             <h3 className={`text-sm leading-snug line-clamp-2 break-words ${item.read ? "font-medium text-zinc-500" : "font-bold text-zinc-100"}`}>
-              {item.title}
+              {item.title || <span className="italic text-zinc-600">Untitled</span>}
             </h3>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -598,7 +598,7 @@ export default function ItemCard({
         {favicon}
 
         <span className={`flex-1 text-sm truncate ${item.read ? "font-normal text-zinc-500" : "font-bold text-zinc-100"}`}>
-          {item.title}
+          {item.title || <span className="italic text-zinc-600">Untitled</span>}
         </span>
 
         <span className="hidden sm:block shrink-0 rounded-full bg-zinc-700/60 px-2 py-0.5 text-xs text-zinc-400">

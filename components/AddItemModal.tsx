@@ -259,7 +259,6 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
     (inputTab === "image" && imageBase64 !== null);
 
   const canSave =
-    fields.title.trim() !== "" &&
     (fields.category !== "__new__" || fields.newCategory.trim() !== "");
 
   return (
@@ -471,17 +470,6 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                 />
               </div>
 
-              {/* Summary */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">{t.summaryLabel}</label>
-                <textarea
-                  className={`${inputCls} resize-none`}
-                  rows={3}
-                  value={fields.summary}
-                  onChange={(e) => setFields((f) => ({ ...f, summary: e.target.value }))}
-                />
-              </div>
-
               {/* Category */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-zinc-400">{t.categoryLabel} <span className="text-zinc-600">*</span></label>
@@ -566,6 +554,17 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                     ))}
                   </datalist>
                 )}
+              </div>
+
+              {/* Summary */}
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-zinc-400">{t.summaryLabel}</label>
+                <textarea
+                  className={`${inputCls} resize-none`}
+                  rows={3}
+                  value={fields.summary}
+                  onChange={(e) => setFields((f) => ({ ...f, summary: e.target.value }))}
+                />
               </div>
 
               {/* Tags */}
