@@ -24,10 +24,7 @@ export default function IconPickerModal({ categoryName, currentIcon, onSave, onC
 
   const q = search.trim().toLowerCase();
   const displaySections = q
-    ? EMOJI_SECTIONS.filter((s) => s.label.toLowerCase().includes(q) || s.emojis.length > 0).map((s) => ({
-        ...s,
-        emojis: s.emojis,
-      }))
+    ? EMOJI_SECTIONS.filter((s) => s.label.toLowerCase().includes(q))
     : EMOJI_SECTIONS;
 
   async function handleEmojiClick(emoji: string) {
@@ -103,7 +100,7 @@ export default function IconPickerModal({ categoryName, currentIcon, onSave, onC
             onClick={() => setTab("emoji")}
             className={`flex-1 py-2.5 text-xs font-medium transition-colors ${tab === "emoji" ? "text-zinc-100 border-b-2 border-zinc-400" : "text-zinc-500 hover:text-zinc-300"}`}
           >
-            Emoji bank
+            Emojis
           </button>
           <button
             onClick={() => setTab("upload")}
@@ -119,7 +116,7 @@ export default function IconPickerModal({ categoryName, currentIcon, onSave, onC
             <div className="px-4 py-3 shrink-0">
               <input
                 className={inputCls}
-                placeholder="Search sections…"
+                placeholder="Search…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 autoFocus
