@@ -21,6 +21,7 @@ import CollectionPickerModal from "./CollectionPickerModal";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { normalizeCategory } from "@/lib/categories";
 import TourOverlay from "./TourOverlay";
+import CategoryGrid from "./CategoryGrid";
 
 interface CollectionMeta {
   id: string;
@@ -1503,7 +1504,18 @@ function KnowledgeBaseContent({
             </div>
           )}
           <div className="px-4 md:px-6 py-4 md:py-6">
-          {loadingSharedItems || loadingAllShared || loadingCollection ? (
+          {/* Category overview — shown in "All" personal view */}
+          {!selectedCategory && !selectedShare && !selectedCollection && !showAllShared ? (
+            <CategoryGrid
+              categories={categories}
+              unreadCounts={unreadCounts}
+              membershipItemsMap={categoryMembershipItemsMap}
+              mySharedCategoryNames={mySharedCategoryNames}
+              onSelect={handleCategoryChange}
+              onDeleteCategory={setConfirmDeleteCategory}
+              onRenameCategory={handleRenameCategory}
+            />
+          ) : loadingSharedItems || loadingAllShared || loadingCollection ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-zinc-500 text-sm">{t.loading}</p>
             </div>
