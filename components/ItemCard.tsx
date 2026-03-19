@@ -50,6 +50,8 @@ interface ItemCardProps {
   shareId?: string;
   // Auto-expand and scroll (used when navigating from a push notification)
   autoFocus?: boolean;
+  // Quick color change from expanded card
+  onColorChange?: (id: string, color: string | null) => void;
 }
 
 function docIconColor(att: Attachment): string {
@@ -144,11 +146,18 @@ function computeRelated(item: Item, siblings: Item[]): Item[] {
     .map((x) => x.item);
 }
 
+const COLOR_DOTS = [
+  { value: null,    cls: "bg-zinc-500",  title: "None" },
+  { value: "rose",  cls: "bg-rose-500",  title: "Rose" },
+  { value: "amber", cls: "bg-amber-500", title: "Amber" },
+  { value: "blue",  cls: "bg-blue-500",  title: "Blue" },
+] as const;
+
 export default function ItemCard({
   item, view, onDelete, onToggleRead, onEdit, onTagClick,
   canReorder, canDrag, isDragging, isDragOver, onDragStart, onDragOver, onDrop, onDragEnd,
   currentUserEmail, isSharedView, shareOwnerEmail, onRemoveFromShare, onAddToShare,
-  hasAvailableShares, siblingItems, onAddToCollection, shareId, autoFocus,
+  hasAvailableShares, siblingItems, onAddToCollection, shareId, autoFocus, onColorChange,
 }: ItemCardProps) {
   const isItemOwner = item.ownerEmail === currentUserEmail;
   const isShareOwner = shareOwnerEmail === currentUserEmail;
@@ -562,7 +571,25 @@ export default function ItemCard({
                 #{tag}
               </button>
             ))}
-            <span className="ml-auto text-xs text-zinc-600">{formatDate(item.dateAdded)}</span>
+            <div className="ml-auto flex items-center gap-2">
+              {expanded && canModify && onColorChange && (
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  {COLOR_DOTS.map(({ value, cls, title }) => (
+                    <button
+                      key={title}
+                      title={title}
+                      onClick={() => onColorChange(item.id, value)}
+                      className={`h-3 w-3 rounded-full transition-all ${cls} ${
+                        (item.color ?? null) === value
+                          ? "ring-1 ring-white/80 scale-125"
+                          : "opacity-40 hover:opacity-80"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+              <span className="text-xs text-zinc-600">{formatDate(item.dateAdded)}</span>
+            </div>
           </div>
         )}
 
@@ -687,7 +714,23 @@ export default function ItemCard({
               />
             </div>
           )}
-          <div className="flex flex-wrap gap-1.5 mt-1">
+          <div className="flex flex-wrap gap-1.5 mt-1 items-center">
+            {canModify && onColorChange && (
+              <div className="flex items-center gap-1 mr-1" onClick={(e) => e.stopPropagation()}>
+                {COLOR_DOTS.map(({ value, cls, title }) => (
+                  <button
+                    key={title}
+                    title={title}
+                    onClick={() => onColorChange(item.id, value)}
+                    className={`h-3 w-3 rounded-full transition-all ${cls} ${
+                      (item.color ?? null) === value
+                        ? "ring-1 ring-white/80 scale-125"
+                        : "opacity-40 hover:opacity-80"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
             {item.tags.map((tag) => (
               <button
                 key={tag}

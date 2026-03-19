@@ -531,28 +531,42 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
               {/* Subcategory */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400">
-                  {t.subcategoryLabel}
-                  {subcategorySuggestions.length > 0 && (
-                    <span className="ml-1 text-zinc-600">
-                      — {t.existingSubcategories} {subcategorySuggestions.slice(0, 4).join(", ")}
-                      {subcategorySuggestions.length > 4 ? "…" : ""}
-                    </span>
-                  )}
-                </label>
-                <input
-                  list="subcategory-list"
-                  className={inputCls}
-                  placeholder={t.subcategoryPlaceholder}
-                  value={fields.subcategory}
-                  onChange={(e) => setFields((f) => ({ ...f, subcategory: e.target.value }))}
-                />
-                {subcategorySuggestions.length > 0 && (
-                  <datalist id="subcategory-list">
-                    {subcategorySuggestions.map((s) => (
-                      <option key={s} value={s} />
-                    ))}
-                  </datalist>
+                <label className="text-xs text-zinc-400">{t.subcategoryLabel}</label>
+                {subcategorySuggestions.length > 0 ? (
+                  <>
+                    <select
+                      className={inputCls}
+                      value={subcategorySuggestions.includes(fields.subcategory) ? fields.subcategory : "__custom__"}
+                      onChange={(e) => {
+                        if (e.target.value === "__custom__") {
+                          setFields((f) => ({ ...f, subcategory: "" }));
+                        } else {
+                          setFields((f) => ({ ...f, subcategory: e.target.value }));
+                        }
+                      }}
+                    >
+                      {subcategorySuggestions.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                      <option value="__custom__">+ Custom…</option>
+                    </select>
+                    {!subcategorySuggestions.includes(fields.subcategory) && (
+                      <input
+                        className={`${inputCls} mt-1`}
+                        placeholder={t.subcategoryPlaceholder}
+                        value={fields.subcategory}
+                        autoFocus
+                        onChange={(e) => setFields((f) => ({ ...f, subcategory: e.target.value }))}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <input
+                    className={inputCls}
+                    placeholder={t.subcategoryPlaceholder}
+                    value={fields.subcategory}
+                    onChange={(e) => setFields((f) => ({ ...f, subcategory: e.target.value }))}
+                  />
                 )}
               </div>
 

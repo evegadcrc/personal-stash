@@ -514,6 +514,22 @@ function KnowledgeBaseContent({
     }
   }
 
+  async function handleColorChange(id: string, color: string | null) {
+    const res = await fetch(`/api/items/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ color }),
+    });
+    if (res.ok) {
+      setCategories((prev) =>
+        prev.map((cat) => ({
+          ...cat,
+          items: cat.items.map((item) => item.id === id ? { ...item, color: color ?? undefined } as typeof item : item),
+        }))
+      );
+    }
+  }
+
   async function handleToggleRead(id: string, read: boolean) {
     // Pass shareId so server knows to use UserItemRead path for non-owners
     const shareId = selectedShare?.id ?? (showAllShared ? "all-shared" : undefined);
@@ -1611,6 +1627,7 @@ function KnowledgeBaseContent({
                       onAddToCollection={setCollectionPickerItem}
                       shareId={selectedShare?.id ?? currentCategoryShare?.id}
                       autoFocus={item.id === focusItemId}
+                      onColorChange={handleColorChange}
                     />
                     </div>
                   ))}
@@ -1647,6 +1664,7 @@ function KnowledgeBaseContent({
                       onAddToCollection={setCollectionPickerItem}
                       shareId={selectedShare?.id ?? currentCategoryShare?.id}
                       autoFocus={item.id === focusItemId}
+                      onColorChange={handleColorChange}
                     />
                   ))}
                 </div>
