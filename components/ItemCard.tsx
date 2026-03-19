@@ -475,13 +475,15 @@ export default function ItemCard({
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {readButton}
-            {editButton}
-            {collectionButton}
-            {copyTextButton}
-            {copyLinkButton}
-            {addToShareButton}
-            {deleteButton}
-            {removeFromShareButton}
+            <div className={`flex items-center gap-1 ${expanded ? "" : "hidden sm:flex"}`}>
+              {editButton}
+              {collectionButton}
+              {copyTextButton}
+              {copyLinkButton}
+              {addToShareButton}
+              {deleteButton}
+              {removeFromShareButton}
+            </div>
             {openLink}
           </div>
         </div>
@@ -638,13 +640,15 @@ export default function ItemCard({
         ) : (
           <div className="flex shrink-0 items-center gap-1">
             {readButton}
-            {editButton}
-            {collectionButton}
-            {copyTextButton}
-            {copyLinkButton}
-            {addToShareButton}
-            {deleteButton}
-            {removeFromShareButton}
+            <div className={`flex items-center gap-1 ${expanded ? "" : "hidden sm:flex"}`}>
+              {editButton}
+              {collectionButton}
+              {copyTextButton}
+              {copyLinkButton}
+              {addToShareButton}
+              {deleteButton}
+              {removeFromShareButton}
+            </div>
             {openLink}
           </div>
         )}
