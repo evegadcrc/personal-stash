@@ -1531,8 +1531,8 @@ function KnowledgeBaseContent({
             </div>
           )}
           <div className="px-4 md:px-6 py-4 md:py-6">
-          {/* Category overview — shown in "All" personal view */}
-          {!selectedCategory && !selectedShare && !selectedCollection && !showAllShared ? (
+          {/* Category overview — shown in "All" personal view (hidden when searching) */}
+          {!selectedCategory && !selectedShare && !selectedCollection && !showAllShared && !searchQuery.trim() ? (
             <CategoryGrid
               categories={categories}
               unreadCounts={unreadCounts}

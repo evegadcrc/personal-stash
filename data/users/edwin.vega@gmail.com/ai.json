@@ -327,6 +327,20 @@
       "source": "facebook"
     },
     {
+      "id": "675db765-c031-4f9c-bcad-aeb79a0e981d",
+      "title": "Superpowers — Agentic Skills Framework for AI Coding Agents",
+      "url": "https://github.com/obra/superpowers",
+      "summary": "An open-source development methodology and skills framework for AI coding agents (Claude Code, Codex, OpenCode) with 40.9K GitHub stars. Before writing any code, the agent brainstorms and refines a spec with you, creates a detailed implementation plan, then executes via subagents with two-stage code review per task. Enforces true TDD: write failing test → watch it fail → write minimal code → watch it pass → commit. Philosophy: systematic over ad-hoc, evidence over claims, verify before declaring success. MIT licensed.",
+      "category": "ai",
+      "subcategory": "tool",
+      "tags": ["claude-code", "agentic", "open-source", "tdd", "methodology"],
+      "dateAdded": "2026-03-19T00:00:00Z",
+      "content": "**Repo:** https://github.com/obra/superpowers\n**Stars:** 40.9K\n**License:** MIT\n\n## What it does\n- Brainstorms + refines spec with you before writing any code\n- Creates a detailed implementation plan (junior-engineer-proof)\n- Subagent-driven execution — fresh subagents per task\n- Two-stage code review after each task (spec compliance → code quality)\n- Enforces TDD: failing test → pass → commit — deletes code written before tests\n- End-of-task verification and cleanup\n\n## Compatible with\nClaude Code (plugin install), Codex, OpenCode",
+      "source": "facebook",
+      "read": false,
+      "color": "blue"
+    },
+    {
       "id": "f28372f6-52fa-4975-b5a8-d204d01245e1",
       "title": "AiUpdates06 — Hands-On AI Building Step-by-Step Tutorials",
       "url": "https://www.facebook.com/share/1M5eNuUBoo/",
