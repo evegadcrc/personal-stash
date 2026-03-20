@@ -5,6 +5,10 @@ import { prisma } from "@/lib/db";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Google],
   pages: { signIn: "/login" },
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+  },
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
