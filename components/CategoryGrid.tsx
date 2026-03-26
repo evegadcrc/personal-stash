@@ -80,15 +80,10 @@ export default function CategoryGrid({
 
           return (
             <div key={cat.name} className={cardCls}>
-              {/* Tappable icon — opens icon picker */}
-              <button
-                onClick={(e) => { e.stopPropagation(); onIconPickerOpen(cat.name); }}
-                className="mb-2 self-start rounded-lg p-0.5 hover:bg-zinc-700 transition-colors"
-                title="Change icon"
-                tabIndex={isEditing ? -1 : 0}
-              >
+              {/* Icon — display only */}
+              <div className="mb-2 self-start">
                 <CatIcon icon={icon} />
-              </button>
+              </div>
 
               {/* Card body — navigates into category */}
               <button
@@ -137,13 +132,13 @@ export default function CategoryGrid({
               </button>
 
               {/* Action buttons — top-right corner */}
-              {!isEditing && (
+              {!isEditing ? (
                 <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingCategory(cat.name); }}
-                    title="Rename"
+                    title="Edit"
                     className="flex h-6 w-6 items-center justify-center rounded text-[11px] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-700 transition-colors"
-                    aria-label="Rename category"
+                    aria-label="Edit category"
                   >
                     ✎
                   </button>
@@ -157,6 +152,25 @@ export default function CategoryGrid({
                         : "text-zinc-500 hover:text-zinc-100 hover:bg-zinc-700 cursor-pointer"
                     }`}
                     aria-label="Delete category"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="absolute top-2 right-2 flex items-center gap-0.5">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onIconPickerOpen(cat.name); }}
+                    title="Change icon"
+                    className="flex h-6 w-6 items-center justify-center rounded text-[11px] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-700 transition-colors"
+                    aria-label="Change icon"
+                  >
+                    🎨
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingCategory(null); }}
+                    title="Cancel"
+                    className="flex h-6 w-6 items-center justify-center rounded text-[11px] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-700 transition-colors"
+                    aria-label="Cancel editing"
                   >
                     ✕
                   </button>
