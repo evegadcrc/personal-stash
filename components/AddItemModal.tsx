@@ -80,6 +80,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState("");
   const [preferredCategory, setPreferredCategory] = useState<string>("");
+  const [preferredSubcategory, setPreferredSubcategory] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Derived values (needed before useState)
@@ -168,24 +169,27 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
       const finalCat = preferredCategory || (catExists ? aiCat : "__new__");
       const finalNewCat = preferredCategory ? "" : (catExists ? "" : aiCat);
 
+      // Use user's preferred subcategory if they picked one, otherwise use AI suggestion
+      const finalSubcat = preferredSubcategory || (data.subcategory ?? "");
+
       setFields({
         title: data.title ?? "",
         url: data.url ?? (inputTab === "url" ? urlInput.trim() : ""),
         summary: data.summary ?? "",
         category: finalCat,
         newCategory: finalNewCat,
-        subcategory: data.subcategory ?? "",
+        subcategory: finalSubcat,
         tagsInput: (data.tags ?? []).join(", "),
         source: data.source ?? "web",
         content: "",
         color: undefined,
       });
       if (data.attachments?.length) setAttachments(data.attachments);
-      // If AI suggested a subcategory not in existing suggestions, show custom input
-      const aiSubcat = data.subcategory ?? "";
-      const catForSuggestions = categories.find((c) => c.name === (preferredCategory || (catExists ? aiCat : aiCat)));
+      // If subcategory is not in existing suggestions, show custom input
+      const resolvedCatName = preferredCategory || (catExists ? aiCat : aiCat);
+      const catForSuggestions = categories.find((c) => c.name === resolvedCatName);
       const existingSubs = catForSuggestions ? [...new Set(catForSuggestions.items.map((i) => i.subcategory))].sort() : [];
-      setCustomSubcategory(aiSubcat !== "" && !existingSubs.includes(aiSubcat));
+      setCustomSubcategory(finalSubcat !== "" && !existingSubs.includes(finalSubcat));
       setShowForm(true);
     } catch (e) {
       setAnalyzeError((e as Error).message);
@@ -424,19 +428,36 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
 
             {analyzeError && <p className="text-xs text-red-400">{analyzeError}</p>}
 
-            {/* Optional category hint */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">{t.categoryLabel} <span className="text-zinc-600">{t.aiCategoryHint}</span></label>
-              <select
-                className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-300 outline-none focus:border-zinc-500 transition-colors w-full"
-                value={preferredCategory}
-                onChange={(e) => setPreferredCategory(e.target.value)}
-              >
-                <option value="">{t.letAIDecide}</option>
-                {existingCategoryNames.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+            {/* Optional category & subcategory hints */}
+            <div className="flex gap-2">
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs text-zinc-500">{t.categoryLabel}</label>
+                <select
+                  className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-300 outline-none focus:border-zinc-500 transition-colors w-full"
+                  value={preferredCategory}
+                  onChange={(e) => { setPreferredCategory(e.target.value); setPreferredSubcategory(""); }}
+                >
+                  <option value="">Auto</option>
+                  {existingCategoryNames.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <label className="text-xs text-zinc-500">{t.subcategoryLabel}</label>
+                <select
+                  className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-zinc-300 outline-none focus:border-zinc-500 transition-colors w-full"
+                  value={preferredSubcategory}
+                  onChange={(e) => setPreferredSubcategory(e.target.value)}
+                >
+                  <option value="">Auto</option>
+                  {preferredCategory && categories.find((c) => c.name === preferredCategory)
+                    ? [...new Set(categories.find((c) => c.name === preferredCategory)!.items.map((i) => i.subcategory))].sort().map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))
+                    : null}
+                </select>
+              </div>
             </div>
 
             <button

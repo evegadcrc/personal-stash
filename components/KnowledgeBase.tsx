@@ -1340,7 +1340,7 @@ function KnowledgeBaseContent({
                 Unread
               </button>
               <button
-                onClick={() => setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date")}
+                onClick={() => { setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date"); if (selectedCategory) setCustomOrder((prev) => { const next = { ...prev }; delete next[selectedCategory]; localStorage.setItem("stash-custom-order", JSON.stringify(next)); return next; }); }}
                 className="hidden sm:flex h-8 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
                 title={`Sorted by ${sortMode} — click to toggle`}
               >
@@ -1408,7 +1408,7 @@ function KnowledgeBaseContent({
               Unread
             </button>
             <button
-              onClick={() => setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date")}
+              onClick={() => { setSortMode((s) => s === "date" ? "name" : s === "name" ? "color" : "date"); if (selectedCategory) setCustomOrder((prev) => { const next = { ...prev }; delete next[selectedCategory]; localStorage.setItem("stash-custom-order", JSON.stringify(next)); return next; }); }}
               className="flex h-7 shrink-0 items-center gap-1.5 rounded-lg border border-zinc-700 px-2.5 text-xs text-zinc-400 transition-colors"
             >
               {sortMode === "date" ? t.sortDate : sortMode === "name" ? t.sortName : t.sortColor}
