@@ -100,7 +100,6 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
   const [saveError, setSaveError] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [duplicate, setDuplicate] = useState<{ title: string; category: string } | null>(null);
-  const [customSubcategory, setCustomSubcategory] = useState(false);
 
   // Derived values
   const existingCategoryNames = categories.map((c) => c.name);
@@ -185,11 +184,6 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
         color: undefined,
       });
       if (data.attachments?.length) setAttachments(data.attachments);
-      // If subcategory is not in existing suggestions, show custom input
-      const resolvedCatName = preferredCategory || (catExists ? aiCat : aiCat);
-      const catForSuggestions = categories.find((c) => c.name === resolvedCatName);
-      const existingSubs = catForSuggestions ? [...new Set(catForSuggestions.items.map((i) => i.subcategory))].sort() : [];
-      setCustomSubcategory(finalSubcat !== "" && !existingSubs.includes(finalSubcat));
       setShowForm(true);
     } catch (e) {
       setAnalyzeError((e as Error).message);
@@ -510,7 +504,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                     className={inputCls}
                     value={fields.category}
                     onChange={(e) =>
-                      { setCustomSubcategory(false); setFields((f) => ({ ...f, category: e.target.value, subcategory: "" })); }
+                      setFields((f) => ({ ...f, category: e.target.value, subcategory: "" }))
                     }
                   >
                     <optgroup label={t.myLibrary}>
@@ -563,15 +557,10 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                   <>
                     <select
                       className={inputCls}
-                      value={customSubcategory ? "__new__sub" : subcategorySuggestions.includes(fields.subcategory) ? fields.subcategory : "__new__sub"}
+                      value={subcategorySuggestions.includes(fields.subcategory) ? fields.subcategory : "__new__sub"}
                       onChange={(e) => {
-                        if (e.target.value === "__new__sub") {
-                          setCustomSubcategory(true);
-                          setFields((f) => ({ ...f, subcategory: "" }));
-                        } else {
-                          setCustomSubcategory(false);
-                          setFields((f) => ({ ...f, subcategory: e.target.value }));
-                        }
+                        const v = e.target.value === "__new__sub" ? "" : e.target.value;
+                        setFields((f) => ({ ...f, subcategory: v }));
                       }}
                     >
                       {subcategorySuggestions.map((s) => (
@@ -579,12 +568,11 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
                       ))}
                       <option value="__new__sub">+ New…</option>
                     </select>
-                    {customSubcategory && (
+                    {!subcategorySuggestions.includes(fields.subcategory) && (
                       <input
                         className={`${inputCls} mt-1`}
                         placeholder={t.subcategoryPlaceholder}
                         value={fields.subcategory}
-                        autoFocus
                         onChange={(e) => setFields((f) => ({ ...f, subcategory: e.target.value }))}
                       />
                     )}

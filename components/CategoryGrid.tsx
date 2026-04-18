@@ -80,9 +80,25 @@ export default function CategoryGrid({
 
           return (
             <div key={cat.name} className={cardCls}>
-              {/* Icon — display only */}
+              {/* Icon — tappable in edit mode to change */}
               <div className="mb-2 self-start">
-                <CatIcon icon={icon} />
+                {isEditing ? (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={(e) => { e.stopPropagation(); onIconPickerOpen(cat.name); }}
+                    title="Change icon"
+                    aria-label="Change icon"
+                    className="relative rounded-lg ring-2 ring-zinc-500 hover:ring-zinc-300 transition"
+                  >
+                    <CatIcon icon={icon} />
+                    <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-700 text-[9px] text-zinc-100 border border-zinc-900">
+                      ✎
+                    </span>
+                  </button>
+                ) : (
+                  <CatIcon icon={icon} />
+                )}
               </div>
 
               {/* Card body — navigates into category */}
@@ -159,14 +175,7 @@ export default function CategoryGrid({
               ) : (
                 <div className="absolute top-2 right-2 flex items-center gap-0.5">
                   <button
-                    onClick={(e) => { e.stopPropagation(); onIconPickerOpen(cat.name); }}
-                    title="Change icon"
-                    className="flex h-6 w-6 items-center justify-center rounded text-[11px] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-700 transition-colors"
-                    aria-label="Change icon"
-                  >
-                    🎨
-                  </button>
-                  <button
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={(e) => { e.stopPropagation(); setEditingCategory(null); }}
                     title="Cancel"
                     className="flex h-6 w-6 items-center justify-center rounded text-[11px] text-zinc-500 hover:text-zinc-100 hover:bg-zinc-700 transition-colors"

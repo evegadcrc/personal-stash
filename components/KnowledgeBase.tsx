@@ -375,6 +375,72 @@ function KnowledgeBaseContent({
     return () => navigator.serviceWorker?.removeEventListener("message", onSwMessage);
   }, []);
 
+  // Android/browser back button: map to in-app navigation (close modal or view)
+  // instead of exiting the PWA. We maintain a parallel depth: each "open" view
+  // or modal pushes one history entry; popstate closes the top-most thing.
+  const backDepthRef = useRef(0);
+  const programmaticBackRef = useRef(0);
+  const popHandlerRef = useRef<() => void>(() => {});
+
+  const inViewLevel =
+    selectedCategory || selectedShare || selectedCollection || showAllShared ? 1 : 0;
+  const backTarget =
+    inViewLevel +
+    (showAddModal ? 1 : 0) +
+    (editingItem ? 1 : 0) +
+    (confirmDeleteCategory ? 1 : 0) +
+    (shareSettingsCategory ? 1 : 0) +
+    (iconPickerCategory ? 1 : 0) +
+    (showFriendsModal ? 1 : 0) +
+    (addToShareItem ? 1 : 0) +
+    (collectionPickerItem ? 1 : 0) +
+    (notifPanelOpen ? 1 : 0) +
+    (sidebarOpen ? 1 : 0) +
+    (userMenuOpen ? 1 : 0);
+
+  useEffect(() => {
+    while (backDepthRef.current < backTarget) {
+      window.history.pushState({ stashDepth: backDepthRef.current + 1 }, "");
+      backDepthRef.current++;
+    }
+    while (backDepthRef.current > backTarget) {
+      programmaticBackRef.current++;
+      backDepthRef.current--;
+      window.history.back();
+    }
+  }, [backTarget]);
+
+  // Keep latest close priority in a ref so the popstate listener never reads stale state
+  popHandlerRef.current = () => {
+    if (programmaticBackRef.current > 0) {
+      programmaticBackRef.current--;
+      return;
+    }
+    if (backDepthRef.current === 0) return;
+    backDepthRef.current--;
+    if (iconPickerCategory) { setIconPickerCategory(null); return; }
+    if (collectionPickerItem) { setCollectionPickerItem(null); return; }
+    if (addToShareItem) { setAddToShareItem(null); return; }
+    if (confirmDeleteCategory) { setConfirmDeleteCategory(null); return; }
+    if (shareSettingsCategory) { setShareSettingsCategory(null); return; }
+    if (showFriendsModal) { setShowFriendsModal(false); return; }
+    if (editingItem) { setEditingItem(null); return; }
+    if (showAddModal) { setShowAddModal(false); return; }
+    if (notifPanelOpen) { setNotifPanelOpen(false); return; }
+    if (userMenuOpen) { setUserMenuOpen(false); return; }
+    if (sidebarOpen) { setSidebarOpen(false); return; }
+    if (selectedCollection) { setSelectedCollection(null); setCollectionItems([]); return; }
+    if (showAllShared) { setShowAllShared(false); setAllSharedItems([]); return; }
+    if (selectedShare) { setSelectedShare(null); setSharedItems([]); return; }
+    if (selectedCategory) { setSelectedCategory(null); return; }
+  };
+
+  useEffect(() => {
+    function onPop() { popHandlerRef.current(); }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
   // Load my shares + prefetch membership items/contributors for all owned shares in parallel
   useEffect(() => {
     if (!currentUserEmail) return;
