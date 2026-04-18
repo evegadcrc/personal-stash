@@ -112,7 +112,7 @@ export default function AddItemModal({ categories, onClose, onSave, shareId, sha
       : fields.category;
   const selectedCatData = categories.find((c) => c.name === effectiveCategoryName);
   const subcategorySuggestions = selectedCatData
-    ? [...new Set(selectedCatData.items.map((i) => i.subcategory))].sort()
+    ? [...new Set(selectedCatData.items.map((i) => i.subcategory).filter(Boolean))].sort()
     : [];
   const tagChips = fields.tagsInput
     .split(",")
