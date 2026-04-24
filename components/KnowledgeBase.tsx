@@ -205,18 +205,25 @@ function KnowledgeBaseContent({
       .catch(() => {});
   }, [currentUserEmail]);
 
-  // Fetch notification count on mount + poll every 60s
+  // Fetch notification count on mount + poll every 5min while tab is visible.
+  // Why: Neon compute auto-suspends after ~5min idle; polling more aggressively
+  // or while the tab is hidden keeps compute alive 24/7 and burns free-tier quota.
   useEffect(() => {
     if (!currentUserEmail) return;
     function fetchCount() {
+      if (document.visibilityState !== "visible") return;
       fetch("/api/notifications?count=true")
         .then((r) => r.json())
         .then((data) => setNotifCount(data.count ?? 0))
         .catch(() => {});
     }
     fetchCount();
-    const interval = setInterval(fetchCount, 60_000);
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchCount, 300_000);
+    document.addEventListener("visibilitychange", fetchCount);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", fetchCount);
+    };
   }, [currentUserEmail]);
 
   // Register for web push notifications
